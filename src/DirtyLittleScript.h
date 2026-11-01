@@ -22,7 +22,7 @@ namespace DLS {
     // -------------------------------------------------------------------------
     // Run a Script
     // -------------------------------------------------------------------------
-    std::string Run(std::string code) {
+    std::string Run(const std::string& code) {
         Lexer lex(code);
         std::vector<Token> token = lex.tokenize();
         if (DEBUG_TOKEN) {

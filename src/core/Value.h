@@ -19,7 +19,7 @@ namespace DLS {
     // ------------------------------------------
     // Value
     // ------------------------------------------
-    enum class ValueType: uint8_t {
+    enum class ValueType: U8 {
         None,
         Double,
         Long,
@@ -37,8 +37,9 @@ namespace DLS {
             U32 strId;
 
         } ;
+        U32 flags;      // 4 byte flags can be used to type something like pointers
         ValueType type; // 1 byte
-        U8  padding[7]; // 7 bytes padding for future use
+        U8  padding[3]; // 3 bytes padding for future use
 
         // ------------------
         Value() { type = ValueType::None;  }

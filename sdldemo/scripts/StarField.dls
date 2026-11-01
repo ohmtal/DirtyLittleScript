@@ -12,7 +12,7 @@ minW = maxW * -1
 maxH = H / 2
 minH = maxH * -1
 
-STAR_COUNT  = 420
+STAR_COUNT  = 4200
 START_DIV   = 0.03125
 Speed       = 0.2
 fontScale   = 1.2
@@ -145,6 +145,7 @@ while Running
 
 
     SDL_RenderPresent Renderer
+    # 1 ms breath
     SDL_Delay 1
 end
 

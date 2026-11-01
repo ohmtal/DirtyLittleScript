@@ -18,11 +18,11 @@
 
 namespace DLS{
 
-namespace ParserFrame {
-    bool guessGlobalVarAndInsertLocalIfNot(uint32_t symId);
-    void startFunc(uint32_t funcSymId);
-    void endFunc(uint32_t funcSymId);
-} //namespace
+// namespace ParserFrame {
+//     bool guessGlobalVarAndInsertLocalIfNot(uint32_t symId);
+//     void startFunc(uint32_t funcSymId);
+//     void endFunc(uint32_t funcSymId);
+// } //namespace
 
 void PrintParseError(const std::string& message
 , const std::string& p1 = "",const std::string& p2 = "",const std::string& p3 = "") {
@@ -148,12 +148,7 @@ private:
                 // HACK fest - unable to save the tape when pushing the
                 //             symId which is not always the same!
                 U32 symId = SymbolTable::insert(t.mValue);
-                Value* constansPointer = FunctionMap::getConstants(symId);
-                if (constansPointer) {
-                    vm->emitCode(op_literal );
-                    vm->emitValue(*constansPointer);
-                }
-                else
+
                 if (FunctionMap::IsCFunction(symId)) {
                     U32 argCount = 0;
                     while (isContinueToken(peek())) {
@@ -187,13 +182,13 @@ private:
                         requestParam++;
                         if (!getArg("array assign")) return false;
                         requestParam--;
-                        S64 varidx = Variables.getGlobalRegister(symId);
+                        S64 varidx = vm->Variables.getGlobalRegister(symId);
                         if (varidx < 0) {
-                            varidx = Variables.reserveGlobal(symId);
+                            varidx = vm->Variables.reserveGlobal(symId);
                         }
                         vm->emitCode(op_save_array);
                         vm->emitTapeChunk((size_t)varidx);
-                    } else if (S64 varidx = Variables.getGlobalRegister(symId); varidx >= 0)  {
+                    } else if (S64 varidx = vm->Variables.getGlobalRegister(symId); varidx >= 0)  {
                         vm->emitCode(op_load_array);
                         vm->emitTapeChunk((size_t)varidx);
 
@@ -212,15 +207,20 @@ private:
                     requestParam++;
                     if (!getArg("Assign")) return false;
                     requestParam--;
-                    size_t varidx = Variables.reserveGlobal(symId);
+                    size_t varidx = vm->Variables.reserveGlobal(symId);
                     vm->emitCode(op_save_global);
                     vm->emitTapeChunk(varidx);
                 }
                 else
-                if (S64 varidx = Variables.getGlobalRegister(symId); varidx >= 0)  {
+                if (S64 varidx = vm->Variables.getGlobalRegister(symId); varidx >= 0)  {
                     vm->emitCode(op_load_global);
                     vm->emitTapeChunk((size_t)varidx);
 
+                }
+                else
+                if (Value* constansPointer = FunctionMap::getConstants(symId);constansPointer) {
+                    vm->emitCode(op_literal );
+                    vm->emitValue(*constansPointer);
                 }
                 else
                 {
@@ -289,7 +289,7 @@ private:
             }
             // ~~~~ Others ~~~~
             default:
-                PrintParseError("Unhandled Token:", tokenTypeToString(curType));
+                PrintParseError("parsePrimary :: Unhandled Token:", tokenTypeToString(curType));
                 return false;
                 break;
         } //switch

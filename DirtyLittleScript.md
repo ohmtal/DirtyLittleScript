@@ -110,12 +110,28 @@ For first run ever 13,50 it's not so bad - still beat python on that ;)
 - [X] write readme 
 - [X] write examples
 - [X] write cheat sheet 
-- [ ] rewrite SymbolTable/map lookup to register based vector for at least the global variables
+- [X] rewrite SymbolTable/map lookup to register based vector for the global variables
     - [X] variables ==> double speed on test_var ! 6.690010350 seconds time elapsed
-    - [ ] const ?
-    - [ ] c-functions ?
-- [ ] maybe i'll add a callframe too to enable real functions 
+    
+- [X] i broke the parser someewhere - since variable registers? - test does not pass! 
+    - **NOTE** when i run it single it pass! There must be chunk left from previous run!
+    - reset all global vectors build in VM !
+        - [X] VariableStorage - a new one every time << did not fix it!
+        - [X] It's the contant `define foo` this breaks the following !!!
+              NEVER use lowercase with define !! :P ***it's not a bug***
+    - cause assert stack overflow: `mySrc = R"( if; 1 < 2; 40; end; )"; std::cout << mySrc << "  =  " << Run(mySrc) << "\n";`
+    - unhandled token LSquare =>  `mySrc = R"( foo[110] = 10; print "10==" foo[110] )"; Run(mySrc);`
+    - Unhandled Token: Assign => ` foo = function ; print str::strlen "HUHU";;`
+    - Unhandled Token: Assign => somewhere in:  *Comment test*
+    
+- [X] add parse error  constansPointer ==> peek Assign or '[' or move the constant to bottom   
 - [ ] clean unused stuff 
     - [ ] lexer 
     - [ ] 
 
+
+## maybe:
+- [ ] add a callframe too to enable real functions 
+- [ ] rewrite SymbolTable/map lookup for:
+    - [ ] const ?
+    - [ ] c-functions ?

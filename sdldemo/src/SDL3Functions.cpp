@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: MIT
 //-----------------------------------------------------------------------------
 // DLS basic SDL3 bindings
-// NOTE WARNING null type safety!
+// NOTE WARNING null type safety! - i could use Value::flags or the 3 padding
+// bytes for that.
 //-----------------------------------------------------------------------------
 // #pragma once
 #include <SDL3/SDL.h>

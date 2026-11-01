@@ -100,7 +100,7 @@ namespace DLS {
             }
         }
 
-    } Variables;
+    } ;
 
     // ------------------------------------------
     // FWD
@@ -133,6 +133,8 @@ namespace DLS {
         std::vector<Value> stack;
 
         std::vector<LoopContext> mLoopStack;
+
+        VariableStorage Variables;
 
         void run() {
             while (pc < tape.size()) {
@@ -200,15 +202,15 @@ namespace DLS {
     // ------------------------------------------
     void op_save_global(VM& vm) {
          size_t varIndex = vm.advanceSlot().tapeChunk;
-         Variables.saveGlobal(varIndex,vm.POP_STACK());
+         vm.Variables.saveGlobal(varIndex,vm.POP_STACK());
     }
 
     void op_load_global(VM& vm) {
         size_t varIndex = vm.advanceSlot().tapeChunk;
-        Value& var = Variables.getGlobal(varIndex);
+        Value& var = vm.Variables.getGlobal(varIndex);
         if (var.type == ValueType::Function) {
-            Variables.mReturnStack.push_back(vm.tell());
-            vm.pc = Variables.mFunctions[(size_t)var.l];
+            vm.Variables.mReturnStack.push_back(vm.tell());
+            vm.pc = vm.Variables.mFunctions[(size_t)var.l];
         } else {
             vm.PUSH_STACK( var );
         }
@@ -227,7 +229,7 @@ namespace DLS {
             return;
         }
 
-        Variables.saveArray(symid,arrayIndexValue.getUInt(), assignValue);
+        vm.Variables.saveArray(symid,arrayIndexValue.getUInt(), assignValue);
     }
 
     void op_load_array(VM& vm) {
@@ -237,7 +239,7 @@ namespace DLS {
             PrintRuntimeError("Array index must be an number: ", arrayIndexValue.toString());
             return;
         }
-        vm.PUSH_STACK(Variables.getArray(varIndex,arrayIndexValue.getUInt()));
+        vm.PUSH_STACK(vm.Variables.getArray(varIndex,arrayIndexValue.getUInt()));
     }
 
     // void op_load_local(VM& vm) {
@@ -475,18 +477,18 @@ namespace DLS {
     // ------------------------------------------
     void op_func_def(VM& vm) {
         size_t startPosition =  vm.advanceSlot().jump_offset;
-        Variables.mFunctions.push_back(startPosition);
-        Value subValue = Value((S64)(Variables.mFunctions.size() - 1));
+        vm.Variables.mFunctions.push_back(startPosition);
+        Value subValue = Value((S64)(vm.Variables.mFunctions.size() - 1));
         subValue.type = ValueType::Function;
         vm.PUSH_STACK(subValue);
     }
     void op_return(VM& vm) {
-        if (Variables.mReturnStack.size() == 0) {
+        if (vm.Variables.mReturnStack.size() == 0) {
             vm.pc = vm.tape.size() - 1;
             return;
         }
-        vm.pc = Variables.mReturnStack.back();
-        Variables.mReturnStack.pop_back();
+        vm.pc = vm.Variables.mReturnStack.back();
+        vm.Variables.mReturnStack.pop_back();
     }
     // ------------------------------------------
 }
