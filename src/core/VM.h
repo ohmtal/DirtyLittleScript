@@ -25,37 +25,47 @@ namespace DLS {
     // Variables
     // ------------------------------------------
     struct VariableStorage {
-        std::unordered_map<U32,Value> mGlobals;
+
+
+        std::unordered_map<U32,size_t> mGlobalsLookUp;
+        std::vector<Value> mGlobalsRegister;
+
         std::vector<std::vector<Value>> mArrays;
 
         std::vector<size_t> mFunctions;
         std::vector<size_t> mReturnStack;
 
-        bool isGlobal(U32 id) {
-            return (mGlobals.find(id) != mGlobals.end());
-        }
-
-        void saveGlobal(U32 id, const Value& value) {
-            mGlobals[id] = value;
-        }
-
-        Value getGlobal(U32 id) {
-
-            auto it = mGlobals.find(id);
-            if (it != mGlobals.end()) [[likely]] {
+        S64 getGlobalRegister(U32 symId) {
+            auto it = mGlobalsLookUp.find(symId);
+            if (it != mGlobalsLookUp.end()) [[likely]] {
                 return it->second;
             }
-            Value v = Value(0.0);
+            return -1;
+        }
 
+        size_t reserveGlobal(U32 symId) {
+            S64 index = getGlobalRegister(symId);
+            if (index < 0 ) {
+                index = mGlobalsRegister.size();
+                mGlobalsLookUp[symId] = index;
+                mGlobalsRegister.push_back(Value());
+            }
+            return (size_t) index;
+        }
 
-            std::string varName = SymbolTable::getName(id);
-            Tools::warnf("Variable not found: %s\n", varName.c_str());
-            return v;
+        void saveGlobal(size_t index, const Value& value) {
+            assert (index < mGlobalsRegister.size() && "SAVE: GLOBALS REGISTER OUT OF BOUNDS");
+            mGlobalsRegister[index] = value;
+        }
+
+        Value& getGlobal(size_t index) {
+
+            assert (index < mGlobalsRegister.size() && "LOAD: GLOBALS REGISTER OUT OF BOUNDS");
+            return mGlobalsRegister[index];
         }
         // --------------------------------------------------------------------
-        // FIXME bad code .. lazy today:
-        Value getArray(U32 id, U32 index) {
-            Value arrValue = getGlobal(id);
+        Value getArray(size_t varIndex, U32 index) {
+            Value& arrValue = getGlobal(varIndex);
             if (!arrValue.isArray()) [[unlikely]] {
                 PrintRuntimeError("This is not a array Value!");
                 return Value(0.0);
@@ -68,14 +78,9 @@ namespace DLS {
             return mArrays[masterIndex][index];
 
         }
-        void saveArray(U32 id, U32 index, const Value& value) {
-            Value arrValue;
-            if (isGlobal(id)) {
-                arrValue = getGlobal(id);
-                if (!arrValue.isArray()) [[unlikely]] {
-                    PrintRuntimeError("This is not a array Value!");
-                    return;
-                }
+        void saveArray(size_t varIndex, U32 index, const Value& value) {
+            Value arrValue = getGlobal(varIndex);
+            if (arrValue.isArray()) {
                 size_t masterIndex =arrValue.getUInt();
                 if (index >= mArrays[masterIndex].size()) {
                     mArrays[masterIndex].resize(index + 1);
@@ -90,7 +95,7 @@ namespace DLS {
                     mArrays[masterIndex].resize(index + 1);
                 }
                 mArrays[masterIndex][index] = value;
-                saveGlobal(id,arrValue);
+                saveGlobal(varIndex,arrValue);
                 // Tools::printf("id:%u, index:%u, masterIndex: %zu arrValue=%u\n", id,index, masterIndex, arrValue.getUInt());
             }
         }
@@ -194,13 +199,13 @@ namespace DLS {
     // Variables
     // ------------------------------------------
     void op_save_global(VM& vm) {
-         U32 symid = (U32)vm.advanceSlot().tapeChunk;
-         Variables.saveGlobal(symid,vm.POP_STACK());
+         size_t varIndex = vm.advanceSlot().tapeChunk;
+         Variables.saveGlobal(varIndex,vm.POP_STACK());
     }
 
     void op_load_global(VM& vm) {
-        U32 symid = (U32)vm.advanceSlot().tapeChunk;
-        Value var = Variables.getGlobal(symid);
+        size_t varIndex = vm.advanceSlot().tapeChunk;
+        Value& var = Variables.getGlobal(varIndex);
         if (var.type == ValueType::Function) {
             Variables.mReturnStack.push_back(vm.tell());
             vm.pc = Variables.mFunctions[(size_t)var.l];
@@ -226,13 +231,13 @@ namespace DLS {
     }
 
     void op_load_array(VM& vm) {
-        U32 symid = (U32)vm.advanceSlot().tapeChunk;
+        size_t varIndex = vm.advanceSlot().tapeChunk;
         Value arrayIndexValue = vm.POP_STACK();
         if (!arrayIndexValue.isLong() && !arrayIndexValue.isDouble()) [[unlikely]]{
             PrintRuntimeError("Array index must be an number: ", arrayIndexValue.toString());
             return;
         }
-        vm.PUSH_STACK(Variables.getArray(symid,arrayIndexValue.getUInt()));
+        vm.PUSH_STACK(Variables.getArray(varIndex,arrayIndexValue.getUInt()));
     }
 
     // void op_load_local(VM& vm) {

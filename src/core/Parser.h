@@ -187,12 +187,19 @@ private:
                         requestParam++;
                         if (!getArg("array assign")) return false;
                         requestParam--;
+                        S64 varidx = Variables.getGlobalRegister(symId);
+                        if (varidx < 0) {
+                            varidx = Variables.reserveGlobal(symId);
+                        }
                         vm->emitCode(op_save_array);
-                        vm->emitTapeChunk(symId);
-                    } else {
+                        vm->emitTapeChunk((size_t)varidx);
+                    } else if (S64 varidx = Variables.getGlobalRegister(symId); varidx >= 0)  {
                         vm->emitCode(op_load_array);
-                        vm->emitTapeChunk(symId);
+                        vm->emitTapeChunk((size_t)varidx);
 
+                    } else {
+                        PrintLexerError("Unknown Variable", t.mValue);
+                        return false;
                     }
 
 
@@ -205,14 +212,14 @@ private:
                     requestParam++;
                     if (!getArg("Assign")) return false;
                     requestParam--;
-                    Variables.saveGlobal(symId, Value(0.0));
+                    size_t varidx = Variables.reserveGlobal(symId);
                     vm->emitCode(op_save_global);
-                    vm->emitTapeChunk(symId);
+                    vm->emitTapeChunk(varidx);
                 }
                 else
-                if (Variables.isGlobal(symId)) {
+                if (S64 varidx = Variables.getGlobalRegister(symId); varidx >= 0)  {
                     vm->emitCode(op_load_global);
-                    vm->emitTapeChunk(symId);
+                    vm->emitTapeChunk((size_t)varidx);
 
                 }
                 else

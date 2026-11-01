@@ -111,7 +111,7 @@ For first run ever 13,50 it's not so bad - still beat python on that ;)
 - [X] write examples
 - [X] write cheat sheet 
 - [ ] rewrite SymbolTable/map lookup to register based vector for at least the global variables
-    - [ ] variables
+    - [X] variables ==> double speed on test_var ! 6.690010350 seconds time elapsed
     - [ ] const ?
     - [ ] c-functions ?
 - [ ] maybe i'll add a callframe too to enable real functions 

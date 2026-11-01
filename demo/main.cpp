@@ -132,7 +132,7 @@ goto jump_to_test;
         end
     )"; Run(mySrc);
 
-
+jump_to_test:
    std::cout << "---- Array ----\n";
     mySrc = R"( foo[110] = 10; print "10==" foo[110] )"; Run(mySrc);
 
@@ -175,7 +175,7 @@ end
 
 )"; Run(mySrc);
 
-jump_to_test:
+
 std::cout << "-------- Comment test  --------\n";
 mySrc = R"(
     foo = 1
