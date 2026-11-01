@@ -12,7 +12,7 @@ minW = maxW * -1
 maxH = H / 2
 minH = maxH * -1
 
-STAR_COUNT  = 4200
+STAR_COUNT  = 420
 START_DIV   = 0.03125
 Speed       = 0.2
 fontScale   = 1.2
@@ -71,7 +71,7 @@ Running = true
 Time_Last = SDL_GetTicks
 counter = 0
 fpsSum  = 0.0
-FPS = 0.0
+FPS = 0
 
 print "* Launch Main Loop"
 
@@ -87,7 +87,7 @@ while Running
     end
 
     if (counter == 50 )
-         FPS = fpsSum / 50.0
+        FPS = int::cast fpsSum / 50.0
         fpsSum = 0.0
         counter = 0
     end

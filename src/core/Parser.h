@@ -567,6 +567,7 @@ private:
 public:
     Parser(std::vector<Token> t, VM* vm) : mTokens(std::move(t)), vm(vm) { }
     bool parse(){
+        if (mTokens.size() == 0) return false;
         while (peek().mType != TokenType::EOFToken) {
             U32 startPos = tell();
             if (!parseStatements()) return false;

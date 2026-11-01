@@ -104,9 +104,13 @@ For first run ever 13,50 it's not so bad - still beat python on that ;)
 ### Bugs
 - [X] CRIT: Array is not working !!!! POINT_X[1] = 1; POINT_Y[1] = 2; POINT_X[1] becomes 2?!
 - [X] fn NOT working! Test with function calls << it is! it did not find the variables!!!
-- [ ] inside "#" disable the code ! 
+- [X] inside "#" disable the code ! << tested works ?! 
 
 ### Todos:
-- fn parser multi line !
-
+- [ ] write readme 
+- [ ] write examples
+- [ ] write cheat sheet 
+- [ ] clean unused stuff 
+    - [ ] lexer 
+    - [ ] 
 

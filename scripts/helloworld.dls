@@ -1,0 +1,13 @@
+# -----------------------------------------------------------------------------
+# Dirty Little Script: scripts/helloworld.dls
+# -----------------------------------------------------------------------------
+
+# famous hello world
+print "1. Hello World!"
+
+# with str::concat
+print (str::concat  2 ". " "Hello" " " "World" "!")
+
+# with str::format
+print (str::format "%d. %s %s!" 3 "Hello" "World")
+

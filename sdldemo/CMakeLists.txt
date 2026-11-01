@@ -5,9 +5,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 
-set(WITHSDL3_DEFAULT ON)
-set(BUILD_WITH_SDL3 ${WITHSDL3_DEFAULT} CACHE BOOL "Build Application with SDL3 Demo")
-
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    message(STATUS "No build type selected, defaulting to RelWithDebInfo")
+    set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build." FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
 
 # -----------------------------------------------------------------------------
 project(dlsSDL C CXX)
@@ -23,13 +25,10 @@ set(PROJECT_SRC
 )
 
 # ------------- SDL3
-if (BUILD_WITH_SDL3)
-    find_package(SDL3 REQUIRED)
+find_package(SDL3 REQUIRED)
 
-    list(APPEND LINK_LIBS SDL3::SDL3)
-    list(APPEND PROJECT_SRC "SDL3Functions.cpp")
-    add_compile_definitions(DREIZEHN_SDL3)
-endif()
+list(APPEND LINK_LIBS SDL3::SDL3)
+add_compile_definitions(DREIZEHN_SDL3)
 
 # ------------- Main
 add_executable(${PROJECT_NAME}
@@ -42,6 +41,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 target_include_directories(${PROJECT_NAME} PRIVATE
      "${CMAKE_CURRENT_SOURCE_DIR}/"
+     "${CMAKE_CURRENT_SOURCE_DIR}/src"
      "${CMAKE_CURRENT_SOURCE_DIR}/../src"
 )
 

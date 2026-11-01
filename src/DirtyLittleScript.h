@@ -4,6 +4,7 @@
 //-----------------------------------------------------------------------------
 // Dirty Little Script
 //-----------------------------------------------------------------------------
+#pragma once
 #include <iostream>
 #include <string>
 
@@ -30,11 +31,13 @@ namespace DLS {
             }
         }
 
+
         VM vm;
         Parser parser(token,&vm);
-        if (!parser.parse()) {
+        if (!parser.parse() ) {
             return "ERROR!";
         }
+        if (vm.tape.size() == 0) return "";
         vm.run();
         std::string result = "";
         int iter = 0;
@@ -106,7 +109,7 @@ namespace DLS {
         RegisterFunction("printraw", [](std::span<Value> args, Value& ret) -> bool {
             std::string line = "";
             for ( auto& value : args) {
-                line = line + value.toString() + " ";
+                line = line + value.toString();
             }
             Tools::printf("%s", line.c_str());
             return true;

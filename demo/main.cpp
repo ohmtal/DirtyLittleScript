@@ -21,42 +21,6 @@ extern void RegisterStringFunctions();
 
 }
 
-// std::string Run(std::string code) {
-//     Lexer lex(code);
-//     std::vector<Token> token = lex.tokenize();
-//     if (DEBUG_TOKEN) {
-//         for (auto& tok: token) {
-//             std::cout << tokenTypeToString(tok.mType) << "  ::  " << tok.mValue << "\n";
-//         }
-//     }
-//
-//     VM vm;
-//     Parser parser(token,&vm);
-//     if (!parser.parse()) {
-//         return "ERROR!";
-//     }
-//     vm.run();
-//     std::string result = "";
-//     int iter = 0;
-//     for (auto val: vm.stack) {
-//         if (iter > 0) result = result  + ", ";
-//         result = result + val.toString();
-//         iter++;
-//     }
-//     return result;
-// }
-//
-// std::string loadScript(const std::string& scriptPath) {
-//     std::ifstream file(scriptPath, std::ios::in | std::ios::binary);
-//     if (!file.is_open()) {
-//         Tools::errorf("Script file cant be opened: %s\n", scriptPath.c_str());
-//         return "";
-//     }
-//     return std::string((std::istreambuf_iterator<char>(file)),
-//                        std::istreambuf_iterator<char>());
-// }
-
-
 int main(int argc, char* argv[]) {
 
     DLS::Init();
@@ -185,13 +149,12 @@ goto jump_to_test;
 
     std::cout << "-------- Lambda Fn --------\n";
     mySrc = R"(
-        foo = fn ; print str::strlen "HUHU";;
+        foo = function ; print str::strlen "HUHU";;
         foo
         return
         print "still here ?"
     )"; Run(mySrc);
 
-jump_to_test:
 std::cout << "-------- Array again--------\n";
 mySrc = R"(
 i = 0
@@ -212,5 +175,11 @@ end
 
 )"; Run(mySrc);
 
-
+jump_to_test:
+std::cout << "-------- Comment test  --------\n";
+mySrc = R"(
+    foo = 1
+    bar = 2
+    print "#" foo bar
+)"; Run(mySrc);
 }
