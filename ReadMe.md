@@ -12,8 +12,8 @@ header only at the moment.
 
 ## Cheat Sheet 
 
-| basic |
-| --- | 
+| basic | |
+| --- | --- | 
 | `print "hello world" 12 3.13`| no paren, space separated |
 | `i=1; j=2`|semicolon only to separate multiple statement is on line|
 | `print math::rand, 12`|comma only required after a nested function call|
@@ -22,16 +22,16 @@ header only at the moment.
 | `# this is a comment` | '#' comment. it can be used for one line| 
 | `print "hello" # this is a comment` | also on the end| 
 | `print "hello" # this is a comment # print "there"` | or in the middle | 
-| math |
+| math | |
 | `f = (10 * 5 + 2 ) / 4 - 1`| basic math, respect the order|
 | `b = true || false` |  boolean and or |
 | `b = b + 1` |  increment one |
-| Loops |
+| Loops |  |
 | `i = 5; while i > 0; print i; i = i - 1; end`| while loop | 
 | `i = 5; while i > 0; print i; if i == 2; continue;; if i == 1 break;; end`| while loop | 
-| Condition |
+| Condition |  |
 | `if true == false; print "Thats wrong!"; else print "OK"; end`  | if elif else |
-| Function |
+| Function |  |
 | `myFunc = function; print "Hello"; end; myFunc`  | lambda style function |
-| Array |
+| Array |  |
 | `arr[0]=10; arr[20]=100` | Numeric indexed Array auto initialized |

@@ -107,9 +107,14 @@ For first run ever 13,50 it's not so bad - still beat python on that ;)
 - [X] inside "#" disable the code ! << tested works ?! 
 
 ### Todos:
-- [ ] write readme 
-- [ ] write examples
-- [ ] write cheat sheet 
+- [X] write readme 
+- [X] write examples
+- [X] write cheat sheet 
+- [ ] rewrite SymbolTable/map lookup to register based vector for at least the global variables
+    - [ ] variables
+    - [ ] const ?
+    - [ ] c-functions ?
+- [ ] maybe i'll add a callframe too to enable real functions 
 - [ ] clean unused stuff 
     - [ ] lexer 
     - [ ] 
