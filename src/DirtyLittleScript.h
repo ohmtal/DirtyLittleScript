@@ -161,6 +161,7 @@ namespace DLS {
 
             return true;
         }, "cast any type to float");
-    }
+
+    } //<< Init
 
 } // namespace DLS

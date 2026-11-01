@@ -26,7 +26,6 @@ namespace DLS {
     // ------------------------------------------
     struct VariableStorage {
 
-
         std::unordered_map<U32,size_t> mGlobalsLookUp;
         std::vector<Value> mGlobalsRegister;
 
@@ -208,7 +207,7 @@ namespace DLS {
     void op_load_global(VM& vm) {
         size_t varIndex = vm.advanceSlot().tapeChunk;
         Value& var = vm.Variables.getGlobal(varIndex);
-        if (var.type == ValueType::Function) {
+        if (var.type == ValueType::Function) [[unlikely]] {
             vm.Variables.mReturnStack.push_back(vm.tell());
             vm.pc = vm.Variables.mFunctions[(size_t)var.l];
         } else {
@@ -242,17 +241,6 @@ namespace DLS {
         vm.PUSH_STACK(vm.Variables.getArray(varIndex,arrayIndexValue.getUInt()));
     }
 
-    // void op_load_local(VM& vm) {
-    //     size_t relative_var_offset = vm.advanceSlot().tapeChunk;
-    //     size_t absolute_index = vm.call_stack.back().stack_base + relative_var_offset;
-    //     vm.stack.push_back(vm.stack[absolute_index]);
-    // }
-    //
-    // void op_save_local(VM& vm) {
-    //     size_t relative_var_offset = vm.advanceSlot().tapeChunk;
-    //     size_t absolute_index = vm.call_stack.back().stack_base + relative_var_offset;
-    //     vm.stack[absolute_index] = vm.stack.back();
-    // }
     // ------------------------------------------
     // Literal
     // ------------------------------------------
@@ -431,15 +419,34 @@ namespace DLS {
         U32 symid = (U32) vm.advanceSlot().tapeChunk;
         U32 numArgs = (U32) vm.advanceSlot().tapeChunk;
 
+        // func cache on tape but not a ms faster?!
+        // Value* pointerCacheValue = &vm.advanceSlot().value;
+        //
+        // FunctionMap::CallBack* cb = nullptr;
+        // if ( pointerCacheValue->getPointer()) {
+        //     cb = static_cast<FunctionMap::CallBack*>(pointerCacheValue->getPointer());
+        // } else {
+        //     cb = FunctionMap::GetCFunction(symid);
+        //     if (!cb) [[unlikely]]{
+        //         for (size_t i = 0; i < numArgs; ++i) {
+        //             vm.POP_STACK();
+        //         }
+        //         //FIXME error!? or special push value
+        //         vm.PUSH_STACK(Value(0));
+        //         return;
+        //     }
+        //     *pointerCacheValue = Value(cb);
+        // }
+
         const FunctionMap::CallBack* cb = FunctionMap::GetCFunction(symid);
         if (!cb) [[unlikely]]{
             for (size_t i = 0; i < numArgs; ++i) {
                 vm.POP_STACK();
             }
-            //FIXME error!? or special push value
             vm.PUSH_STACK(Value(0));
             return;
         }
+
         // Tools::printf("CALL FUNC: %s [args:%f]\n", SymbolTable::getName(symid).c_str(), numArgs);
 
         if (numArgs <= 12) {

@@ -18,12 +18,6 @@
 
 namespace DLS{
 
-// namespace ParserFrame {
-//     bool guessGlobalVarAndInsertLocalIfNot(uint32_t symId);
-//     void startFunc(uint32_t funcSymId);
-//     void endFunc(uint32_t funcSymId);
-// } //namespace
-
 void PrintParseError(const std::string& message
 , const std::string& p1 = "",const std::string& p2 = "",const std::string& p3 = "") {
     Tools::errorf("[Parser-ERROR]: %s %s %s %s\n", message.c_str(),p1.c_str(),p2.c_str(),p3.c_str());
@@ -137,16 +131,9 @@ private:
                 // NOTE nothing else to do here ?!
             }
             break;
-            // // ~~~~ Comma  ~~~~
-            // case TokenType::Comma: {
-            //     advance();
-            // }
-            // break;
             // ~~~~ Identifier ~~~~
             case TokenType::Identifier: {
                 advance(); // eat
-                // HACK fest - unable to save the tape when pushing the
-                //             symId which is not always the same!
                 U32 symId = SymbolTable::insert(t.mValue);
 
                 if (FunctionMap::IsCFunction(symId)) {
@@ -165,6 +152,7 @@ private:
                     vm->emitCode( op_cfunc );
                     vm->emitTapeChunk((size_t)symId);
                     vm->emitTapeChunk((size_t)argCount);
+                    //not faster! vm->emitValue(Value(nullptr));
 
                     if (requestParam <= 0) vm->emitCode( op_pop_stack );
                 }
@@ -202,8 +190,6 @@ private:
                 else
                 if (peek().mType == TokenType::Assign) {
                     advance(); // eat Assign
-                   // FIXME only globals at the moment
-
                     requestParam++;
                     if (!getArg("Assign")) return false;
                     requestParam--;
@@ -229,33 +215,33 @@ private:
                 }
             }
             break;
-            case TokenType::Define: {
-                advance(); //eat define
-                if (peek().mType != TokenType::Identifier) {
-                    PrintParseError("variable name after define expected");
-                    return false;
-                }
-                U32 varSymId = SymbolTable::insert(advance().mValue);
-                if (peek().mType == TokenType::Assign) advance(); //eat optional "="
-
-                if (!getArg("Define")) return false;
-                // HACK fest
-                // I  push it directly !!!
-                //  - with this I cant save a tape!
-                //  - without i need to lookup the constants in op_code (slower)
-
-                size_t tapePos = vm->tape.size() - 1;
-                if (vm->tape[tapePos - 1 ].code == op_literal) {
-                    Value a = vm->tape.back().value; vm->tape.pop_back();
-                    vm->tape.pop_back();
-                    FunctionMap::RegisterConstants(varSymId,a);
-                } else {
-                    PrintParseError("sorry, define only allows literals");
-                    return false;
-                }
-
-            }
-            break;
+            // // case TokenType::Define: {
+            // //     advance(); //eat define
+            // //     if (peek().mType != TokenType::Identifier) {
+            // //         PrintParseError("variable name after define expected");
+            // //         return false;
+            // //     }
+            // //     U32 varSymId = SymbolTable::insert(advance().mValue);
+            // //     if (peek().mType == TokenType::Assign) advance(); //eat optional "="
+            // //
+            // //     if (!getArg("Define")) return false;
+            // //     // HACK fest
+            // //     // I  push it directly !!!
+            // //     //  - with this I cant save a tape!
+            // //     //  - without i need to lookup the constants in op_code (slower)
+            // //
+            // //     size_t tapePos = vm->tape.size() - 1;
+            // //     if (vm->tape[tapePos - 1 ].code == op_literal) {
+            // //         Value a = vm->tape.back().value; vm->tape.pop_back();
+            // //         vm->tape.pop_back();
+            // //         FunctionMap::RegisterConstants(varSymId,a);
+            // //     } else {
+            // //         PrintParseError("sorry, define only allows literals");
+            // //         return false;
+            // //     }
+            // //
+            // // }
+            // // break;
 
             // // case TokenType::Or: {
             // //     advance();
@@ -588,8 +574,6 @@ public:
         return true;
     }
 
-    // std::vector<std::unique_ptr<ASTNode>> parseStatements();
-    // std::unique_ptr<ASTNode> parseLine();
 
 };
 } //namespace

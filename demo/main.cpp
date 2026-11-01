@@ -114,10 +114,6 @@ int main(int argc, char* argv[]) {
     mySrc = R"( print "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" )";
     Tools::printf("%s :: RESULT=%s\n", mySrc.c_str(),Run(mySrc).c_str());
 
-    std::cout << "---- push constant ----\n";
-    mySrc = R"( define FOO = 47.11 )"; Run(mySrc);
-    mySrc = R"( define BAR = 6.66; print "PI is" math::pi "foo:" FOO "bar:" BAR)"; Run(mySrc);
-
     std::cout << "---- Global Variables ----\n";
     mySrc = R"( a = 12.0; print a; )"; Run(mySrc);
     mySrc = R"( i = 12.0; i = i + 1; print "i ==" i (i < 10); )"; Run(mySrc);
@@ -148,7 +144,7 @@ jump_to_test:
     mySrc = R"( i = 10 ; if i == 0 || i == 9; print "i is:" i;else print "not"; end  )"; Run(mySrc);
     mySrc = R"( i = 10 ; if i > 11 && i < 20; print "i is " i; else print "not";;  )"; Run(mySrc);
 
-DEBUG_TOKEN = true;
+// DEBUG_TOKEN = true;
     std::cout << "-------- Lambda Fn --------\n";
     mySrc = R"(
         foo = function ; print str::strlen "HUHU";;
@@ -156,7 +152,7 @@ DEBUG_TOKEN = true;
         return
         print "still here ?"
     )"; Run(mySrc);
-DEBUG_TOKEN = false;
+// DEBUG_TOKEN = false;
 
 std::cout << "-------- Array again--------\n";
 mySrc = R"(
@@ -178,11 +174,14 @@ end
 
 )"; Run(mySrc);
 
-DEBUG_TOKEN = true;
+// DEBUG_TOKEN = true;
 std::cout << "-------- Comment test  --------\n";
 mySrc = R"(
     foo = 1
     bar = 2
     print "#" foo bar
 )"; Run(mySrc);
+
+
+
 }

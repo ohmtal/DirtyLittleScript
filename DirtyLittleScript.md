@@ -125,13 +125,16 @@ For first run ever 13,50 it's not so bad - still beat python on that ;)
     - Unhandled Token: Assign => somewhere in:  *Comment test*
     
 - [X] add parse error  constansPointer ==> peek Assign or '[' or move the constant to bottom   
-- [ ] clean unused stuff 
-    - [ ] lexer 
-    - [ ] 
 
+- [X] remove define again! was a bad hack fest anyway 
 
+- [X] cache c-function pointer on tape.<< NOT FASTER!
+
+- [ ] Save a Tape:
+    - SymbolTable
+    - StringTable
+    - Variables
+    - tape
+        
 ## maybe:
 - [ ] add a callframe too to enable real functions 
-- [ ] rewrite SymbolTable/map lookup for:
-    - [ ] const ?
-    - [ ] c-functions ?
