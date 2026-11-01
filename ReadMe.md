@@ -2,7 +2,7 @@
 
 **Dirty Little Script** is a subset of [DreiZehnScript](https://github.com/ohmtal/DreiZehnScript)
 it's not as performat as DreiZehn or ElfScript but it's much smaller and the base is 
-header only at the moment.
+header only.
 
 ## Usage in your Project: 
 - Download, 
@@ -24,7 +24,7 @@ header only at the moment.
 | `print "hello" # this is a comment # print "there"` | or in the middle | 
 | math | |
 | `f = (10 * 5 + 2 ) / 4 - 1`| basic math, respect the order|
-| `b = true || false` |  boolean and or |
+| `b = true && false` |  boolean and, or |
 | `b = b + 1` |  increment one |
 | Loops |  |
 | `i = 5; while i > 0; print i; i = i - 1; end`| while loop | 
@@ -32,6 +32,14 @@ header only at the moment.
 | Condition |  |
 | `if true == false; print "Thats wrong!"; else print "OK"; end`  | if elif else |
 | Function |  |
-| `myFunc = function; print "Hello"; end; myFunc`  | lambda style function |
+| `myFunc = function; print "Hello"; end; myFunc`  | lambda style function (*)  |
 | Array |  |
 | `arr[0]=10; arr[20]=100` | Numeric indexed Array auto initialized |
+
+(*) only in DLS and not in DreiZehnScript available
+
+
+## Bind your C-Functions
+
+This is simular to [DreiZehn's binding method](https://github.com/ohmtal/DreiZehnScript/blob/main/handbook/Bindings.md).
+Except the Object. DLS does not support the DreiZehn ValueObject Classes.
