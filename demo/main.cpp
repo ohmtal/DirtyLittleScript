@@ -182,6 +182,13 @@ mySrc = R"(
     print "#" foo bar
 )"; Run(mySrc);
 
+std::cout << "-------- Basic Commands --------\n";
+mySrc = R"(
+    arr[999] = 1; print "array::count arr=" array::count arr
+    print "cast int:" int::cast 47.11
+    print "cast float:" float::cast 10
+    print "get variable type" getType arr
+)"; Run(mySrc);
 
 
 }

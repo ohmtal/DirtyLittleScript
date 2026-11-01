@@ -14,6 +14,7 @@
 #include "Types.h"
 #include "Value.h"
 #include "FunctionMap.h"
+#include "Globals.h"
 
 namespace DLS {
 
@@ -63,6 +64,10 @@ namespace DLS {
             return mGlobalsRegister[index];
         }
         // --------------------------------------------------------------------
+        const std::vector<Value>& getArrayByMasterIndex(size_t masterIndex) {
+            return mArrays[masterIndex];
+        }
+
         Value getArray(size_t varIndex, U32 index) {
             Value& arrValue = getGlobal(varIndex);
             if (!arrValue.isArray()) [[unlikely]] {
@@ -139,6 +144,13 @@ namespace DLS {
             while (pc < tape.size()) {
                 tape[pc++].code(*this);
             }
+        }
+
+        VM() {
+            Globals::CurrentVM = this;
+        }
+        ~VM() {
+            Globals::CurrentVM = nullptr;
         }
 
         // ------------------------------------------

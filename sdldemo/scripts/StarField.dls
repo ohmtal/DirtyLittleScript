@@ -127,7 +127,6 @@ while Running
             screenY = H + Points_Y[i]
         end
 
-
         radius = math::lerp 2.0 0.3 Points_Z[i]
         SDL_RenderFillRect Renderer screenX screenY radius radius
 

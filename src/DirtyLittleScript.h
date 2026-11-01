@@ -161,7 +161,21 @@ namespace DLS {
 
             return true;
         }, "cast any type to float");
-
+        // ---------------------------------------------------------------------
+        // Array
+        // ---------------------------------------------------------------------
+        RegisterFunction("array::count", [](std::span<Value> args, Value& ret) -> bool {
+            if (args.size() != 1 || args[0].type != ValueType::Array) {
+                Tools::errorf("Usage: array::count value\n");
+                return false;
+            }
+            if (!Globals::CurrentVM) {
+                Tools::errorf("Sorry no VM running.\n");
+            }
+            auto arr = Globals::CurrentVM->Variables.getArrayByMasterIndex((size_t)args[0].getLong());
+            ret = Value((S64)arr.size());
+            return true;
+        }, "cast any type to float");
     } //<< Init
 
 } // namespace DLS
