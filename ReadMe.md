@@ -1,11 +1,9 @@
 # Dirty Little Script (DLS)
 
-**Dirty Little Script** is a subset of [DreiZehnScript](https://github.com/ohmtal/DreiZehnScript)
-it's not as performat as DreiZehn or ElfScript but it's much smaller and the base is 
-header only.
+**Dirty Little Script** is a **header only** subset of [DreiZehnScript](https://github.com/ohmtal/DreiZehnScript)
 
 ## Usage in your Project: 
-- Download and add Includepath to DirtyLittleScript/dls
+- Download and add `DirtyLittleScript/dls` to your include path 
 - Include the header `DirtyLittleScript.h`
 - call `DLS::Init();`
 - call `DLS::Run("print "Hello World");` 
@@ -55,3 +53,12 @@ cd demo
 cmake -S . -B build
 cmake --build build
 ```
+
+## Technology 
+
+- require C++ 20
+- Lexer: Traditional Tokenizer
+- Value: 16 Byte typed with union struct
+- Parser: Pratt (Operator-precedence parser) writing directly to the tape
+- VM: threaded flatten tape - a bit like bytecode but with (bigger) slots 
+- Functionmap - C-function system from DreiZehn 
