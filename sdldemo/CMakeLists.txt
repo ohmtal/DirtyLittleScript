@@ -20,8 +20,8 @@ set (LINK_LIBS)
 set(PROJECT_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/SDL3Functions.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/functions/MathFunctions.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../src/functions/StringFunctions.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../dls/functions/MathFunctions.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../dls/functions/StringFunctions.cpp
 )
 
 # ------------- SDL3
@@ -40,9 +40,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
-     "${CMAKE_CURRENT_SOURCE_DIR}/"
-     "${CMAKE_CURRENT_SOURCE_DIR}/src"
-     "${CMAKE_CURRENT_SOURCE_DIR}/../src"
+     "${CMAKE_CURRENT_SOURCE_DIR}/../dls"
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE

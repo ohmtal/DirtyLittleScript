@@ -1,0 +1,6 @@
+fun = function; print "INSIDE!"; return 10;;
+x = fun
+print "x = " x
+print "----------------"
+print (math::rand) 12  "ochjo" (math::random 10 20) 88
+

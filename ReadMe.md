@@ -5,8 +5,8 @@ it's not as performat as DreiZehn or ElfScript but it's much smaller and the bas
 header only.
 
 ## Usage in your Project: 
-- Download, 
-- Include the header `src/DirtyLittleScript.h`
+- Download or fetch via cmake
+- Include the header `dls/DirtyLittleScript.h`
 - call `DLS::Init();`
 - call `DLS::Run("print "Hello World");` 
 

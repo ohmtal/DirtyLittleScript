@@ -26,9 +26,9 @@ set (LINK_LIBS)
 
 set(PROJECT_SRC
 
-    demo/main.cpp
-    src/functions/MathFunctions.cpp
-    src/functions/StringFunctions.cpp
+    src/main.cpp
+    ../dls/functions/MathFunctions.cpp
+    ../dls/functions/StringFunctions.cpp
 )
 
 
@@ -48,7 +48,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 
 target_include_directories(${PROJECT_NAME} PRIVATE
-     "${CMAKE_CURRENT_SOURCE_DIR}/src/"
+     "${CMAKE_CURRENT_SOURCE_DIR}/../dls"
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
