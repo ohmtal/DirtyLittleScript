@@ -11,6 +11,8 @@
 #include <vector>
 #include <cstdint>
 
+namespace DLS {
+
 class BaseStringTable {
 
 protected:
@@ -94,3 +96,5 @@ private:
     }
 
 };
+
+} //namespace DLS

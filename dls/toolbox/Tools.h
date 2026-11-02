@@ -24,7 +24,7 @@
 
 
 
-namespace Tools{
+namespace DLS::Tools{
 
     // ------------------------------------------------------------------
     enum class LogLevel {
