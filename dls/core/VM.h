@@ -55,8 +55,11 @@ namespace DLS {
 
         void saveGlobal(size_t index, const Value& value) {
             assert (index < mGlobalsRegister.size() && "SAVE: GLOBALS REGISTER OUT OF BOUNDS");
-            Value finaleValue = (value.type == ValueType::Array) ? copyArray((size_t)value.getFastLong()) : value;
-            mGlobalsRegister[index] = finaleValue;
+            if (value.type == ValueType::Array) [[unlikely]] {
+                mGlobalsRegister[index] = copyArray((size_t)value.getFastLong());
+                return;
+            }
+            mGlobalsRegister[index] = value;
         }
 
         Value& getGlobal(size_t index) {

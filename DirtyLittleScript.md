@@ -134,12 +134,20 @@ For first run ever 13,50 it's not so bad - still beat python on that ;)
     also only `fn` create a endless loop
 
 
+- [X] on assing array, it  must be copied .. bad grow if used a lot .. 
+
+- --------------- TAGGED 0.3 ---------------
+
 - [X] Syntax is done remove unused tokens
     
 - [X] funny: `i = 0; while i < 100; i++;;` gived an unhandled "end" error
 because `i++` is invalid ?! fixed after removing unused token! 
 
+- [X] changed array assign copy on save global 
 
+- Features completed ?! 
+        
+        
         
 ## maybe:
 - add a callframe too to enable real functions 

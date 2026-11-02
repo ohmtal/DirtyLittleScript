@@ -5,10 +5,11 @@ it's not as performat as DreiZehn or ElfScript but it's much smaller and the bas
 header only.
 
 ## Usage in your Project: 
-- Download or fetch via cmake
-- Include the header `dls/DirtyLittleScript.h`
+- Download and add Includepath to DirtyLittleScript/dls
+- Include the header `DirtyLittleScript.h`
 - call `DLS::Init();`
 - call `DLS::Run("print "Hello World");` 
+- optional add dls/functions/*.cpp to you project. (see also demo)
 
 ## Cheat Sheet 
 
@@ -43,3 +44,14 @@ header only.
 
 This is simular to [DreiZehn's binding method](https://github.com/ohmtal/DreiZehnScript/blob/main/handbook/Bindings.md).
 Except the Object. DLS does not support the DreiZehn ValueObject Classes.
+
+
+## Compile the demo
+
+*Note: you need a c++ compiler and cmake installed*
+
+```
+cd demo
+cmake -S . -B build
+cmake --build build
+```
