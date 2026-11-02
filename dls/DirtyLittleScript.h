@@ -20,7 +20,8 @@ namespace DLS {
     bool DEBUG_TOKEN = false;
 
     // -------------------------------------------------------------------------
-    // Run a Script
+    // Run a Script, and shutdown if you need to keep it up vm must be defined
+    //               in your source so you can work with it.
     // -------------------------------------------------------------------------
     std::string Run(const std::string& code) {
         Lexer lex(code);
