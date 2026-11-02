@@ -132,6 +132,10 @@ For first run ever 13,50 it's not so bad - still beat python on that ;)
 
 - [X] Critical: create a endless loop!!!! `fn = function; print "hello World";;`
     also only `fn` create a endless loop
+    
+- [ ] also funny: `i = 0; while i < 100; i++;;` gived an unhandled "end" error
+because `i++` is invalid ?! must kick out unused token! Then it's loop forever. 
+While is always dangerous. add forRange at least! 
 
 - [ ] Save a Tape:
     - SymbolTable

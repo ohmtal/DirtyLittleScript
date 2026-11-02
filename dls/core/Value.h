@@ -46,6 +46,7 @@ namespace DLS {
         Value(F64 val) { type = ValueType::Double; d = val; }
         Value(S32 val) { type = ValueType::Long; l = (S64)val; }
         Value(U32 val) { type = ValueType::Long; l = (S64)val; }
+        Value(U8 val)  { type = ValueType::Long; l = (S64)val; }
         Value(S64 val) { type = ValueType::Long; l = val; }
         Value(std::string val) { type = ValueType::String; strId = StringTable::insert(val); }
         Value(void* val) { type = ValueType::Pointer; p = val; }
@@ -77,6 +78,7 @@ namespace DLS {
         }
         // ------------------
         inline F32 getFloat() { return (F32) getDouble(); }
+        inline U8 getU8()     { return (U8) getLong(); }
         inline U32 getUInt()  { return (U32) getLong(); }
         inline S32 getInt()   { return (S32) getLong(); }
         inline bool getBool() { return  getLong() != 0; }
