@@ -130,6 +130,9 @@ For first run ever 13,50 it's not so bad - still beat python on that ;)
 
 - [X] cache c-function pointer on tape.<< NOT FASTER!
 
+- [ ] Critical: create a endless loop!!!! `fn = function; print "hello World";;`
+    also only `fn` create a endless loop
+
 - [ ] Save a Tape:
     - SymbolTable
     - StringTable

@@ -20,7 +20,7 @@ namespace DLS {
     Value EmptyStringValue = Value("");
 
     //-----------------------------------------------------------------------------
-    namespace FluxStr {
+    namespace StrTools {
         std::string toLower(std::string s);
         static constexpr std::string_view whitespaces = " \t\r\n";
 
@@ -522,7 +522,7 @@ namespace DLS {
         RegisterFunction("str::ltrim", [](std::span<Value> args, Value& ret) -> bool {
             if (!ArgsCheckString("str::ltrim", args, 1)) return true;
             std::string str = args[0].getString();
-            FluxStr::ltrim(str);
+            StrTools::ltrim(str);
             ret = Value(str);
             return true;
         }, "return left side trimmed string");
@@ -530,7 +530,7 @@ namespace DLS {
         RegisterFunction("str::rtrim", [](std::span<Value> args, Value& ret) -> bool {
             if (!ArgsCheckString("str::ltrim", args, 1)) return true;
             std::string str = args[0].getString();
-            FluxStr::rtrim(str);
+            StrTools::rtrim(str);
             ret = Value(str);
             return true;
         }, "return right side trimmed string");
@@ -538,20 +538,20 @@ namespace DLS {
         RegisterFunction("str::trim", [](std::span<Value> args, Value& ret) -> bool {
             if (!ArgsCheckString("str::ltrim", args, 1)) return true;
             std::string str = args[0].getString();
-            FluxStr::trim(str);
+            StrTools::trim(str);
             ret = Value(str);
             return true;
         }, "return both sides trimmed string");
         // ---------------------------------------------------------------------
         RegisterFunction("str::toLower", [](std::span<Value> args, Value& ret) -> bool {
             if (!ArgsCheckString("str::toLower", args, 1)) return true;
-            ret = Value(FluxStr::toLower(args[0].getString()));
+            ret = Value(StrTools::toLower(args[0].getString()));
             return true;
         }, "return converted to lower string");
         // ---------------------------------------------------------------------
         RegisterFunction("str::toUpper", [](std::span<Value> args, Value& ret) -> bool {
             if (!ArgsCheckString("str::toUpper", args, 1)) return true;
-            ret = Value(FluxStr::toUpper(args[0].getString()));
+            ret = Value(StrTools::toUpper(args[0].getString()));
             return true;
         }, "return converted to upper string");
         // ---------------------------------------------------------------------
@@ -672,7 +672,7 @@ namespace DLS {
                 delim = args[1].toString()[0];
             }
 
-            ret =  Value(FluxStr::getWordCount(str,delim));
+            ret =  Value(StrTools::getWordCount(str,delim));
 
             return true;
         }, "Get the count of Words - optional separator char");
@@ -696,7 +696,7 @@ namespace DLS {
                 delim = args[2].toString()[0];
             }
 
-            ret =  Value(FluxStr::getWord(str,index,delim));
+            ret =  Value(StrTools::getWord(str,index,delim));
 
             return true;
         }, "Get a word at index - optional separator char");
@@ -721,7 +721,7 @@ namespace DLS {
                 delim = args[3].toString()[0];
             }
 
-            ret =  Value(FluxStr::setWord(str,index,replace, delim));
+            ret =  Value(StrTools::setWord(str,index,replace, delim));
 
             return true;
         }, "Set a words at index - optional separator char");
@@ -745,7 +745,7 @@ namespace DLS {
                 delim = args[2].toString()[0];
             }
 
-            ret =  Value(FluxStr::removeWord(str,index,delim));
+            ret =  Value(StrTools::removeWord(str,index,delim));
 
             return true;
         }, "Remove a words at index - optional separator char");

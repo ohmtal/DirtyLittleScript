@@ -47,6 +47,7 @@ private:
     Token peekPrev() { if (mPos > 1) return mTokens[mPos-1]; else return Token(TokenType::NoToken); }
     Token advance() { if (mPos + 1 < mTokens.size()) return mTokens[mPos++]; else return Token(TokenType::EOFToken);}
 
+
     // -------------------------------------------------------------------------
     int getPrecedence(TokenType type){
         if (isInlineMathType(type)) return 100;
@@ -265,7 +266,7 @@ private:
             // //  break;
 
             // ~~~~ Functions ~~~~
-            case TokenType::Fn: parseFn(); break;
+            case TokenType::Fn: if (!parseFn()) return false; break;
 
             // ~~~~ LineBreak ~~~~
             case TokenType::EOLToken:
@@ -391,7 +392,13 @@ private:
     bool parseFn() {
         advance(); //advanceFN
 
+        // // while (peek().mType == TokenType::EOLToken) advance(); //ear all eol away
+        // // if (peek().mType == TokenType::EOFToken) {
+        // //     PrintParseError("function def invalid!");
+        // //     return false;
+        // // }
 
+        size_t rewind_POS = vm->tell();
 
         // tape should jump over this function when playing
         vm->emitCode(op_func_def);
@@ -408,10 +415,14 @@ private:
         while (peek().mType != TokenType::EOFToken &&
             peek().mType != TokenType::End)
         {
-            if (!parseStatements()) return false;
+            if (!parseStatements()) {
+                vm->rewindTape(rewind_POS);
+                return false;
+            }
         }
         if (peek().mType != TokenType::End) {
-            PrintParseError("While missing end!");
+            PrintParseError("Function missing end!");
+            vm->rewindTape(rewind_POS);
             return false;
         }
         advance(); //end
@@ -570,12 +581,16 @@ public:
     Parser(std::vector<Token> t, VM* vm) : mTokens(std::move(t)), vm(vm) { }
     bool parse(){
         if (mTokens.size() == 0) return false;
+        size_t entryTapeSize = vm->tape.size();
         while (peek().mType != TokenType::EOFToken) {
             U32 startPos = tell();
-            if (!parseStatements()) return false;
-
+            if (!parseStatements()) {
+                vm->rewindTape(entryTapeSize);
+                return false;
+            }
             if (tell() == startPos) {
                 PrintParseError("Failed to parse: reason stuck!");
+                vm->rewindTape(entryTapeSize);
                 return false;
             }
         }

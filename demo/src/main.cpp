@@ -60,10 +60,9 @@ goto jump_to_test;
     mySrc = R"( return math::randomf )"; std::cout << mySrc << " = " << Run(mySrc) << "\n";
     mySrc = R"( math::random 10 20 )"; std::cout << mySrc << " = " << Run(mySrc) << "\n";
 
-jump_to_test:
     // x = fun not supported !
     mySrc = R"( fun = function; print "INSIDE";; fun; print "OUTSIDE" )"; std::cout << mySrc << " = " << Run(mySrc) << "\n";
-goto jump_to_end;
+
 
 
     std::cout << "------------ Comparison ---------------\n";
@@ -192,6 +191,18 @@ mySrc = R"(
     print "get variable type" getType arr
 )"; Run(mySrc);
 
+jump_to_test:
+mySrc = R"(
+    arr[999] = 1; print "array::count arr=" array::count arr
+    print "cast int:" int::cast 47.11
+    print "cast float:" float::cast 10
+    print "get variable type" getType arr
+    fn
+)"; Run(mySrc);
+
+
+
+goto jump_to_end;
 jump_to_end:
 Tools::printf("");
 }

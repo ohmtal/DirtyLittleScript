@@ -165,6 +165,12 @@ namespace DLS {
 
         size_t tell() { return tape.size(); }
 
+        void rewindTape(size_t slot) {
+            while (tape.size() > slot) {
+                tape.pop_back();
+            }
+        }
+
         Slot& peekSlot(size_t reverseOffset) {
             return tape[pc - reverseOffset];
         }
