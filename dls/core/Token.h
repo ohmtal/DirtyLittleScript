@@ -18,56 +18,23 @@ namespace DLS{
         , LParen
         , RParen
         , LSquare, RSquare
-        , LCurly, RCurly
         // math
         , Plus , Minus , Mul , Div
-
-        , PlusPlus, MinusMinus
-
-        , AssignPlus, AssignMinus, AssignMul, AssignDiv
-
         // if ...
         , If,  Else , ElIf
-
         , Greater, Less, Equal, NotEqual
         // fn functions
         , Fn, End
-
-
-        // for iter
-        ,For
-
         // break, return
         , Break, Return
         , Continue
-
         , Semicolon
-
         , While
         , Or, And, BitOr, BitAnd
         , BitXOr
         , LowerEqual, GreaterEqual
         , SHL, SHR
-
-        , Arrow, Dot
-
-        , forRange, forEach
-        , Not
         , Modulo
-
-        , Question, Colon //short if then
-
-        , Define, Import, Include
-
-        , Global
-
-        , Comma
-
-        , DotDot
-        , DotAssign
-
-        , KeyValue // =>
-
         , NoToken // for peekPrev pos < 1
         , EOLToken
         , EOFToken
@@ -89,22 +56,14 @@ namespace DLS{
             case TokenType::RParen:        return "RParen )";
             case TokenType::LSquare:        return "LSquare [";
             case TokenType::RSquare:        return "RSquare ]";
-            case TokenType::LCurly:        return "LCurly {";
-            case TokenType::RCurly:        return "RCurly }";
 
             // math
             case TokenType::Plus:          return "Plus";
-            case TokenType::PlusPlus:      return "PlusPlus";
-            case TokenType::MinusMinus:    return "MinusMinus";
             case TokenType::Minus:         return "Minus";
             case TokenType::Mul:           return "Mul";
             case TokenType::Div:           return "Div";
             case TokenType::Modulo:        return "Modulo";
 
-            case TokenType::AssignPlus:    return "AssignPlus";
-            case TokenType::AssignMinus:   return "AssignMinus";
-            case TokenType::AssignMul:     return "AssignMul";
-            case TokenType::AssignDiv:     return "AssignDiv";
             // if ...
             case TokenType::If:            return "If";
             case TokenType::Greater:       return "Greater";
@@ -119,7 +78,6 @@ namespace DLS{
             case TokenType::End:           return "End";
 
             // for / while iter
-            case TokenType::For:           return "For";
             case TokenType::While:         return "While";
 
             // break, return
@@ -138,26 +96,6 @@ namespace DLS{
             case TokenType::SHR:            return "Shift Right >>";
 
             case TokenType::Semicolon:      return "Semicolon";
-
-            case TokenType::Arrow:          return "Arrow Object Method call";
-            case TokenType::Dot:            return "Dot Object field access";
-
-            case TokenType::forRange:       return "forRange";
-            case TokenType::forEach:        return "forEach";
-            case TokenType::Not:            return "Not";
-
-            case TokenType::Question:       return "Question";
-            case TokenType::Colon:          return "Colon";
-
-            case TokenType::Import:         return "Import";
-            case TokenType::Include:        return "Include";
-            case TokenType::Define:         return "Define";
-            case TokenType::Global:         return "Global";
-            case TokenType::Comma:          return "Comma";
-            case TokenType::KeyValue:       return "KeyValue";
-            case TokenType::DotDot:         return "DotDot"; //String concat
-            case TokenType::DotAssign:      return "DotAssign"; //String concat
-
             case TokenType::EOLToken:       return "EOLToken";
             case TokenType::EOFToken:       return "EOFToken";
 
@@ -175,21 +113,6 @@ namespace DLS{
     }
 
     // punkt vor strich :P orders of ...
-
-    bool isMathAssignOperatorType(TokenType tokenType) {
-        return tokenType == TokenType::AssignPlus
-        || tokenType == TokenType::AssignMinus
-        || tokenType == TokenType::AssignMul
-        || tokenType == TokenType::AssignDiv
-        ;
-    }
-
-    bool isInlineMathType(const TokenType tokenType) {
-        return
-        tokenType == TokenType::PlusPlus
-        || tokenType == TokenType::MinusMinus
-        ;
-    }
 
     bool isMathType(const Token& op) {
         return
@@ -209,16 +132,6 @@ namespace DLS{
         || op.mType == TokenType::SHR
         || op.mType == TokenType::Modulo
 
-        // || op.mType == TokenType::Question
-        // || op.mType == TokenType::Dot
-        // || op.mType == TokenType::Arrow
-        // || op.mType == TokenType::KeyValue
-        // || op.mType == TokenType::DotDot
-        // || op.mType == TokenType::DotAssign
-
-        // || op.mType == TokenType::Assign
-        || isInlineMathType(op.mType)
-        || isMathAssignOperatorType(op.mType)
         ;
     }
 
@@ -232,7 +145,6 @@ namespace DLS{
         && op.mType != TokenType::Else
         && op.mType != TokenType::ElIf
         && op.mType != TokenType::RSquare
-        && op.mType != TokenType::RCurly
         && op.mType != TokenType::EOLToken
         && !isMathType(op)
         ;

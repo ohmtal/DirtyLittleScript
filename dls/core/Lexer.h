@@ -45,16 +45,9 @@ public:
             if (peek() == '\n') { advance(); tokens.push_back({TokenType::EOLToken, "LINEBREAK"}); continue; }
             if (std::isspace(peek())) { advance(); continue; }
             // ----------------------------------------------------------------
-            if (peek() == '.' && peekNext() == '.') { advance();advance(); tokens.push_back({TokenType::DotDot, ".."}); continue; }
-            if (peek() == '.' && peekNext() == '=') { advance();advance(); tokens.push_back({TokenType::DotAssign, ".="}); continue; }
-            if (peek() == '=' && peekNext() == '>') { advance();advance(); tokens.push_back({TokenType::KeyValue, "=>"}); continue; }
             if (peek() == '>' && peekNext() == '=') { advance();advance(); tokens.push_back({TokenType::GreaterEqual, ">="}); continue; }
             if (peek() == '<' && peekNext() == '=') { advance();advance(); tokens.push_back({TokenType::LowerEqual, "<="}); continue; }
 
-            if (peek() == '+' && peekNext() == '=') { advance();advance(); tokens.push_back({TokenType::AssignPlus, "+="}); continue; }
-            if (peek() == '-' && peekNext() == '=') { advance();advance(); tokens.push_back({TokenType::AssignMinus, "-="}); continue; }
-            if (peek() == '*' && peekNext() == '=') { advance();advance(); tokens.push_back({TokenType::AssignMul, "*="}); continue; }
-            if (peek() == '/' && peekNext() == '=') { advance();advance(); tokens.push_back({TokenType::AssignDiv, "/="}); continue; }
 
             if (peek() == '=') {
                 advance();
@@ -71,31 +64,18 @@ public:
                 tokens.push_back({TokenType::NotEqual, "!="});
             }
 
-            if (peek() == '+' && peekNext() == '+') { advance();advance(); tokens.push_back({TokenType::PlusPlus, "++"}); continue; }
-            if (peek() == '-' && peekNext() == '-') { advance();advance(); tokens.push_back({TokenType::MinusMinus, "--"}); continue; }
-
             if (peek() == '(') { advance(); tokens.push_back({TokenType::LParen, "("}); continue; }
             if (peek() == ')') { advance(); tokens.push_back({TokenType::RParen, ")"}); continue; }
             if (peek() == '+') { advance(); tokens.push_back({TokenType::Plus, "+"}); continue; }
             if (peek() == '*') { advance(); tokens.push_back({TokenType::Mul,   "*"}); continue; }
             if (peek() == '/') { advance(); tokens.push_back({TokenType::Div,   "/"}); continue; }
 
-            if (peek() == '!') { advance(); tokens.push_back({TokenType::Not,   "!"}); continue; }
             if (peek() == '%') { advance(); tokens.push_back({TokenType::Modulo,"%"}); continue; }
 
             if (peek() == '[') { advance(); tokens.push_back({TokenType::LSquare,"["}); continue; }
             if (peek() == ']') { advance(); tokens.push_back({TokenType::RSquare,"]"}); continue; }
 
-
-            if (peek() == '{') { advance(); tokens.push_back({TokenType::LCurly,"{"}); continue; }
-            if (peek() == '}') { advance(); tokens.push_back({TokenType::RCurly,"}"}); continue; }
-
             // ----------------------------------------------------------------
-            if (peek() == '-' && peekNext() == '>') {
-                advance();advance();
-                tokens.push_back({TokenType::Arrow, "->"});
-                continue;
-            }
 
             if (peek() == '>' && peekNext() == '>') { advance();advance(); tokens.push_back({TokenType::SHR, ">>"}); continue; }
             if (peek() == '<' && peekNext() == '<') { advance();advance(); tokens.push_back({TokenType::SHL, "<<"}); continue; }
@@ -171,8 +151,6 @@ public:
             // minus after number
             if (peek() == '-') { advance(); tokens.push_back({TokenType::Minus, "-"}); continue; }
 
-            if (peek() == '.') { advance(); tokens.push_back({TokenType::Dot, "."}); continue; }
-
             // ----------------------------------------------------------------
             // Identifier and Keywords scan
             // 0.6c only allow "::" not more or less
@@ -188,45 +166,24 @@ public:
                 while (std::isalnum(peek()) || peek() == '_' ||/* peek() == '.' ||*/ peek() == ':') {
                     id += advance();
                 }
-
-                // early out to enable fields and methods with the registered names
-                TokenType prevType = tokens.size() > 0 ? tokens.back().mType : TokenType::NoToken;
-                if (prevType == TokenType::Dot || prevType == TokenType::Arrow)
-                {
-                    tokens.push_back({TokenType::Identifier, id});
-                    continue;
-                }
-
                 if (id == "if") { tokens.push_back({TokenType::If, "if"}); }
                 else if (id == "else") { tokens.push_back({TokenType::Else, "else"}); }
                 else if (id == "elif") { tokens.push_back({TokenType::ElIf, "elif"});  }
                 else if (id == "fn") { tokens.push_back({TokenType::Fn, "fn"});  }
                 else if (id == "function") { tokens.push_back({TokenType::Fn, "function"});  }
                 else if (id == "end") { tokens.push_back({TokenType::End, "end"}); }
-                else if (id == "for") { tokens.push_back({TokenType::For, "for"});  }
                 else if (id == "break") { tokens.push_back({TokenType::Break, "break"});  }
                 else if (id == "return") { tokens.push_back({TokenType::Return, "return"});  }
                 else if (id == "continue") { tokens.push_back({TokenType::Continue, "continue"});  }
                 else if (id == "while") { tokens.push_back({TokenType::While, "while"});  }
-                else if (id == "forRange") { tokens.push_back({TokenType::forRange, "forRange"});  }
-                else if (id == "forrange") { tokens.push_back({TokenType::forRange, "forrange"});  }
-                else if (id == "forEach") { tokens.push_back({TokenType::forEach, "forEach"});  }
-                else if (id == "foreach") { tokens.push_back({TokenType::forEach, "foreach"});  }
-                else if (id == "not") { tokens.push_back({TokenType::Not, "not"});  }
                 else if (id == "and") { tokens.push_back({TokenType::And, "and"});  }
                 else if (id == "or") { tokens.push_back({TokenType::Or, "or"});  }
-                else if (id == "include") { tokens.push_back({TokenType::Include, "include"});  }
-                else if (id == "define") { tokens.push_back({TokenType::Define, "define"});  }
-                else if (id == "global") { tokens.push_back({TokenType::Global, "global"});  }
                 else {
                     tokens.push_back({TokenType::Identifier, id});
                 }
                 continue;
             }
 
-            if (peek() == '?') { advance(); tokens.push_back({TokenType::Question, "?"}); continue; }
-            if (peek() == ':') { advance(); tokens.push_back({TokenType::Colon, ":"}); continue; }
-            if (peek() == ',') { advance(); tokens.push_back({TokenType::Comma, ","}); continue; }
 
             // ----------------------------------------------------------------
             // StringLiteral

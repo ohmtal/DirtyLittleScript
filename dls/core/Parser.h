@@ -50,9 +50,8 @@ private:
 
     // -------------------------------------------------------------------------
     int getPrecedence(TokenType type){
-        if (isInlineMathType(type)) return 100;
         if (type == TokenType::Mul || type == TokenType::Div ||
-            type == TokenType::Modulo || type == TokenType::Not) return 90;
+            type == TokenType::Modulo ) return 90;
         if (type == TokenType::Plus || type == TokenType::Minus) return 80;
         if (type == TokenType::SHL || type == TokenType::SHR) return 70;
 
@@ -67,20 +66,9 @@ private:
 
         if (type == TokenType::And || type == TokenType::Or) return 10;
 
-        if (type == TokenType::Question) return 0;
         if (type == TokenType::Assign) return 0;
-        if (type == TokenType::Dot) return 0;
-        if (type == TokenType::Arrow) return 0;
-        if (type == TokenType::KeyValue) return 0;
-        if (type == TokenType::DotDot) return 0;
-        if (type == TokenType::DotAssign) return 0;
-        if (isMathAssignOperatorType(type)) return 0;
-
         return -1;
     }
-
-
-
     // -------------------------------------------------------------------------
     // parsePrimary
     // -------------------------------------------------------------------------

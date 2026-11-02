@@ -133,20 +133,18 @@ For first run ever 13,50 it's not so bad - still beat python on that ;)
 - [X] Critical: create a endless loop!!!! `fn = function; print "hello World";;`
     also only `fn` create a endless loop
 
+
+- [X] Syntax is done remove unused tokens
+    
+- [X] funny: `i = 0; while i < 100; i++;;` gived an unhandled "end" error
+because `i++` is invalid ?! fixed after removing unused token! 
+
+
         
-- [ ] also funny: `i = 0; while i < 100; i++;;` gived an unhandled "end" error
-because `i++` is invalid ?! must kick out unused token! Then it's loop forever. 
-While is always dangerous. add forRange at least! 
-
-- [ ] Add:
-    - [ ] curly array constuctor
-    - [ ] forRange
-
-- [ ] Save a Tape:
+## maybe:
+- add a callframe too to enable real functions 
+- Save a Tape:
     - SymbolTable
     - StringTable
     - Variables
     - tape
-        
-## maybe:
-- [ ] add a callframe too to enable real functions 
