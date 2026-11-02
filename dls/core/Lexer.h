@@ -16,8 +16,7 @@ namespace DLS {
 
 void PrintLexerError(const std::string& message
     , const std::string& p1 = "",const std::string& p2 = "",const std::string& p3 = "") {
-    //TODO tool printer
-    std::cout << "[Lexer-ERROR] " << message << p1 << p2 << p3 << "\n";
+    Tools::errorf("[Lexer-ERROR] %s %s %s %s", message.c_str(), p1.c_str(), p2.c_str(), p3.c_str());
 }
 
 
