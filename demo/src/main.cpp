@@ -193,12 +193,15 @@ mySrc = R"(
 
 jump_to_test:
 mySrc = R"(
+    foo = 47.11;
     arr[999] = 1; print "array::count arr=" array::count arr
     print "cast int:" int::cast 47.11
     print "cast float:" float::cast 10
     print "get variable type" getType arr
     fn
 )"; Run(mySrc);
+
+
 
 
 

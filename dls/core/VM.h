@@ -35,6 +35,9 @@ namespace DLS {
         std::vector<size_t> mFunctions;
         std::vector<size_t> mReturnStack;
 
+
+
+
         S64 getGlobalRegister(U32 symId) {
             auto it = mGlobalsLookUp.find(symId);
             if (it != mGlobalsLookUp.end()) [[likely]] {
@@ -63,6 +66,14 @@ namespace DLS {
             assert (index < mGlobalsRegister.size() && "LOAD: GLOBALS REGISTER OUT OF BOUNDS");
             return mGlobalsRegister[index];
         }
+
+        bool getGlobalVariableValueRef(const std::string& varName, Value& ret) {
+            S64 index = getGlobalRegister(SymbolTable::insert(varName));
+            if (index < 0 ) return false;
+            ret = getGlobal((size_t)index);
+            return true;
+        }
+
         // --------------------------------------------------------------------
         const std::vector<Value>& getArrayByMasterIndex(size_t masterIndex) {
             return mArrays[masterIndex];
