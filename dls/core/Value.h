@@ -37,8 +37,8 @@ namespace DLS {
             U32 strId;
 
         } ;
-        U32 flags;      // 4 byte flags can be used to type something like pointers
-        ValueType type; // 1 byte
+        U32 flags = 0;      // 4 byte flags can be used to type something like pointers
+        ValueType type = ValueType::None; // 1 byte
         U8  padding[3]; // 3 bytes padding for future use
 
         // ------------------

@@ -23,7 +23,7 @@ namespace DLS {
     // Run a Script, and shutdown if you need to keep it up vm must be defined
     //               in your source so you can work with it.
     // -------------------------------------------------------------------------
-    std::string Run(const std::string& code) {
+    inline std::string Run(const std::string& code) {
         Lexer lex(code);
         std::vector<Token> token = lex.tokenize();
         if (DEBUG_TOKEN) {
@@ -52,7 +52,7 @@ namespace DLS {
     // -------------------------------------------------------------------------
     // Load a Script file
     // -------------------------------------------------------------------------
-    std::string loadScript(const std::string& scriptPath) {
+   inline  std::string loadScript(const std::string& scriptPath) {
         std::ifstream file(scriptPath, std::ios::in | std::ios::binary);
         if (!file.is_open()) {
             Tools::errorf("Script file cant be opened: %s\n", scriptPath.c_str());
@@ -64,7 +64,7 @@ namespace DLS {
     // -------------------------------------------------------------------------
     // Init the base functions and constants
     // -------------------------------------------------------------------------
-    void Init( ) {
+    inline void Init( ) {
         static bool registered = false; if (registered) return; registered = true;
 
         using namespace FunctionMap;

@@ -206,6 +206,16 @@ namespace DLS {
         void PUSH_STACK(Value val) {
             stack.push_back(val);
         }
+
+        // ------------------------------------------
+        // Run script  functions
+        // ------------------------------------------
+        bool PlaceTapeAtScriptFunction(Value& var) {
+            if (var.type != ValueType::Function ) return false;
+            Variables.mReturnStack.push_back(pc);
+            pc = Variables.mFunctions[(size_t)var.getFastLong()];
+            return true;
+        }
     };
     // =========================================================================
     // ------------------------------------------
@@ -237,8 +247,9 @@ namespace DLS {
         size_t varIndex = vm.advanceSlot().tapeChunk;
         Value& var = vm.Variables.getGlobal(varIndex);
         if (var.type == ValueType::Function) [[unlikely]] {
-            vm.Variables.mReturnStack.push_back(vm.pc);
-            vm.pc = vm.Variables.mFunctions[(size_t)var.getFastLong()];
+            vm.PlaceTapeAtScriptFunction(var);
+            // vm.Variables.mReturnStack.push_back(vm.pc);
+            // vm.pc = vm.Variables.mFunctions[(size_t)var.getFastLong()];
         } else {
             vm.PUSH_STACK( var );
         }
