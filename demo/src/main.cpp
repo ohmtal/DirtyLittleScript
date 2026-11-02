@@ -191,7 +191,6 @@ mySrc = R"(
     print "get variable type" getType arr
 )"; Run(mySrc);
 
-jump_to_test:
 mySrc = R"(
     foo = 47.11;
     arr[999] = 1; print "array::count arr=" array::count arr
@@ -201,8 +200,25 @@ mySrc = R"(
     fn
 )"; Run(mySrc);
 
+jump_to_test:
 
+mySrc = R"(
+    i = 0
+    while i < 10
+        r[0] = math::random 0 10
+        r[1] = math::random 0 10
+        Points[i] = r
 
+        i = i + 1
+    end
+    i = 0
+    while i < 10
+        r = Points[i]
+        print r[0] r[1]
+        i = i + 1
+    end
+
+)"; Run(mySrc);
 
 
 goto jump_to_end;

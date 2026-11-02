@@ -35,9 +35,6 @@ namespace DLS {
         std::vector<size_t> mFunctions;
         std::vector<size_t> mReturnStack;
 
-
-
-
         S64 getGlobalRegister(U32 symId) {
             auto it = mGlobalsLookUp.find(symId);
             if (it != mGlobalsLookUp.end()) [[likely]] {
@@ -58,11 +55,11 @@ namespace DLS {
 
         void saveGlobal(size_t index, const Value& value) {
             assert (index < mGlobalsRegister.size() && "SAVE: GLOBALS REGISTER OUT OF BOUNDS");
-            mGlobalsRegister[index] = value;
+            Value finaleValue = (value.type == ValueType::Array) ? copyArray((size_t)value.getFastLong()) : value;
+            mGlobalsRegister[index] = finaleValue;
         }
 
         Value& getGlobal(size_t index) {
-
             assert (index < mGlobalsRegister.size() && "LOAD: GLOBALS REGISTER OUT OF BOUNDS");
             return mGlobalsRegister[index];
         }
@@ -93,23 +90,36 @@ namespace DLS {
             return mArrays[masterIndex][index];
 
         }
+
+        // return copy of a Array - WARNING can grow a lot!!
+        Value copyArray(size_t curMasterIndex) {
+            size_t newIndex = mArrays.size();
+            mArrays.push_back(mArrays[curMasterIndex]);
+            Value result = Value( (S64) newIndex);
+            result.type = ValueType::Array;
+            return result;
+        }
+
         void saveArray(size_t varIndex, U32 index, const Value& value) {
             Value arrValue = getGlobal(varIndex);
+
+            Value finaleValue = (value.type == ValueType::Array) ? copyArray((size_t)value.getFastLong()) : value;
+
             if (arrValue.isArray()) {
                 size_t masterIndex =arrValue.getUInt();
                 if (index >= mArrays[masterIndex].size()) {
                     mArrays[masterIndex].resize(index + 1);
                 }
-                mArrays[masterIndex][index] = value;
+                mArrays[masterIndex][index] = finaleValue ;
             } else {
-                size_t masterIndex =mArrays.size();
+                size_t masterIndex = mArrays.size();
                 mArrays.push_back({});
-                arrValue = Value((U32)masterIndex);
+                arrValue = Value((S64)masterIndex);
                 arrValue.type = ValueType::Array;
                 if (index >= mArrays[masterIndex].size()) {
                     mArrays[masterIndex].resize(index + 1);
                 }
-                mArrays[masterIndex][index] = value;
+                mArrays[masterIndex][index] = finaleValue ;
                 saveGlobal(varIndex,arrValue);
                 // Tools::printf("id:%u, index:%u, masterIndex: %zu arrValue=%u\n", id,index, masterIndex, arrValue.getUInt());
             }

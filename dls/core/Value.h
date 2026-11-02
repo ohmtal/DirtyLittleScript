@@ -60,7 +60,7 @@ namespace DLS {
         inline bool isFunction() { return type == ValueType::Function; }
         inline bool isArray() { return type == ValueType::Array; }
         // ------------------
-        inline F64 getDouble() {
+        inline F64 getDouble() const {
             if (type == ValueType::Double) [[likely]] return d;
             else if (type == ValueType::Long) return static_cast<F64>(l);
             else if (type == ValueType::Array) return static_cast<F64>(l);
@@ -68,8 +68,8 @@ namespace DLS {
             else return 0.0;
         }
         // ------------------
-       inline S64 getFastLong() { return l; }
-       inline S64 getLong() {
+       inline S64 getFastLong() const { return l; }
+       inline S64 getLong() const {
             if (type == ValueType::Long) [[likely]] return l;
             else if (type == ValueType::Array)  return l;
             else if (type == ValueType::Double)  return static_cast<S64>(d);
@@ -77,11 +77,11 @@ namespace DLS {
             else return 0;
         }
         // ------------------
-        inline F32 getFloat() { return (F32) getDouble(); }
-        inline U8 getU8()     { return (U8) getLong(); }
-        inline U32 getUInt()  { return (U32) getLong(); }
-        inline S32 getInt()   { return (S32) getLong(); }
-        inline bool getBool() { return  getLong() != 0; }
+        inline F32 getFloat() const { return (F32) getDouble(); }
+        inline U8 getU8()     const { return (U8) getLong(); }
+        inline U32 getUInt()  const { return (U32) getLong(); }
+        inline S32 getInt()   const { return (S32) getLong(); }
+        inline bool getBool() const { return  getLong() != 0; }
         // ------------------
         inline const std::string& getString() const {
             if (type == ValueType::String) [[likely]] return StringTable::get(strId);
