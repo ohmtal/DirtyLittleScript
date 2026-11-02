@@ -67,6 +67,7 @@ namespace DLS {
             else return 0.0;
         }
         // ------------------
+       inline S64 getFastLong() { return l; }
        inline S64 getLong() {
             if (type == ValueType::Long) [[likely]] return l;
             else if (type == ValueType::Array)  return l;

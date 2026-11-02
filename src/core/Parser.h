@@ -139,10 +139,10 @@ private:
                 if (FunctionMap::IsCFunction(symId)) {
                     U32 argCount = 0;
                     while (isContinueToken(peek())) {
-                        if (peek().mType == TokenType::Comma){
-                            advance();
-                            break;
-                        }
+                        // if (peek().mType == TokenType::Comma){
+                        //     advance();
+                        //     break;
+                        // }
                         requestParam++;
                         if (!getArg( "c function parameters" )) return false;
                         requestParam--;
@@ -391,6 +391,8 @@ private:
     bool parseFn() {
         advance(); //advanceFN
 
+
+
         // tape should jump over this function when playing
         vm->emitCode(op_func_def);
         size_t func_start_slot = vm->tell();
@@ -413,6 +415,7 @@ private:
             return false;
         }
         advance(); //end
+
 
         vm->emitCode(op_return);
         vm->patchJumpOffset(jump_over_slot,vm->tell());
@@ -547,7 +550,13 @@ private:
             }
             break;
 
-            case TokenType::Return: {advance(); vm->emitCode(op_return);} break;
+            case TokenType::Return: {
+                advance();
+                if (isContinueToken(peek())) getArg("Return");
+                vm->emitCode(op_return);
+
+            }
+                break;
 
 
             // ----- default ----

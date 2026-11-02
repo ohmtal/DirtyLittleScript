@@ -319,7 +319,7 @@ public:
                 continue;
             }
 
-            if (peek() == ';' && peekNext() == ';') { advance();advance(); tokens.push_back({TokenType::End, ";;"}); continue; }
+            if (peek() == ';' && peekNext() == ';') { advance();/* NOT! advance();*/ tokens.push_back({TokenType::End, ";;"}); continue; }
             if (peek() == ';') { advance(); tokens.push_back({TokenType::Semicolon, ";"}); continue; }
 
 

@@ -213,15 +213,26 @@ namespace DLS {
     // ------------------------------------------
     void op_save_global(VM& vm) {
          size_t varIndex = vm.advanceSlot().tapeChunk;
-         vm.Variables.saveGlobal(varIndex,vm.POP_STACK());
+         // WARNING dont want to check its a function!!
+         // becaue i have to load the var first
+         // lamda sucks
+         // // // Value a = vm.POP_STACK();
+         // // // if (a.type == ValueType::Function) [[unlikely]] {
+         // // //    vm.Variables.mReturnStack.push_back(vm.tell());
+         // // //    vm.pc = vm.Variables.mFunctions[(size_t)a.getFastLong()];
+         // // // } else {
+         // // //    vm.Variables.saveGlobal(varIndex,a);
+         // // // }
+          vm.Variables.saveGlobal(varIndex,vm.POP_STACK());
+
     }
 
     void op_load_global(VM& vm) {
         size_t varIndex = vm.advanceSlot().tapeChunk;
         Value& var = vm.Variables.getGlobal(varIndex);
         if (var.type == ValueType::Function) [[unlikely]] {
-            vm.Variables.mReturnStack.push_back(vm.tell());
-            vm.pc = vm.Variables.mFunctions[(size_t)var.l];
+            vm.Variables.mReturnStack.push_back(vm.pc);
+            vm.pc = vm.Variables.mFunctions[(size_t)var.getFastLong()];
         } else {
             vm.PUSH_STACK( var );
         }

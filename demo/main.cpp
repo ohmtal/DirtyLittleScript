@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
 
     std::string mySrc = "";
     std::cout << "============= Dirty Little Script ===============\n";
-// goto jump_to_test;
+goto jump_to_test;
 
     std::cout << "Value size check:" << sizeof(Value) << "\n";
     std::cout << "ValueType size check:" << sizeof(ValueType) << "\n";
@@ -57,11 +57,13 @@ int main(int argc, char* argv[]) {
     std::cout << mySrc << " = " << Run(mySrc) << "\n";
 
     std::cout << "------------ C-Function Call ---------------\n";
-    mySrc = R"( math::randomf )";
-    std::cout << mySrc << " = " << Run(mySrc) << "\n";
-    mySrc = R"( math::random 10 20 )";
-    std::cout << mySrc << " = " << Run(mySrc) << "\n";
+    mySrc = R"( return math::randomf )"; std::cout << mySrc << " = " << Run(mySrc) << "\n";
+    mySrc = R"( math::random 10 20 )"; std::cout << mySrc << " = " << Run(mySrc) << "\n";
 
+jump_to_test:
+    // x = fun not supported !
+    mySrc = R"( fun = function; print "INSIDE";; fun; print "OUTSIDE" )"; std::cout << mySrc << " = " << Run(mySrc) << "\n";
+goto jump_to_end;
 
 
     std::cout << "------------ Comparison ---------------\n";
@@ -130,7 +132,7 @@ int main(int argc, char* argv[]) {
         end
     )"; Run(mySrc);
 
-jump_to_test:
+
    std::cout << "---- Array ----\n";
     mySrc = R"( foo[110] = 10; print "10==" foo[110] )"; Run(mySrc);
 
@@ -190,5 +192,6 @@ mySrc = R"(
     print "get variable type" getType arr
 )"; Run(mySrc);
 
-
+jump_to_end:
+Tools::printf("");
 }
