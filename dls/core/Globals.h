@@ -10,7 +10,7 @@ namespace DLS {
     struct VM;
 
 namespace Globals {
-    VM* CurrentVM = nullptr;
+   inline  VM* CurrentVM = nullptr;
 
 } //Globals
 } //DLS

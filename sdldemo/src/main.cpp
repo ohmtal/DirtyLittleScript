@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 
+#define IMPLEMENT_DLS
 #include "DirtyLittleScript.h"
 
 

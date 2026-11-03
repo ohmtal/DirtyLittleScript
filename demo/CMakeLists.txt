@@ -18,7 +18,9 @@ endif()
 set(SANITIZE_DEFAULT OFF)
 set(BUILD_WITH_SANITIZE ${SANITIZE_DEFAULT} CACHE BOOL "Build Application with -fsanitize=address -g")
 
-
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_definitions(DLS_DEBUG)
+endif()
 # -----------------------------------------------------------------------------
 project(dlsDemo C CXX)
 

@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 
+#define IMPLEMENT_DLS
 #include "DirtyLittleScript.h"
 
 
@@ -35,7 +36,7 @@ int main(int argc, char* argv[]) {
 
     std::string mySrc = "";
     std::cout << "============= Dirty Little Script ===============\n";
-goto jump_to_test;
+// goto jump_to_test;
 
     std::cout << "Value size check:" << sizeof(Value) << "\n";
     std::cout << "ValueType size check:" << sizeof(ValueType) << "\n";
@@ -243,7 +244,7 @@ mySrc = R"(
 )";
 Run(mySrc);
 
-goto jump_to_end;
+// goto jump_to_end;
 
 mySrc = R"(
     arr = { 10 20 math::rand}

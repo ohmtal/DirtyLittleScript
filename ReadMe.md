@@ -4,7 +4,7 @@
 
 ## Usage in your Project: 
 - Download and add `DirtyLittleScript/dls` to your include path 
-- Include the header `DirtyLittleScript.h`
+- Include the header `DirtyLittleScript.h`and `#define IMPLEMENT_DLS` *only once*
 - call `DLS::Init();`
 - call `DLS::Run("print "Hello World");` 
 - optional add dls/functions/*.cpp to you project. (see also demo)

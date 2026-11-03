@@ -48,6 +48,9 @@ namespace DLS{
         std::string mValue;
     };
 
+     const char* tokenTypeToString(TokenType type);
+
+#ifdef IMPLEMENT_DLS
     const char* tokenTypeToString(TokenType type) {
         switch (type) {
             case TokenType::Identifier:    return "Identifier";
@@ -156,5 +159,5 @@ namespace DLS{
         ;
     }
 
-
+#endif // IMPLEMENT_DLS
 }//namespace

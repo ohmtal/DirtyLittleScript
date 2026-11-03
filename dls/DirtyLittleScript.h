@@ -17,7 +17,7 @@
 #include <istream>
 
 namespace DLS {
-    bool DEBUG_TOKEN = false;
+    static bool DEBUG_TOKEN = false;
 
     // -------------------------------------------------------------------------
     // Run a Script, and shutdown if you need to keep it up vm must be defined

@@ -6,8 +6,10 @@
 //-----------------------------------------------------------------------------
 #pragma once
 
-#include <cstdint>
+
 #include <cassert>
+
+#include <cstdint>
 #include <memory>
 #include <vector>
 #include <span>
@@ -19,16 +21,16 @@
 namespace DLS {
 
     void PrintRuntimeError(const std::string& message
-    , const std::string& p1 = "",const std::string& p2 = "",const std::string& p3 = "") {
-        Tools::errorf("[Runtime-ERROR]: %s %s %s %s\n", message.c_str(),p1.c_str(),p2.c_str(),p3.c_str());
-    }
+    , const std::string& p1 = "",const std::string& p2 = "",const std::string& p3 = "");
 
     struct ArrayEntry {
         std::vector<Value> Elements;
         void setAssigned(bool isAssigned) {
             if (isAssigned) mAssingCount++;
             else {
+
                 assert(mAssingCount > 0 && "Array Assign counter out of bounds!");
+
                 mAssingCount--;
             }
         }
@@ -68,7 +70,10 @@ namespace DLS {
         }
 
         void saveGlobal(size_t index, const Value& value) {
+
             assert (index < mGlobalsRegister.size() && "SAVE: GLOBALS REGISTER OUT OF BOUNDS");
+
+
             if (mGlobalsRegister[index].isArray()) [[unlikely]] {
                 size_t oldIndex = mGlobalsRegister[index].getFastLong();
                 mArrays[oldIndex].setAssigned(false);
@@ -82,7 +87,9 @@ namespace DLS {
         }
 
         Value& getGlobal(size_t index) {
+
             assert (index < mGlobalsRegister.size() && "LOAD: GLOBALS REGISTER OUT OF BOUNDS");
+
             return mGlobalsRegister[index];
         }
 
@@ -233,19 +240,25 @@ namespace DLS {
         }
 
         Slot& advanceSlot() {
+
             assert (pc < tape.size() && "TAPE OVERFLOW");
+
             return tape[pc++];
         }
         // ------------------------------------------
         // Stack functions
         // ------------------------------------------
         Value POP_STACK() {
+
             assert(stack.size() > 0 && "POP_STACK but stack empty!");
+
             Value result = stack.back(); stack.pop_back();
             return result;
         }
         Value PEEK_STACK() {
+
             assert(stack.size() > 0 && "PEEK_STACK but stack empty!");
+
             Value result = stack.back();
             return result;
         }
@@ -264,6 +277,11 @@ namespace DLS {
         }
     };
     // =========================================================================
+#ifdef IMPLEMENT_DLS
+    void PrintRuntimeError(const std::string& message
+    , const std::string& p1,const std::string& p2,const std::string& p3) {
+        Tools::errorf("[Runtime-ERROR]: %s %s %s %s\n", message.c_str(),p1.c_str(),p2.c_str(),p3.c_str());
+    }
     // ------------------------------------------
     // Exit (last for jump offsets)
     // ------------------------------------------
@@ -597,5 +615,6 @@ namespace DLS {
         vm.Variables.mReturnStack.pop_back();
     }
     // ------------------------------------------
-}
+#endif // IMPLEMENT_DLS
+} //namespace
 
