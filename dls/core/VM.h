@@ -22,6 +22,11 @@ namespace DLS {
     , const std::string& p1 = "",const std::string& p2 = "",const std::string& p3 = "") {
         Tools::errorf("[Runtime-ERROR]: %s %s %s %s\n", message.c_str(),p1.c_str(),p2.c_str(),p3.c_str());
     }
+
+    struct ArrayEntry {
+        std::vector<Value> Elements;
+        S64 AssingCount = 0;
+    };
     // ------------------------------------------
     // Variables
     // ------------------------------------------
@@ -30,7 +35,7 @@ namespace DLS {
         std::unordered_map<U32,size_t> mGlobalsLookUp;
         std::vector<Value> mGlobalsRegister;
 
-        std::vector<std::vector<Value>> mArrays;
+        std::vector<ArrayEntry> mArrays;
 
         std::vector<size_t> mFunctions;
         std::vector<size_t> mReturnStack;
@@ -59,6 +64,11 @@ namespace DLS {
                 mGlobalsRegister[index] = copyArray((size_t)value.getFastLong());
                 return;
             }
+            if (mGlobalsRegister[index].isArray()) [[unlikely]] {
+                size_t oldIndex = mGlobalsRegister[index].getFastLong();
+                mArrays[oldIndex].AssingCount--;
+            }
+
             mGlobalsRegister[index] = value;
         }
 
@@ -76,7 +86,7 @@ namespace DLS {
 
         // --------------------------------------------------------------------
         const std::vector<Value>& getArrayByMasterIndex(size_t masterIndex) {
-            return mArrays[masterIndex];
+            return mArrays[masterIndex].Elements;
         }
 
         Value getArray(size_t varIndex, U32 index) {
@@ -87,17 +97,27 @@ namespace DLS {
             }
             size_t masterIndex =arrValue.getUInt();
 
-            if (index >= mArrays[masterIndex].size()) {
-                mArrays[masterIndex].resize(index + 1);
+            if (index >= mArrays[masterIndex].Elements.size()) {
+                mArrays[masterIndex].Elements.resize(index + 1);
             }
-            return mArrays[masterIndex][index];
+            return mArrays[masterIndex].Elements[index];
 
         }
 
-        // return copy of a Array - WARNING can grow a lot!!
+        size_t reserveArray() {
+            for (size_t i = 0; i < mArrays.size(); i++) {
+                if (mArrays[i].AssingCount <= 0)
+                    return i;
+            }
+            size_t result = mArrays.size();
+            mArrays.push_back({});
+            return result;
+        }
+
         Value copyArray(size_t curMasterIndex) {
-            size_t newIndex = mArrays.size();
-            mArrays.push_back(mArrays[curMasterIndex]);
+            size_t newIndex = reserveArray();
+            mArrays[newIndex].Elements = mArrays[curMasterIndex].Elements;
+            mArrays[newIndex].AssingCount = 1; //new entry
             Value result = Value( (S64) newIndex);
             result.type = ValueType::Array;
             return result;
@@ -110,21 +130,26 @@ namespace DLS {
 
             if (arrValue.isArray()) {
                 size_t masterIndex =arrValue.getUInt();
-                if (index >= mArrays[masterIndex].size()) {
-                    mArrays[masterIndex].resize(index + 1);
+                if (index >= mArrays[masterIndex].Elements.size()) {
+                    mArrays[masterIndex].Elements.resize(index + 1);
                 }
-                mArrays[masterIndex][index] = finaleValue ;
+                if (mArrays[masterIndex].Elements[index].isArray()) {
+                    size_t oldIndex = mArrays[masterIndex].Elements[index].getFastLong();
+                    mArrays[oldIndex].AssingCount--;
+                }
+                // copyArray already set AssingCount
+                mArrays[masterIndex].Elements[index] = finaleValue ;
             } else {
                 size_t masterIndex = mArrays.size();
                 mArrays.push_back({});
                 arrValue = Value((S64)masterIndex);
                 arrValue.type = ValueType::Array;
-                if (index >= mArrays[masterIndex].size()) {
-                    mArrays[masterIndex].resize(index + 1);
+                if (index >= mArrays[masterIndex].Elements.size()) {
+                    mArrays[masterIndex].Elements.resize(index + 1);
                 }
-                mArrays[masterIndex][index] = finaleValue ;
+                // copyArray already set AssingCount
+                mArrays[masterIndex].Elements[index] = finaleValue ;
                 saveGlobal(varIndex,arrValue);
-                // Tools::printf("id:%u, index:%u, masterIndex: %zu arrValue=%u\n", id,index, masterIndex, arrValue.getUInt());
             }
         }
 

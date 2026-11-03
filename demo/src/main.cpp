@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
 
     std::string mySrc = "";
     std::cout << "============= Dirty Little Script ===============\n";
-// goto jump_to_test;
+goto jump_to_test;
 
     std::cout << "Value size check:" << sizeof(Value) << "\n";
     std::cout << "ValueType size check:" << sizeof(ValueType) << "\n";
@@ -220,11 +220,17 @@ mySrc = R"(
 
 )"; Run(mySrc);
 
-jump_to_test:
 mySrc = R"(
     print "parse error? or endless loop"
     i = 0; while i < 100; i++;;
 )"; Run(mySrc);
+
+jump_to_test:
+mySrc = R"(
+    forRange i 10; print i; i = i  + 1;;
+)";
+Run(mySrc);
+
 
 
 goto jump_to_end;

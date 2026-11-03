@@ -199,7 +199,7 @@ private:
                 }
                 else
                 {
-                    PrintLexerError("Unhandled Identifier:", t.mValue);
+                    PrintParseError("Unhandled Identifier:", t.mValue);
                     return false;
                 }
             }
@@ -316,13 +316,13 @@ private:
         return true;
     }
 
-    bool getArg(const std::string& Where) {
+    bool getArg(const std::string& Where, bool optional = false) {
         size_t curPos = tell();
         requestParam++;
         if (!parseMath(0)) return false;
         requestParam--;
         if (tell() == curPos) {
-            PrintParseError("Value expected at:", Where);
+            if (!optional) PrintParseError("Value expected at:", Where);
             return false;
         }
         return true;
@@ -354,6 +354,98 @@ private:
         }
         if (peek().mType != TokenType::End) {
             PrintParseError("While missing end!");
+            return false;
+        }
+        advance(); //end
+
+        vm->emitCode(op_jump);
+        vm->emitJumpOffset(loop_start_slot);
+        vm->patchJumpOffset(false_jump_slot,vm->tell());
+
+
+        size_t loop_end_slot = vm->tell();
+
+        // handle breaks
+        for (size_t break_slot : vm->mLoopStack.back().break_slots) {
+            vm->patchJumpOffset(break_slot, loop_end_slot);
+        }
+        vm->mLoopStack.pop_back();
+
+        return true;
+    }
+    // -------------------------------------------------------------------------
+    //  Statements sub: forRange [VAR] [COUNT]
+    // -------------------------------------------------------------------------
+    bool parseForRange() {
+        advance();
+
+        std::string variable = "";
+        U32 count = 0;
+        if (peek().mType != TokenType::Identifier) {
+            PrintParseError("forRange need a variable");
+            return false;
+        } else {
+            variable = peek().mValue;
+            advance();
+        }
+        if (peek().mType != TokenType::Number) {
+            PrintParseError("forRange need a count");
+            return false;
+        } else {
+            count = (U32)std::abs(atoi(peek().mValue.c_str()));
+            advance();
+        }
+
+        // ---- emit loop variable and set to -1
+        vm->emitCode(op_literal);
+        vm->emitValue(Value(-1.0));
+        U32 symId = SymbolTable::insert(variable);
+        size_t varidx = vm->Variables.reserveGlobal(symId);
+        vm->emitCode(op_save_global);
+        vm->emitTapeChunk((size_t)varidx);
+
+        // ---- save tape position
+        size_t loop_start_slot = vm->tell();
+
+        // ---- increment iter
+        vm->emitCode(op_load_global);
+        vm->emitTapeChunk((size_t)varidx);
+        vm->emitCode(op_literal);
+        vm->emitValue(Value(1.0));
+        vm->emitCode(op_add);
+        vm->emitCode(op_save_global);
+        vm->emitTapeChunk((size_t)varidx);
+
+        // ---- condition iter < count
+        vm->emitCode(op_load_global);
+        vm->emitTapeChunk((size_t)varidx);
+        vm->emitCode(op_literal);
+        vm->emitValue(Value(count));
+        vm->emitCode(op_lower);
+
+        // --- now the same as While.....
+        vm->emitCode(op_jump_if_false);
+        size_t false_jump_slot = vm->tell();
+        vm->emitJumpOffset(0); // false placeholder
+
+
+        // break continue
+        LoopContext context;
+        context.continue_target = loop_start_slot;
+        vm->mLoopStack.push_back(context);
+
+
+        // main loop:
+        while (peek().mType != TokenType::EOFToken &&
+            peek().mType != TokenType::End)
+        {
+            if (!parseStatements()){
+                PrintParseError("ForRange: failed to parse Statements");
+                return false;
+            }
+        }
+        if (peek().mType != TokenType::End) {
+            PrintParseError("ForRange missing end!");
             return false;
         }
         advance(); //end
@@ -524,6 +616,10 @@ private:
             break;
             case TokenType::While: {
                 if (!parseWhile()) return false;
+            }
+            break;
+            case TokenType::ForRange: {
+                if (!parseForRange()) return false;
             }
             break;
             case TokenType::Continue: {

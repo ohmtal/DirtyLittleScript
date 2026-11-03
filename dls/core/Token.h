@@ -30,6 +30,7 @@ namespace DLS{
         , Continue
         , Semicolon
         , While
+        , ForRange
         , Or, And, BitOr, BitAnd
         , BitXOr
         , LowerEqual, GreaterEqual
@@ -79,6 +80,7 @@ namespace DLS{
 
             // for / while iter
             case TokenType::While:         return "While";
+            case TokenType::ForRange:      return "ForRange";
 
             // break, return
             case TokenType::Break:         return "Break";

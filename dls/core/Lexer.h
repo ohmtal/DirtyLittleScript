@@ -16,7 +16,7 @@ namespace DLS {
 
 void PrintLexerError(const std::string& message
     , const std::string& p1 = "",const std::string& p2 = "",const std::string& p3 = "") {
-    Tools::errorf("[Lexer-ERROR] %s %s %s %s", message.c_str(), p1.c_str(), p2.c_str(), p3.c_str());
+    Tools::errorf("[Lexer-ERROR] %s %s %s %s\n", message.c_str(), p1.c_str(), p2.c_str(), p3.c_str());
 }
 
 
@@ -176,6 +176,8 @@ public:
                 else if (id == "return") { tokens.push_back({TokenType::Return, "return"});  }
                 else if (id == "continue") { tokens.push_back({TokenType::Continue, "continue"});  }
                 else if (id == "while") { tokens.push_back({TokenType::While, "while"});  }
+                else if (id == "forrange") { tokens.push_back({TokenType::ForRange, "forrange"});  }
+                else if (id == "forRange") { tokens.push_back({TokenType::ForRange, "forRange"});  }
                 else if (id == "and") { tokens.push_back({TokenType::And, "and"});  }
                 else if (id == "or") { tokens.push_back({TokenType::Or, "or"});  }
                 else {
