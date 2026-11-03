@@ -147,6 +147,37 @@ because `i++` is invalid ?! fixed after removing unused token!
 
 - Features completed ?! 
         
+- --------------- TAGGED 0.4 ---------------
+
+- [X] Added forRange
+- [X] Added curly constuctor        
+- [X] Bug in Array setAssigned
+
+This works fine:
+```
+InitRects = function
+    forRange i 100
+        Rects[i] = { (math::random 0 500) (math::random 0 500) 30 30 }
+        Colors[i] = { (math::random 0 255) (math::random 0 255) (math::random 0 255) 255 }
+        Filled[i] = math::random 0 1
+    end
+end
+```
+Copy and Count up! some seconds later fps is at 0! 
+I need to hack in Rects[i][0] would by nive like in DreiZehn
+but for now i need to find out where the counter get out of sync!
+and i guess the free slot lookup is what it makes so slow.
+```
+MoveRects = function
+    forRange i 100
+        r = Rects[i]
+        r[0] = r[0] + 0.1
+        r[1] = r[1] + 0.1
+        Rects[i] = r
+    end
+end
+```
+        
         
         
 ## maybe:

@@ -204,57 +204,12 @@ private:
                 }
             }
             break;
-            // // case TokenType::Define: {
-            // //     advance(); //eat define
-            // //     if (peek().mType != TokenType::Identifier) {
-            // //         PrintParseError("variable name after define expected");
-            // //         return false;
-            // //     }
-            // //     U32 varSymId = SymbolTable::insert(advance().mValue);
-            // //     if (peek().mType == TokenType::Assign) advance(); //eat optional "="
-            // //
-            // //     if (!getArg("Define")) return false;
-            // //     // HACK fest
-            // //     // I  push it directly !!!
-            // //     //  - with this I cant save a tape!
-            // //     //  - without i need to lookup the constants in op_code (slower)
-            // //
-            // //     size_t tapePos = vm->tape.size() - 1;
-            // //     if (vm->tape[tapePos - 1 ].code == op_literal) {
-            // //         Value a = vm->tape.back().value; vm->tape.pop_back();
-            // //         vm->tape.pop_back();
-            // //         FunctionMap::RegisterConstants(varSymId,a);
-            // //     } else {
-            // //         PrintParseError("sorry, define only allows literals");
-            // //         return false;
-            // //     }
-            // //
-            // // }
-            // // break;
-
-            // // case TokenType::Or: {
-            // //     advance();
-            // //     vm->emitCode(op_jump_if_true_no_pop);
-            // //     size_t jumpOffset = vm->tell();
-            // //     vm->emitJumpOffset(0); // placeholder
-            // //     vm->emitCode(op_pop_stack);
-            // //     if (!getArg("right or")) return false;
-            // //     vm->patchJumpOffset(jumpOffset , vm->tell());
-            // // }
-            // // break;
-            // // case TokenType::And: {
-            // //     advance();
-            // //     vm->emitCode(op_jump_if_false_no_pop);
-            // //     size_t jumpOffset = vm->tell();
-            // //     vm->emitJumpOffset(0); // placeholder
-            // //     vm->emitCode(op_pop_stack);
-            // //     if (!getArg("right or")) return false;
-            // //     vm->patchJumpOffset(jumpOffset , vm->tell());
-            // // }
-            // //  break;
-
             // ~~~~ Functions ~~~~
             case TokenType::Fn: if (!parseFn()) return false; break;
+
+            // ~~~~ Curly Array constructor ~~~~
+            case TokenType::LCurly: if (!parseCurly()) return false; break;
+
 
             // ~~~~ LineBreak ~~~~
             case TokenType::EOLToken:
@@ -595,6 +550,30 @@ private:
         for (size_t slot : end_jump_slots) {
             vm->patchJumpOffset(slot, final_destination);
         }
+        return true;
+    }
+    // -------------------------------------------------------------------------
+    // Statements sub :  curly array constructor
+    // -------------------------------------------------------------------------
+    bool parseCurly() {
+        advance();
+
+        size_t count = 0;
+        while (peek().mType != TokenType::EOFToken &&
+                peek().mType != TokenType::RCurly)
+        {
+            if (!getArg("Curly Array constuctor")) return false;
+            count++;
+        }
+
+        if (peek().mType != TokenType::RCurly) {
+            PrintParseError("While right curly paren");
+            return false;
+        }
+        advance(); //RCurly
+
+        vm->emitCode(op_constuct_array);
+        vm->emitTapeChunk(count);
         return true;
     }
 

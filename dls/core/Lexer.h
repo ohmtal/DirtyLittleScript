@@ -75,6 +75,9 @@ public:
             if (peek() == '[') { advance(); tokens.push_back({TokenType::LSquare,"["}); continue; }
             if (peek() == ']') { advance(); tokens.push_back({TokenType::RSquare,"]"}); continue; }
 
+            if (peek() == '{') { advance(); tokens.push_back({TokenType::LCurly,"{"}); continue; }
+            if (peek() == '}') { advance(); tokens.push_back({TokenType::RCurly,"}"}); continue; }
+
             // ----------------------------------------------------------------
 
             if (peek() == '>' && peekNext() == '>') { advance();advance(); tokens.push_back({TokenType::SHR, ">>"}); continue; }

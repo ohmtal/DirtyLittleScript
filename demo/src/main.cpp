@@ -226,14 +226,44 @@ mySrc = R"(
 )"; Run(mySrc);
 
 jump_to_test:
+
 mySrc = R"(
-    forRange i 10; print i; i = i  + 1;;
+    arr[0] = { 10 20 math::rand}
+    print 1
+    item = arr[0]
+    print 2
+    print "item type:" (getType item) "arr type:" (getType arr)
+    print "0=" item[0] "1=" item[1] "2=" item[2]
+    item[0] = 100
+    print 3
+    arr[0] = item
+    print 4
+    item = arr[0]
+    print 5
+)";
+Run(mySrc);
+
+goto jump_to_end;
+
+mySrc = R"(
+    arr = { 10 20 math::rand}
+    forRange i 3; print i arr[i] ;;
+
+    forRange i 3
+       arr[i] = { 10 20 30 }
+    end
+
+    forRange i 3
+       p = arr[i]
+       print p[0] p[1] p[2]
+    end
+
+
 )";
 Run(mySrc);
 
 
 
-goto jump_to_end;
 jump_to_end:
 Tools::printf("");
 }

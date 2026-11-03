@@ -35,6 +35,7 @@
 | `myFunc = function; print "Hello"; end; myFunc`  | lambda style function (*)  |
 | Array |  |
 | `arr[0]=10; arr[20]=100` | Numeric indexed Array auto initialized |
+| `arr = { 10 20 30}` | construct a array with three elements |
 
 (*) only in DLS and not in DreiZehnScript available
 

@@ -25,7 +25,16 @@ namespace DLS {
 
     struct ArrayEntry {
         std::vector<Value> Elements;
-        S64 AssingCount = 0;
+        void setAssigned(bool isAssigned) {
+            if (isAssigned) mAssingCount++;
+            else {
+                assert(mAssingCount > 0 && "Array Assign counter out of bounds!");
+                mAssingCount--;
+            }
+        }
+        bool isAssigned() { return mAssingCount > 0;}
+    private:
+        S64 mAssingCount = 0;
     };
     // ------------------------------------------
     // Variables
@@ -60,13 +69,13 @@ namespace DLS {
 
         void saveGlobal(size_t index, const Value& value) {
             assert (index < mGlobalsRegister.size() && "SAVE: GLOBALS REGISTER OUT OF BOUNDS");
+            if (mGlobalsRegister[index].isArray()) [[unlikely]] {
+                size_t oldIndex = mGlobalsRegister[index].getFastLong();
+                mArrays[oldIndex].setAssigned(false);
+            }
             if (value.type == ValueType::Array) [[unlikely]] {
                 mGlobalsRegister[index] = copyArray((size_t)value.getFastLong());
                 return;
-            }
-            if (mGlobalsRegister[index].isArray()) [[unlikely]] {
-                size_t oldIndex = mGlobalsRegister[index].getFastLong();
-                mArrays[oldIndex].AssingCount--;
             }
 
             mGlobalsRegister[index] = value;
@@ -106,8 +115,7 @@ namespace DLS {
 
         size_t reserveArray() {
             for (size_t i = 0; i < mArrays.size(); i++) {
-                if (mArrays[i].AssingCount <= 0)
-                    return i;
+                if (!mArrays[i].isAssigned()) return i;
             }
             size_t result = mArrays.size();
             mArrays.push_back({});
@@ -117,7 +125,7 @@ namespace DLS {
         Value copyArray(size_t curMasterIndex) {
             size_t newIndex = reserveArray();
             mArrays[newIndex].Elements = mArrays[curMasterIndex].Elements;
-            mArrays[newIndex].AssingCount = 1; //new entry
+            mArrays[newIndex].setAssigned(true); //new entry
             Value result = Value( (S64) newIndex);
             result.type = ValueType::Array;
             return result;
@@ -135,7 +143,7 @@ namespace DLS {
                 }
                 if (mArrays[masterIndex].Elements[index].isArray()) {
                     size_t oldIndex = mArrays[masterIndex].Elements[index].getFastLong();
-                    mArrays[oldIndex].AssingCount--;
+                    mArrays[oldIndex].setAssigned(false);
                 }
                 // copyArray already set AssingCount
                 mArrays[masterIndex].Elements[index] = finaleValue ;
@@ -319,6 +327,19 @@ namespace DLS {
         vm.PUSH_STACK(vm.Variables.getArray(varIndex,arrayIndexValue.getUInt()));
     }
 
+    void op_constuct_array(VM& vm) {
+        size_t count = vm.advanceSlot().tapeChunk;
+        std::vector<Value> arr;
+        for (S32 i = 0; i < (S32)count; i++) {
+            arr.push_back(vm.POP_STACK());
+        }
+        std::reverse(arr.begin(), arr.end());
+        S64 masterIndex = (S64)vm.Variables.reserveArray();
+        Value result = Value(masterIndex);
+        result.type = ValueType::Array;
+        vm.Variables.mArrays[masterIndex].Elements = arr;
+        vm.PUSH_STACK(result);
+    }
     // ------------------------------------------
     // Literal
     // ------------------------------------------

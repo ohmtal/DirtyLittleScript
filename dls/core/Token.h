@@ -18,6 +18,7 @@ namespace DLS{
         , LParen
         , RParen
         , LSquare, RSquare
+        , LCurly, RCurly
         // math
         , Plus , Minus , Mul , Div
         // if ...
@@ -57,6 +58,8 @@ namespace DLS{
             case TokenType::RParen:        return "RParen )";
             case TokenType::LSquare:        return "LSquare [";
             case TokenType::RSquare:        return "RSquare ]";
+            case TokenType::LCurly:        return "LCurly {";
+            case TokenType::RCurly:        return "RCurly }";
 
             // math
             case TokenType::Plus:          return "Plus";
@@ -147,6 +150,7 @@ namespace DLS{
         && op.mType != TokenType::Else
         && op.mType != TokenType::ElIf
         && op.mType != TokenType::RSquare
+        && op.mType != TokenType::RCurly
         && op.mType != TokenType::EOLToken
         && !isMathType(op)
         ;
