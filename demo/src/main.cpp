@@ -246,7 +246,6 @@ Run(mySrc);
 
 
 
-jump_to_test:
 mySrc = R"(
     arr = { 10 20 math::rand}
     forRange i 3; print i arr[i] ;;
@@ -265,9 +264,13 @@ mySrc = R"(
 Run(mySrc);
 
 
+jump_to_test:
 mySrc = R"(
-    arr[1][2] = 10
-
+    arr[0] = { 10 20 30 }
+    print arr[0][2]
+    arr[1] = { 40 50 60 }
+    print arr[1][0]
+    arr[2][0]  = 4711
 )";
 Run(mySrc);
 // goto jump_to_end;

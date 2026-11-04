@@ -324,15 +324,18 @@ namespace DLS {
     // Array
     // ------------------------------------------
     void op_save_array(VM& vm) {
-        U32 symid = (U32)vm.advanceSlot().tapeChunk;
+        U32 varIndex = (U32)vm.advanceSlot().tapeChunk;
         U32 dimension = (U32)vm.advanceSlot().tapeChunk;
-//--------
+
+//-------- ... what a mess ;) ...
+        // COPIED FROM LOAD !!! FIXME !!
 if ( dimension > 1 ) {
     Value assignValue = vm.POP_STACK();
-
     std::vector<S64> indexStack;
     Value arrayIndexValue;
     PrintRuntimeError("FIXME op_save_array dimensions! = ", std::to_string(dimension), "value:", assignValue.toString());
+
+    // --- Build index Stack ----
     for (U32 i = 0; i < dimension; i++) {
         arrayIndexValue = vm.POP_STACK();
         if (!arrayIndexValue.isLong() && !arrayIndexValue.isDouble()) [[unlikely]]{
@@ -342,11 +345,31 @@ if ( dimension > 1 ) {
         indexStack.push_back(arrayIndexValue.getLong());
     }
     std::reverse(indexStack.begin(), indexStack.end());
-    for (S64 i = 0; i < dimension; i++)
-        PrintRuntimeError("FIXME dimensions! index => ", std::to_string(i),"::", std::to_string(indexStack[i]));
 
+    // ---- Load initial variable ----
+    Value var = vm.Variables.getGlobal(varIndex);
+    // --- loop the index values -----
+    for (S64 i = 0; i < dimension; i++) {
+        // if (!var.isArray()) [[unlikely]]{
+        //     PrintRuntimeError("Not a Array!");
+        //     return;
+        // }
+        PrintRuntimeError("FIXME dimensions! index => ", std::to_string(i),"::", std::to_string(indexStack[i]));
+        // if (var.getFastLong() >= vm.Variables.mArrays.size()) [[unlikely]] {
+        //     PrintRuntimeError("Array Index out of bounds!");
+        //     return;
+        // }
+        // const std::vector<Value>& curArr = vm.Variables.getArrayByMasterIndex(var.getFastLong());
+        // if (indexStack[i] >= curArr.size() ) [[unlikely]]{
+        //     PrintRuntimeError("Array Index out of bounds!");
+        //     return;
+        // }
+        // var = curArr[indexStack[i]];
+    }
+    // vm.PUSH_STACK(var);
     return;
 }
+//--------
 //--------
 
 
@@ -357,36 +380,53 @@ if ( dimension > 1 ) {
             return;
         }
 
-        vm.Variables.saveArray(symid,arrayIndexValue.getUInt(), assignValue);
+        vm.Variables.saveArray(varIndex,arrayIndexValue.getUInt(), assignValue);
     }
-
+    // --------------------------------------------------
     void op_load_array(VM& vm) {
         size_t varIndex = vm.advanceSlot().tapeChunk;
         U32 dimension = (U32)vm.advanceSlot().tapeChunk;
-//--------
-if ( dimension > 1 ) {
-    std::vector<S64> indexStack;
-    Value arrayIndexValue;
-    PrintRuntimeError("FIXME op_load_array dimensions! = ", std::to_string(dimension));
-    for (U32 i = 0; i < dimension; i++) {
-        arrayIndexValue = vm.POP_STACK();
-        if (!arrayIndexValue.isLong() && !arrayIndexValue.isDouble()) [[unlikely]]{
-            PrintRuntimeError("Array index must be an number: ", arrayIndexValue.toString());
+
+        //-------- ... what a mess ;) ...
+        if ( dimension > 1 ) {
+            std::vector<S64> indexStack;
+            Value arrayIndexValue;
+            // PrintRuntimeError("FIXME op_load_array dimensions! = ", std::to_string(dimension));
+            // --- Build index Stack ----
+            for (U32 i = 0; i < dimension; i++) {
+                arrayIndexValue = vm.POP_STACK();
+                if (!arrayIndexValue.isLong() && !arrayIndexValue.isDouble()) [[unlikely]]{
+                    PrintRuntimeError("Array index must be an number: ", arrayIndexValue.toString());
+                    return;
+                }
+                indexStack.push_back(arrayIndexValue.getLong());
+            }
+            std::reverse(indexStack.begin(), indexStack.end());
+
+            // ---- Load initial variable ----
+            Value var = vm.Variables.getGlobal(varIndex);
+            // --- loop the index values -----
+            for (S64 i = 0; i < dimension; i++) {
+                if (!var.isArray()) [[unlikely]]{
+                    PrintRuntimeError("Not a Array!");
+                    return;
+                }
+                // PrintRuntimeError("FIXME dimensions! index => ", std::to_string(i),"::", std::to_string(indexStack[i]));
+                if (var.getFastLong() >= vm.Variables.mArrays.size()) [[unlikely]] {
+                    PrintRuntimeError("Array Index out of bounds!");
+                    return;
+                }
+                const std::vector<Value>& curArr = vm.Variables.getArrayByMasterIndex(var.getFastLong());
+                if (indexStack[i] >= curArr.size() ) [[unlikely]]{
+                    PrintRuntimeError("Array Index out of bounds!");
+                    return;
+                }
+                var = curArr[indexStack[i]];
+            }
+            vm.PUSH_STACK(var);
             return;
         }
-        indexStack.push_back(arrayIndexValue.getLong());
-    }
-    std::reverse(indexStack.begin(), indexStack.end());
-    // Value ArrValue = vm.Variables.getArray(varIndex,arrayIndexValue.getUInt());
-    for (S64 i = 1; i < dimension; i++) {
-        PrintRuntimeError("FIXME dimensions! index => ", std::to_string(i),"::", std::to_string(indexStack[i]));
-        // ArrValue = vm.Variables.getArrayByMasterIndex(ArrValue)
-        // vm.Variables.getArrayByMasterIndex(varIndex
-    }
-
-    return;
-}
-//--------
+        //--------
         Value arrayIndexValue = vm.POP_STACK();
         if (!arrayIndexValue.isLong() && !arrayIndexValue.isDouble()) [[unlikely]]{
             PrintRuntimeError("Array index must be an number: ", arrayIndexValue.toString());

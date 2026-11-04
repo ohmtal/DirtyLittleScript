@@ -189,8 +189,13 @@ put this in a extra function ,,,, should work with peek forward
         - [ ] save loop with auto create ...
     - [ ] VM Load
         - [X] detect dimension
-        - [ ] load loop 
+        - [X] load loop  - heavy shit and save is harder lol - will by slow i guess
+        - [ ] cleanup debug code ...
+    
+    - NOTE: What a mess ... i would not suggest to anybody writing parser => to tape ;)
         
+        
+- [ ] add a line counter for ParseError using EOLToken! 
         
 ## maybe:
 - add a callframe too to enable real functions 
