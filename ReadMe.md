@@ -22,7 +22,7 @@
 | `print "hello" # this is a comment` | also on the end| 
 | `print "hello" # this is a comment #  "there"` | or in the middle | 
 | math | |
-| `f = (10 * 5 + 2 ) / 4 - 1`| basic math, respect the order|
+| `f = (10 * 5 + 2 ) / 4 - 1`| basic math, the parser respect the order|
 | `b = true && false` |  boolean and, or |
 | `b = b + 1` |  increment one |
 | Loops |  |

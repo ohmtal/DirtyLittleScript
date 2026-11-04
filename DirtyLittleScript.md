@@ -1,6 +1,6 @@
 # Dirty Little Script (DLS)
 
-i take a look on a different attepmt:  using Flatten Tape
+i take a look on a different attempt:  using Flatten Tape
 
 *Note on Highlighting:* DLS does not have `--` for comments only `#` so here I use
 **TCSH** highlighter. 
@@ -21,7 +21,7 @@ This time it should be really small.
 - [X] Literals int/string
 - [X] Math `+` `-` `*` `/` 
 - [X] Compare `==` `!=` `<` `>` `<=` `>=`
-- [X] C-Funtion Calls 
+- [X] C-Function Calls 
     - [X] nested with , and ()
     - [X] reverse order POP_STACK)
 - [X] If, Elif, else
