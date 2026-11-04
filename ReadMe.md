@@ -36,6 +36,7 @@
 | Array |  |
 | `arr[0]=10; arr[20]=100` | Numeric indexed Array auto initialized (*2)|
 | `arr = { 10 20 30}` | construct a array with three elements |
+| `arr[0][0] = 10` | multi dimension array. must be initialized before! like `arr[0]={10 20 30}` |
 
 (*1) only in DLS and not in DreiZehnScript available
 

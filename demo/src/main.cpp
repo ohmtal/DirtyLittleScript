@@ -264,16 +264,24 @@ mySrc = R"(
 Run(mySrc);
 
 
-jump_to_test:
 mySrc = R"(
     arr[0] = { 10 20 30 }
     print arr[0][2]
     arr[1] = { 40 50 60 }
     print arr[1][0]
-    arr[2][0]  = 4711
+    arr[1][0]  = 4711
+    print arr[1][0]
 )";
 Run(mySrc);
-// goto jump_to_end;
+
+jump_to_test:
+mySrc = R"(
+    arr[0] = { 10 20 30 }
+    arr[0][4]  = 815
+    print arr[0][4]
+)";
+Run(mySrc);
+    // goto jump_to_end;
 
 
 jump_to_end:

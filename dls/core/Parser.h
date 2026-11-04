@@ -24,6 +24,7 @@ private:
     VM* vm;
     size_t mPos = 0;
     U32 requestParam = 0;
+    U32 lineNumber = 0;
     // ------------------------------
     Token peek() { return mTokens[mPos]; }
     size_t tell() { return mPos; }
@@ -47,6 +48,11 @@ private:
     bool parseIfElifElse();
     bool parseCurly();
     bool parseStatements();
+
+    void PrintParseError(const std::string& message
+    , const std::string& p1 = "",const std::string& p2 = "",const std::string& p3 = "");
+    void PrintParseInfo(const std::string& message
+    , const std::string& p1 = "",const std::string& p2 = "",const std::string& p3 = "");
 public:
     Parser(std::vector<Token> t, VM* vm) : mTokens(std::move(t)), vm(vm) { }
     bool parse();
@@ -57,13 +63,13 @@ public:
 
 
 // -------------------------------------------------------------------------
-void PrintParseError(const std::string& message
-, const std::string& p1 = "",const std::string& p2 = "",const std::string& p3 = "") {
-    Tools::errorf("[Parser-ERROR]: %s %s %s %s\n", message.c_str(),p1.c_str(),p2.c_str(),p3.c_str());
+void Parser::PrintParseError(const std::string& message
+, const std::string& p1 ,const std::string& p2 ,const std::string& p3 ) {
+    Tools::errorf("[Parser-ERROR LINE:%d]: %s %s %s %s\n",lineNumber, message.c_str(),p1.c_str(),p2.c_str(),p3.c_str());
 }
-void PrintParseInfo(const std::string& message
-, const std::string& p1 = "",const std::string& p2 = "",const std::string& p3 = "") {
-    Tools::printf("[Parser-INFO]: %s %s %s %s\n", message.c_str(),p1.c_str(),p2.c_str(),p3.c_str());
+void Parser::PrintParseInfo(const std::string& message
+, const std::string& p1 ,const std::string& p2 ,const std::string& p3 ) {
+    Tools::printf("[Parser-INFO LINE:%d]: %s %s %s %s\n",lineNumber, message.c_str(),p1.c_str(),p2.c_str(),p3.c_str());
 }
 // -------------------------------------------------------------------------
 int Parser::getPrecedence(TokenType type){
@@ -232,6 +238,7 @@ bool Parser::parsePrimary() {
 
         // ~~~~ LineBreak ~~~~
         case TokenType::EOLToken:
+            lineNumber++;
         case TokenType::Semicolon: {
             advance();
             break;
@@ -366,13 +373,13 @@ bool Parser::parseForRange() {
         variable = peek().mValue;
         advance();
     }
-    if (peek().mType != TokenType::Number) {
-        PrintParseError("forRange need a count");
-        return false;
-    } else {
-        count = (U32)std::abs(atoi(peek().mValue.c_str()));
-        advance();
-    }
+    // if (peek().mType != TokenType::Number) {
+    //     PrintParseError("forRange need a count");
+    //     return false;
+    // } else {
+    //     count = (U32)std::abs(atoi(peek().mValue.c_str()));
+    //     advance();
+    // }
 
     // ---- emit loop variable and set to -1
     vm->emitCode(op_literal);
@@ -397,8 +404,9 @@ bool Parser::parseForRange() {
     // ---- condition iter < count
     vm->emitCode(op_load_global);
     vm->emitTapeChunk((size_t)varidx);
-    vm->emitCode(op_literal);
-    vm->emitValue(Value(count));
+
+    if (!getArg("ForRange count")) return false;
+
     vm->emitCode(op_lower);
 
     // --- now the same as While.....
@@ -607,6 +615,7 @@ bool Parser::parseStatements() {
     TokenType tokenType = peek().mType;
     switch (tokenType) {
         case TokenType::EOLToken:
+            lineNumber++;
         case TokenType::Semicolon: {
             advance();
             break;
@@ -664,6 +673,7 @@ bool Parser::parseStatements() {
 }
 // -------------------------------------------------------------------------
 bool Parser::parse(){
+    lineNumber = 1;
     if (mTokens.size() == 0) return false;
     size_t entryTapeSize = vm->tape.size();
     while (peek().mType != TokenType::EOFToken) {

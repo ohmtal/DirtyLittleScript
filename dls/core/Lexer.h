@@ -275,6 +275,7 @@ std::vector<Token> Lexer::tokenize() {
             while ( peek() != '\0') {
                 if (peek() == '\n' ) {
                     advance();
+                    tokens.push_back({TokenType::EOLToken, "\n"});
                     break; //end of line
                 }
                 if (peek() == '#') {

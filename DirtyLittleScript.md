@@ -178,24 +178,22 @@ MoveRects = function
 end
 ```
         
+- [X] add a line counter for ParseError using EOLToken! 
 
-- [ ] i tried to change the assign for multidimensional array but writing 
+- [X] i tried to change the assign for multidimensional array but writing 
 directly to tape is a bitch ;) So this would work i guess: arr[10 10] NOT! 
 make a LSquare / RSquare loop!! so we get arr[10][10] like i wanted it. I should 
 put this in a extra function ,,,, should work with peek forward 
     - [X] parser loop []
-    - [ ] VM Save
+    - [X] VM Save
         - [X] detect dimension
-        - [ ] save loop with auto create ...
-    - [ ] VM Load
+        - [X] save loop with auto create ...
+    - [X] VM Load
         - [X] detect dimension
         - [X] load loop  - heavy shit and save is harder lol - will by slow i guess
-        - [ ] cleanup debug code ...
     
-    - NOTE: What a mess ... i would not suggest to anybody writing parser => to tape ;)
+- [X] forRange count as argument        
         
-        
-- [ ] add a line counter for ParseError using EOLToken! 
         
 ## maybe:
 - add a callframe too to enable real functions 
