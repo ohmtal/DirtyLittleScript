@@ -8,9 +8,6 @@
 #include <iostream>
 #include <string>
 
-// --------------  TESTING NEW ASSIGN -------------------
-// NOT WORKING !!! #define NEW_ASSING
-// ------------------------------------------------------
 
 #include "core/VM.h"
 #include "core/Lexer.h"

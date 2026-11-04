@@ -322,55 +322,6 @@ namespace DLS {
     // ------------------------------------------
     // Array
     // ------------------------------------------
-#ifdef NEW_ASSING
-    void op_save_array_dim(VM& vm) {
-
-        PrintRuntimeError("FIXME op_save_array_dim");
-
-        size_t dimensions = vm.advanceSlot().tapeChunk; //for exampel 2 at foo[0][1]
-
-        Value valueToSave = vm.POP_STACK();
-
-        std::vector<S64> indices(dimensions);
-        for (int i = dimensions - 1; i >= 0; --i) {
-            indices[i] = vm.POP_STACK().getLong();
-        }
-
-        //FIXME recursive walk !!
-// // //         Value baseArray = vm.POP_STACK();
-// // //
-// // //
-// // //         std::vector<Value>* currentVec = &baseArray.asArray();
-// // //
-// // //         for (size_t i = 0; i < dimensions - 1; ++i) {
-// // //             S64 idx = indices[i];
-// // //             if (idx < 0 || idx >= currentVec->size()) {
-// // //                 runtimeError("Index out of bounds during navigation");
-// // //             }
-// // //         Value getArray(size_t varIndex, U32 index)
-// // //             currentVec = &((*currentVec)[idx].asArray());
-// // //         }
-// // //
-// // //         S64 finalIdx = indices[dimensions - 1];
-// // //         if (finalIdx < 0 || finalIdx >= currentVec->size()) {
-// // //             runtimeError("Index out of bounds on assignment");
-// // //         }
-// // //
-// // //         (*currentVec)[finalIdx] = valueToSave;
-    }
-    void op_load_array_element(VM& vm) {
-         PrintRuntimeError("FIXME op_load_array_element");
-        Value indexVal = vm.POP_STACK();
-        Value arrayIndexValue = vm.POP_STACK();
-
-        U32 idx = indexVal.getUInt();
-
-        vm.PUSH_STACK(vm.Variables.getArray(idx,arrayIndexValue.getUInt()));
-
-    }
-
-#endif
-
     void op_save_array(VM& vm) {
         U32 symid = (U32)vm.advanceSlot().tapeChunk;
 

@@ -139,9 +139,6 @@ namespace DLS{
         || op.mType == TokenType::SHL
         || op.mType == TokenType::SHR
         || op.mType == TokenType::Modulo
-#ifdef NEW_ASSING
-        || op.mType == TokenType::Assign
-#endif
         ;
     }
 

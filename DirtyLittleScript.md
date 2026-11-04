@@ -178,6 +178,9 @@ MoveRects = function
 end
 ```
         
+
+- [ ] i tried to change the assign for multidimensional array but writing 
+directly to tape is a bitch ;) So this would work i guess: arr[10 10] 
         
         
 ## maybe:
