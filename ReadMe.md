@@ -32,12 +32,13 @@
 | Condition |  |
 | `if true == false; print "Thats wrong!"; else print "OK"; end`  | if elif else |
 | Function |  |
-| `myFunc = function; print "Hello"; end; myFunc`  | lambda style function (*)  |
+| `myFunc = function; print "Hello"; end; myFunc`  | lambda style function (*1)  |
 | Array |  |
-| `arr[0]=10; arr[20]=100` | Numeric indexed Array auto initialized |
+| `arr[0]=10; arr[20]=100` | Numeric indexed Array auto initialized (*2)|
 | `arr = { 10 20 30}` | construct a array with three elements |
 
-(*) only in DLS and not in DreiZehnScript available
+(*1) only in DLS and not in DreiZehnScript available
+(*2) DreiZehnScript handle arrays with objects so it's different
 
 
 ## Bind your C-Functions
