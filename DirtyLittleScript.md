@@ -180,7 +180,16 @@ end
         
 
 - [ ] i tried to change the assign for multidimensional array but writing 
-directly to tape is a bitch ;) So this would work i guess: arr[10 10] 
+directly to tape is a bitch ;) So this would work i guess: arr[10 10] NOT! 
+make a LSquare / RSquare loop!! so we get arr[10][10] like i wanted it. I should 
+put this in a extra function ,,,, should work with peek forward 
+    - [X] parser loop []
+    - [ ] VM Save
+        - [X] detect dimension
+        - [ ] save loop with auto create ...
+    - [ ] VM Load
+        - [X] detect dimension
+        - [ ] load loop 
         
         
 ## maybe:

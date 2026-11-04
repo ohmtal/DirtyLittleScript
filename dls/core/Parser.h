@@ -160,17 +160,21 @@ bool Parser::parsePrimary() {
             }
             else
             if (peek().mType == TokenType::LSquare) {
-                advance(); //eat
-                // multi array FIXME should be like the while but we need a count then :
-                // while (peek().mType != TokenType::EOFToken && peek().mType != TokenType::RSquare) {
-                    if (!getArg("Square Paren")) return false;
-                // }
+                U32 dimension = 0;
+                do {
+                    advance(); //eat LSquare
 
-                if (peek().mType != TokenType::RSquare) {
-                    PrintParseError("right square paren missing");
-                    return false;
-                }
-                advance(); //RSquare
+                    if (!getArg("Square Paren")) return false;
+
+                    if (peek().mType != TokenType::RSquare) {
+                        PrintParseError("right square paren missing");
+                        return false;
+                    }
+                    advance(); //RSquare
+                    dimension++;
+                } while (peek().mType == TokenType::LSquare);
+
+
                 if (peek().mType == TokenType::Assign) {
                     advance(); //Assign
                     requestParam++;
@@ -182,9 +186,11 @@ bool Parser::parsePrimary() {
                     }
                     vm->emitCode(op_save_array);
                     vm->emitTapeChunk((size_t)varidx);
+                    vm->emitTapeChunk((size_t)dimension);
                 } else if (S64 varidx = vm->Variables.getGlobalRegister(symId); varidx >= 0)  {
                     vm->emitCode(op_load_array);
                     vm->emitTapeChunk((size_t)varidx);
+                    vm->emitTapeChunk((size_t)dimension);
 
                 } else {
                     PrintParseError("Unknown Variable", t.mValue);

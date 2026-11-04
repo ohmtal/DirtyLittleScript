@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
 
     std::string mySrc = "";
     std::cout << "============= Dirty Little Script ===============\n";
-// goto jump_to_test;
+goto jump_to_test;
 
     std::cout << "Value size check:" << sizeof(Value) << "\n";
     std::cout << "ValueType size check:" << sizeof(ValueType) << "\n";
@@ -117,10 +117,8 @@ int main(int argc, char* argv[]) {
     Tools::printf("%s :: RESULT=%s\n", mySrc.c_str(),Run(mySrc).c_str());
 
     std::cout << "---- Global Variables ----\n";
-jump_to_test:
     mySrc = R"( a = 12.0; print a; )"; Run(mySrc);
     mySrc = R"( i = 24.0;print i;  i = i + 1; print "i ==" i (i < 10); )"; Run(mySrc);
-// goto jump_to_end;
 
     std::cout << "---- While ----\n";
     mySrc = R"( itr = 0;while itr < 10; itr = itr + 1; print "iter=" itr;;  )"; Run(mySrc);
@@ -248,6 +246,7 @@ Run(mySrc);
 
 
 
+jump_to_test:
 mySrc = R"(
     arr = { 10 20 math::rand}
     forRange i 3; print i arr[i] ;;
@@ -265,6 +264,13 @@ mySrc = R"(
 )";
 Run(mySrc);
 
+
+mySrc = R"(
+    arr[1][2] = 10
+
+)";
+Run(mySrc);
+// goto jump_to_end;
 
 
 jump_to_end:
