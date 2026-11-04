@@ -38,6 +38,7 @@
 | `arr = { 10 20 30}` | construct a array with three elements |
 
 (*1) only in DLS and not in DreiZehnScript available
+
 (*2) DreiZehnScript handle arrays with objects so it's different
 
 
