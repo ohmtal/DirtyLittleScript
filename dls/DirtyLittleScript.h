@@ -8,6 +8,10 @@
 #include <iostream>
 #include <string>
 
+// --------------  TESTING NEW ASSIGN -------------------
+// NOT WORKING !!! #define NEW_ASSING
+// ------------------------------------------------------
+
 #include "core/VM.h"
 #include "core/Lexer.h"
 #include "core/Parser.h"
@@ -15,6 +19,8 @@
 
 #include <fstream>
 #include <istream>
+
+
 
 namespace DLS {
     static bool DEBUG_TOKEN = false;

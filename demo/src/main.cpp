@@ -117,8 +117,10 @@ int main(int argc, char* argv[]) {
     Tools::printf("%s :: RESULT=%s\n", mySrc.c_str(),Run(mySrc).c_str());
 
     std::cout << "---- Global Variables ----\n";
+jump_to_test:
     mySrc = R"( a = 12.0; print a; )"; Run(mySrc);
-    mySrc = R"( i = 12.0; i = i + 1; print "i ==" i (i < 10); )"; Run(mySrc);
+    mySrc = R"( i = 24.0;print i;  i = i + 1; print "i ==" i (i < 10); )"; Run(mySrc);
+// goto jump_to_end;
 
     std::cout << "---- While ----\n";
     mySrc = R"( itr = 0;while itr < 10; itr = itr + 1; print "iter=" itr;;  )"; Run(mySrc);
@@ -226,7 +228,7 @@ mySrc = R"(
     i = 0; while i < 100; i++;;
 )"; Run(mySrc);
 
-jump_to_test:
+
 
 mySrc = R"(
     arr[0] = { 10 20 math::rand}
@@ -244,7 +246,7 @@ mySrc = R"(
 )";
 Run(mySrc);
 
-// goto jump_to_end;
+
 
 mySrc = R"(
     arr = { 10 20 math::rand}

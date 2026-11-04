@@ -18,8 +18,14 @@
 
 namespace DLS{
 
-
-
+// Helper for Assign
+#ifdef NEW_ASSING
+struct LValue {
+    S64 varidx = -1;
+    int dimensions = 0; // 0 = variable, 1 = foo[0], 2 = foo[0][1], etc.
+    bool isValid = false;
+};
+#endif
 
 class Parser {
 private:
@@ -27,6 +33,9 @@ private:
     VM* vm;
     size_t mPos = 0;
     U32 requestParam = 0;
+#ifdef NEW_ASSING
+    LValue currentLValue = {};
+#endif
     // ------------------------------
     Token peek() { return mTokens[mPos]; }
     size_t tell() { return mPos; }
@@ -56,6 +65,8 @@ public:
 
 };
 #ifdef IMPLEMENT_DLS
+
+
 
 // -------------------------------------------------------------------------
 void PrintParseError(const std::string& message
@@ -146,10 +157,6 @@ bool Parser::parsePrimary() {
             if (FunctionMap::IsCFunction(symId)) {
                 U32 argCount = 0;
                 while (isContinueToken(peek())) {
-                    // if (peek().mType == TokenType::Comma){
-                    //     advance();
-                    //     break;
-                    // }
                     requestParam++;
                     if (!getArg( "c function parameters" )) return false;
                     requestParam--;
@@ -163,63 +170,80 @@ bool Parser::parsePrimary() {
 
                 if (requestParam <= 0) vm->emitCode( op_pop_stack );
             }
+    #ifndef NEW_ASSING
             else
-                if (peek().mType == TokenType::LSquare) {
-                    advance(); //eat
-                    if (!getArg("Square Paren")) return false;
-                    if (peek().mType != TokenType::RSquare) {
-                        PrintParseError("right square paren missing");
-                        return false;
-                    }
-                    advance(); //RSquare
-                    if (peek().mType == TokenType::Assign) {
-                        advance(); //Assign
-                        requestParam++;
-                        if (!getArg("array assign")) return false;
-                        requestParam--;
-                        S64 varidx = vm->Variables.getGlobalRegister(symId);
-                        if (varidx < 0) {
-                            varidx = vm->Variables.reserveGlobal(symId);
-                        }
-                        vm->emitCode(op_save_array);
-                        vm->emitTapeChunk((size_t)varidx);
-                    } else if (S64 varidx = vm->Variables.getGlobalRegister(symId); varidx >= 0)  {
-                        vm->emitCode(op_load_array);
-                        vm->emitTapeChunk((size_t)varidx);
-
-                    } else {
-                        PrintParseError("Unknown Variable", t.mValue);
-                        return false;
-                    }
-
-
+            if (peek().mType == TokenType::LSquare) {
+                advance(); //eat
+                if (!getArg("Square Paren")) return false;
+                if (peek().mType != TokenType::RSquare) {
+                    PrintParseError("right square paren missing");
+                    return false;
                 }
-                else
-                    if (peek().mType == TokenType::Assign) {
-                        advance(); // eat Assign
-                        requestParam++;
-                        if (!getArg("Assign")) return false;
-                        requestParam--;
-                        size_t varidx = vm->Variables.reserveGlobal(symId);
-                        vm->emitCode(op_save_global);
-                        vm->emitTapeChunk(varidx);
+                advance(); //RSquare
+                if (peek().mType == TokenType::Assign) {
+                    advance(); //Assign
+                    requestParam++;
+                    if (!getArg("array assign")) return false;
+                    requestParam--;
+                    S64 varidx = vm->Variables.getGlobalRegister(symId);
+                    if (varidx < 0) {
+                        varidx = vm->Variables.reserveGlobal(symId);
                     }
-                    else
-                        if (S64 varidx = vm->Variables.getGlobalRegister(symId); varidx >= 0)  {
-                            vm->emitCode(op_load_global);
-                            vm->emitTapeChunk((size_t)varidx);
+                    vm->emitCode(op_save_array);
+                    vm->emitTapeChunk((size_t)varidx);
+                } else if (S64 varidx = vm->Variables.getGlobalRegister(symId); varidx >= 0)  {
+                    vm->emitCode(op_load_array);
+                    vm->emitTapeChunk((size_t)varidx);
 
-                        }
-                        else
-                            if (Value* constansPointer = FunctionMap::getConstants(symId);constansPointer) {
-                                vm->emitCode(op_literal );
-                                vm->emitValue(*constansPointer);
-                            }
-                            else
-                            {
-                                PrintParseError("Unhandled Identifier:", t.mValue);
-                                return false;
-                            }
+                } else {
+                    PrintParseError("Unknown Variable", t.mValue);
+                    return false;
+                }
+            }
+            else
+            if (peek().mType == TokenType::Assign) {
+                advance(); // eat Assign
+                requestParam++;
+                if (!getArg("Assign")) return false;
+                requestParam--;
+                size_t varidx = vm->Variables.reserveGlobal(symId);
+                vm->emitCode(op_save_global);
+                vm->emitTapeChunk(varidx);
+            }
+            else
+            if (S64 varidx = vm->Variables.getGlobalRegister(symId); varidx >= 0)  {
+                vm->emitCode(op_load_global);
+                vm->emitTapeChunk((size_t)varidx);
+            }
+#endif
+            else
+            if (Value* constansPointer = FunctionMap::getConstants(symId);constansPointer) {
+                vm->emitCode(op_literal );
+                vm->emitValue(*constansPointer);
+            }
+            else
+            {
+#ifdef NEW_ASSING
+                S64 varidx = vm->Variables.getGlobalRegister(symId);
+                if (varidx < 0) {
+                    varidx = vm->Variables.reserveGlobal(symId);
+                }
+
+                if (peek().mType == TokenType::Assign || peek().mType == TokenType::LSquare) {
+                    currentLValue.varidx = varidx;
+                    currentLValue.dimensions = 0;
+                    currentLValue.isValid = true;
+                } else {
+                    vm->emitCode(op_load_global);
+                    vm->emitTapeChunk((size_t)varidx);
+                    currentLValue.isValid = false;
+                }
+
+#else
+                PrintParseError("Unhandled Identifier:", t.mValue);
+                return false;
+#endif
+            }
         }
         break;
         // ~~~~ Functions ~~~~
@@ -228,6 +252,30 @@ bool Parser::parsePrimary() {
         // ~~~~ Curly Array constructor ~~~~
         case TokenType::LCurly: if (!parseCurly()) return false; break;
 
+#ifdef NEW_ASSING
+        // ~~~~ Square Array access ~~~~
+        case TokenType::LSquare: {
+            advance(); // eat '['
+            if (currentLValue.dimensions > 0) {
+                vm->emitCode(op_load_array_element); // load the element to the stack
+            } else {
+                vm->emitCode(op_load_global);
+                vm->emitTapeChunk((size_t)currentLValue.varidx);
+            }
+
+
+            if (!getArg("Array Square Index")) return false;
+
+            if (peek().mType != TokenType::RSquare) {
+                PrintParseError("right square paren missing");
+                return false;
+            }
+            advance(); // eat ']'
+
+            currentLValue.dimensions++;
+            break;
+        }
+#endif
 
         // ~~~~ LineBreak ~~~~
         case TokenType::EOLToken:
@@ -241,6 +289,10 @@ bool Parser::parsePrimary() {
             return false;
             break;
     } //switch
+
+
+
+
     return true;
 }
 
@@ -280,6 +332,33 @@ bool Parser::parseMath(int minPrecedence) {
             case TokenType::BitAnd:  vm->emitCode(op_bit_and); break;
             case TokenType::SHL:     vm->emitCode(op_bit_shl); break;
             case TokenType::SHR:     vm->emitCode(op_bit_shr); break;
+#ifdef NEW_ASSING
+            case TokenType::Assign: {
+                if (!currentLValue.isValid) {
+                    PrintParseError("Invalid lvalue for assignment");
+                    return false;
+                }
+
+                advance(); // eat '='
+
+                LValue assignmentTarget = currentLValue;
+                currentLValue.isValid = false; // reset
+                //     requestParam++;
+                //     if (!getArg("Assign")) return false;
+                //     requestParam--;
+
+                if (assignmentTarget.dimensions == 0) {
+                    vm->emitCode(op_save_global);
+                    vm->emitTapeChunk(assignmentTarget.varidx);
+                }
+                else {
+                    vm->emitCode(op_save_array_dim);
+                    vm->emitTapeChunk(assignmentTarget.dimensions);
+                }
+                break;
+            }
+#endif
+
             default: break;
         }
 
@@ -654,6 +733,19 @@ bool Parser::parseStatements() {
         // ----- default ----
         default: if (!parseMath(0)) return false;; break;
     } //switch
+
+#ifdef NEW_ASSING
+    //NOTE IS THIS THE RIGHT PLACE ?!
+    if (currentLValue.isValid) {
+        if (currentLValue.dimensions == 0) {
+            vm->emitCode(op_load_global);
+            vm->emitTapeChunk((size_t)currentLValue.varidx);
+        } else {
+            vm->emitCode(op_load_array_element);
+        }
+        currentLValue.isValid = false;
+    }
+#endif
     return true;
 }
 // -------------------------------------------------------------------------
