@@ -14,6 +14,9 @@
 #include "core/Parser.h"
 #include "toolbox/Tools.h"
 
+#include "functions/MathFunctions.h"
+#include "functions/StringFunctions.h"
+
 #include <fstream>
 #include <istream>
 

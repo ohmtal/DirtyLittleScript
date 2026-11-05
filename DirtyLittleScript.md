@@ -196,7 +196,6 @@ put this in a extra function ,,,, should work with peek forward
 
 
 - [ ] math/str also as header with IMPL
-- [ ] #define as preprocessor / from ElfScript
         
 ## maybe:
 - add a callframe too to enable real functions 

@@ -20,8 +20,6 @@ set (LINK_LIBS)
 set(PROJECT_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/SDL3Functions.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../dls/functions/MathFunctions.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../dls/functions/StringFunctions.cpp
 )
 
 # ------------- SDL3

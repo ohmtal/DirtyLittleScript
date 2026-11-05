@@ -17,8 +17,10 @@
 
 namespace DLS {
 
-    Value EmptyStringValue = Value("");
+    void RegisterStringFunctions( );
 
+#ifdef IMPLEMENT_DLS
+    Value EmptyStringValue = Value("");
     //-----------------------------------------------------------------------------
     namespace StrTools {
         std::string toLower(std::string s);
@@ -754,5 +756,5 @@ namespace DLS {
 
 
     } //RegisterStringFunctions
-
+#endif
 } //namespace

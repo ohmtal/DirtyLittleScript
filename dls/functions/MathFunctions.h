@@ -12,6 +12,8 @@
 #include "toolbox/Tools.h"
 
 namespace DLS {
+    void RegisterMathFunctions();
+#ifdef IMPLEMENT_DLS
     void RegisterMathFunctions() {
          static bool registered = false; if (registered) return; registered = true;
 
@@ -172,5 +174,5 @@ namespace DLS {
         }, "Return the higher of two values or the first element in case of equality.");
         // ---------------------------------------------------------------------
     }
-
+#endif
 } //namespace

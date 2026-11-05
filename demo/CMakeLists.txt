@@ -29,8 +29,6 @@ set (LINK_LIBS)
 set(PROJECT_SRC
 
     src/main.cpp
-    ../dls/functions/MathFunctions.cpp
-    ../dls/functions/StringFunctions.cpp
 )
 
 

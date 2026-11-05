@@ -63,6 +63,13 @@ cmake --build build
 - require C++ 20
 - Lexer: Traditional Tokenizer
 - Value: 16 Byte typed with union struct
-- Parser: Pratt (Operator-precedence parser) writing directly to the tape
-- VM: threaded flatten tape - a bit like bytecode but with (bigger) slots 
+- Parser: Pratt (Operator-precedence parser) writing directly to the tape without a AST
+- VM: threaded flatten tape - a bit like bytecode
 - Functionmap - C-function system from DreiZehn 
+
+## Keynotes
+
+- only global variables
+- no objects (fields/methods) like in DreiZehn
+- only lambda style functions without parameters
+- array: only number indexed and auto initialize on current dimension
