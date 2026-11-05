@@ -193,7 +193,10 @@ put this in a extra function ,,,, should work with peek forward
         - [X] load loop  - heavy shit and save is harder lol - will by slow i guess
     
 - [X] forRange count as argument        
-        
+
+
+- [ ] math/str also as header with IMPL
+- [ ] #define as preprocessor / from ElfScript
         
 ## maybe:
 - add a callframe too to enable real functions 

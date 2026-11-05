@@ -278,10 +278,11 @@ std::vector<Token> Lexer::tokenize() {
                     tokens.push_back({TokenType::EOLToken, "\n"});
                     break; //end of line
                 }
-                if (peek() == '#') {
-                    advance();
-                    break;
-                }
+                // NOT!
+                // // if (peek() == '#') {
+                // //     advance();
+                // //     break;
+                // // }
                 advance();
             }
             continue;

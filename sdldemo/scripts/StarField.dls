@@ -107,7 +107,7 @@ while Running
     SDL_SetRenderDrawColor Renderer 20 20 40 255
     SDL_RenderClear Renderer
 
-    SDL_SetRenderDrawColor Renderer 255 255 255 255
+    SDL_SetRenderDrawColor Renderer 180 180 255 255
 
     i = 0
     while i < STAR_COUNT
@@ -145,7 +145,7 @@ while Running
 
     SDL_RenderPresent Renderer
     # 1 ms breath
-    SDL_Delay 1
+#     SDL_Delay 1
 end
 
 

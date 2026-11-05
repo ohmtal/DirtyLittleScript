@@ -51,6 +51,16 @@ namespace DLS {
         std::vector<size_t> mFunctions;
         std::vector<size_t> mReturnStack;
 
+
+        inline void reset() {
+            mReturnStack.clear();
+            mFunctions.clear();
+            mArrays.clear();
+            mGlobalsRegister.clear();
+            mGlobalsLookUp.clear();
+        }
+
+
         S64 getGlobalRegister(U32 symId) {
             auto it = mGlobalsLookUp.find(symId);
             if (it != mGlobalsLookUp.end()) [[likely]] {
