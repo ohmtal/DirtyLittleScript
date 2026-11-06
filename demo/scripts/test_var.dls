@@ -7,39 +7,39 @@ HLOOPS = int::cast ILOOPS / 2.0
 globalX = 0.0
 j = 0;
 
-while j < JLOOPS
-    i = 0; while i <  ILOOPS
-        globalX = globalX + 1
-        i = i + 1
+# NOTE it's the same speed ++/-- should be much faster?!
+
+forRange j JLOOPS
+
+    forRange i ILOOPS
+#         globalX = globalX + 1
+        globalX++
     end
     print  "SUM (++) IS: " globalX
 
-    i = 0; while i < ILOOPS
-        globalX = globalX - 1
-        i = i + 1
+    forRange i ILOOPS
+#         globalX = globalX - 1
+        globalX--
     end
     print  "SUM (--) IS: " globalX
 
     globalX = 66
     print  "set Sum to 66 == " (globalX * 1)
 
-    i = 0; while i < ILOOPS
+    forRange i ILOOPS
         globalX = globalX * (i + 1)
         globalX = globalX / (i + 1)
-        i = i + 1
     end
     print  "SUM (*/ %i+1) IS: " globalX
 
     ran = 0.0
-    i = 0; while i <  HLOOPS
+    forRange i HLOOPS
         ran = math::randomf * i
         globalX = globalX - ran
         globalX = globalX + ran
-        i = i + 1
     end
     print  "last ran" ran
     print  "SUM (rand +-) IS: " globalX
-    j = j + 1
 end
 
 globalX = globalX - 33.0

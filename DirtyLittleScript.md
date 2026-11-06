@@ -195,8 +195,11 @@ put this in a extra function ,,,, should work with peek forward
 - [X] forRange count as argument        
 
 
-- [ ] math/str also as header with IMPL
-        
+- [X] math/str also as header with IMPL
+    
+    
+    
+    
 ## maybe:
 - add a callframe too to enable real functions 
 - Save a Tape:

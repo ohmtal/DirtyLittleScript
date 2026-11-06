@@ -15,28 +15,28 @@ fib = function
     end
 
     stack[sp] = fib_n
-    sp = sp + 1
+    sp++
 
-    fib_n = fib_n - 1
+    fib_n--
 
     fib
 
-    sp = sp - 1
+    sp--
     local_n = stack[sp]
 
     stack[sp] = fib_res
-    sp = sp + 1
+    sp++
 
     fib_n = local_n - 2
 
     fib
 
-    sp = sp - 1
+    sp--
     res_ast1 = stack[sp]
 
     fib_res = res_ast1 + fib_res
 end
 
-fib_n = 24
+fib_n = 33
 fib
 print fib_res
