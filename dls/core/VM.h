@@ -52,7 +52,7 @@ namespace DLS {
         std::vector<size_t> mReturnStack;
 
 
-        inline void reset() {
+        void reset() {
             mReturnStack.clear();
             mFunctions.clear();
             mArrays.clear();
@@ -182,7 +182,6 @@ namespace DLS {
                 if (index >= mArrays[masterIndex].Elements.size()) {
                     mArrays[masterIndex].Elements.resize(index + 1);
                 }
-                // copyArray already set AssingCount
                 mArrays[masterIndex].Elements[index] = finaleValue ;
             }
         }
@@ -196,29 +195,6 @@ namespace DLS {
             saveArray(arrValue, index, finaleValue);
             if (doSave) saveGlobal(varIndex,arrValue);
 
-            // if (arrValue.isArray()) {
-            //     size_t masterIndex =arrValue.getUInt();
-            //     if (index >= mArrays[masterIndex].Elements.size()) {
-            //         mArrays[masterIndex].Elements.resize(index + 1);
-            //     }
-            //     if (mArrays[masterIndex].Elements[index].isArray()) {
-            //         size_t oldIndex = mArrays[masterIndex].Elements[index].getFastLong();
-            //         mArrays[oldIndex].setAssigned(false);
-            //     }
-            //     // copyArray already set AssingCount
-            //     mArrays[masterIndex].Elements[index] = finaleValue ;
-            // } else {
-            //     size_t masterIndex = mArrays.size();
-            //     mArrays.push_back({});
-            //     arrValue = Value((S64)masterIndex);
-            //     arrValue.type = ValueType::Array;
-            //     if (index >= mArrays[masterIndex].Elements.size()) {
-            //         mArrays[masterIndex].Elements.resize(index + 1);
-            //     }
-            //     // copyArray already set AssingCount
-            //     mArrays[masterIndex].Elements[index] = finaleValue ;
-            //     saveGlobal(varIndex,arrValue);
-            // }
         }
 
     };
@@ -248,13 +224,15 @@ namespace DLS {
     // ------------------------------------------
     // VM
     // ------------------------------------------
+    #define DISPATCH() vm.tape[vm.pc++].code(*vm);
+
     struct VM {
-        std::vector<Slot> tape;
         size_t pc = 0;
+        std::vector<Slot> tape;
+        size_t STK = 0;
         std::vector<Value> stack;
 
         std::vector<LoopContext> mLoopStack;
-
         VariableStorage Variables;
 
         void run() {
@@ -265,6 +243,7 @@ namespace DLS {
 
         VM() {
             Globals::CurrentVM = this;
+            stack.resize(256);
         }
         ~VM() {
             Globals::CurrentVM = nullptr;
@@ -301,22 +280,31 @@ namespace DLS {
         // ------------------------------------------
         // Stack functions
         // ------------------------------------------
-        Value POP_STACK() {
+        Value& POP_STACK() {
+            // assert(stack.size() > 0 && "PEEK_STACK but stack empty!");
+            // Value result = stack.back(); stack.pop_back();
 
-            assert(stack.size() > 0 && "POP_STACK but stack empty!");
+            assert(STK > 0 && "POP_STACK but stack empty!");
 
-            Value result = stack.back(); stack.pop_back();
-            return result;
+            return stack[--STK];
         }
-        Value PEEK_STACK() {
+        Value& PEEK_STACK() {
+            // assert(stack.size() > 0 && "PEEK_STACK but stack empty!");
+            // Value result = stack.back();
 
-            assert(stack.size() > 0 && "PEEK_STACK but stack empty!");
-
-            Value result = stack.back();
-            return result;
+            assert(STK > 0 && "POP_STACK but stack empty!");
+            return stack[STK - 1];
         }
-        void PUSH_STACK(Value val) {
-            stack.push_back(val);
+        void PUSH_STACK(const Value& val) {
+            // stack.push_back(val);
+            if (STK + 1 >= stack.size()) [[unlikely]]{
+                stack.resize(STK * 2);
+            }
+            stack[STK++] = val;
+        }
+
+        size_t STACK_SIZE() {
+            return STK;
         }
 
         // ------------------------------------------
@@ -342,7 +330,7 @@ namespace DLS {
     // ------------------------------------------
     // POP
     // ------------------------------------------
-    void op_pop_stack(VM& vm) {
+    inline void op_pop_stack(VM& vm) {
         vm.POP_STACK();
     }
     void op_pop_stack_count(VM& vm) {
@@ -355,12 +343,12 @@ namespace DLS {
     // ------------------------------------------
     // Variables
     // ------------------------------------------
-    void op_save_global(VM& vm) {
+    inline void op_save_global(VM& vm) {
         size_t varIndex = vm.advanceSlot().tapeChunk;
         vm.Variables.saveGlobal(varIndex,vm.POP_STACK());
     }
 
-    void op_load_global(VM& vm) {
+    inline void op_load_global(VM& vm) {
         size_t varIndex = vm.advanceSlot().tapeChunk;
         Value& var = vm.Variables.getGlobal(varIndex);
         if (var.type == ValueType::Function) [[unlikely]] {
@@ -524,7 +512,7 @@ namespace DLS {
         vm.PUSH_STACK(res);
     }
 
-    void op_inc(VM& vm) {
+    inline void op_inc(VM& vm) {
         size_t varIndex = vm.advanceSlot().tapeChunk;
         Value& dstValue = vm.Variables.getGlobal(varIndex);
         dstValue = Value(dstValue.getDouble() + 1.0);

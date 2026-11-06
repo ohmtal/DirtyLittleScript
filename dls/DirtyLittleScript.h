@@ -47,11 +47,10 @@ namespace DLS {
         if (vm.tape.size() == 0) return "";
         vm.run();
         std::string result = "";
-        int iter = 0;
-        for (auto val: vm.stack) {
+        for (size_t iter = 0; iter < vm.STACK_SIZE(); iter++)
+        {
             if (iter > 0) result = result  + ", ";
-            result = result + val.toString();
-            iter++;
+            result = result + vm.stack[iter].toString();
         }
         return result;
     }
