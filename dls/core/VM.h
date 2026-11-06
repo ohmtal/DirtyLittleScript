@@ -6,8 +6,9 @@
 //-----------------------------------------------------------------------------
 #pragma once
 
-
+#ifdef DLS_DEBUG
 #include <cassert>
+#endif
 
 #include <cstdint>
 #include <memory>
@@ -28,9 +29,9 @@ namespace DLS {
         void setAssigned(bool isAssigned) {
             if (isAssigned) mAssingCount++;
             else {
-
+#ifdef DLS_DEBUG
                 assert(mAssingCount > 0 && "Array Assign counter out of bounds!");
-
+#endif
                 mAssingCount--;
             }
         }
@@ -51,6 +52,9 @@ namespace DLS {
         std::vector<size_t> mFunctions;
         std::vector<size_t> mReturnStack;
 
+        VariableStorage() {
+            mGlobalsRegister.reserve(8192);
+        }
 
         void reset() {
             mReturnStack.clear();
@@ -80,9 +84,9 @@ namespace DLS {
         }
 
         void saveGlobal(size_t index, const Value& value) {
-
+            #ifdef DLS_DEBUG
             assert (index < mGlobalsRegister.size() && "SAVE: GLOBALS REGISTER OUT OF BOUNDS");
-
+            #endif
 
             if (mGlobalsRegister[index].isArray()) [[unlikely]] {
                 size_t oldIndex = mGlobalsRegister[index].getFastLong();
@@ -97,9 +101,9 @@ namespace DLS {
         }
 
         Value& getGlobal(size_t index) {
-
+            #ifdef DLS_DEBUG
             assert (index < mGlobalsRegister.size() && "LOAD: GLOBALS REGISTER OUT OF BOUNDS");
-
+            #endif
             return mGlobalsRegister[index];
         }
 
@@ -122,7 +126,9 @@ namespace DLS {
 
 
         /*const*/ std::vector<Value>& getArrayByMasterIndex(size_t masterIndex) {
+            #ifdef DLS_DEBUG
             assert(masterIndex < mArrays.size() && "Master index array out of range");
+            #endif
             return mArrays[masterIndex].Elements;
         }
 
@@ -243,7 +249,7 @@ namespace DLS {
 
         VM() {
             Globals::CurrentVM = this;
-            stack.resize(256);
+            stack.resize(1024);
         }
         ~VM() {
             Globals::CurrentVM = nullptr;
@@ -272,9 +278,9 @@ namespace DLS {
         }
 
         Slot& advanceSlot() {
-
+#ifdef DLS_DEBUG
             assert (pc < tape.size() && "TAPE OVERFLOW");
-
+#endif
             return tape[pc++];
         }
         // ------------------------------------------
@@ -283,23 +289,26 @@ namespace DLS {
         Value& POP_STACK() {
             // assert(stack.size() > 0 && "PEEK_STACK but stack empty!");
             // Value result = stack.back(); stack.pop_back();
-
+            #ifdef DLS_DEBUG
             assert(STK > 0 && "POP_STACK but stack empty!");
-
+            #endif
             return stack[--STK];
         }
         Value& PEEK_STACK() {
             // assert(stack.size() > 0 && "PEEK_STACK but stack empty!");
             // Value result = stack.back();
-
+            #ifdef DLS_DEBUG
             assert(STK > 0 && "POP_STACK but stack empty!");
+            #endif
             return stack[STK - 1];
         }
         void PUSH_STACK(const Value& val) {
             // stack.push_back(val);
-            if (STK + 1 >= stack.size()) [[unlikely]]{
-                stack.resize(STK * 2);
-            }
+
+            // if (STK + 1 >= stack.size()) [[unlikely]]{
+            //     stack.resize(STK * 2);
+            // }
+
             stack[STK++] = val;
         }
 
