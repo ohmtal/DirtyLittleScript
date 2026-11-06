@@ -73,6 +73,7 @@ void Parser::PrintParseInfo(const std::string& message
 }
 // -------------------------------------------------------------------------
 int Parser::getPrecedence(TokenType type){
+    if (isInlineMathType(type)) return 100;
     if (type == TokenType::Mul || type == TokenType::Div ||
         type == TokenType::Modulo ) return 90;
     if (type == TokenType::Plus || type == TokenType::Minus) return 80;
@@ -90,6 +91,7 @@ int Parser::getPrecedence(TokenType type){
     if (type == TokenType::And || type == TokenType::Or) return 10;
 
     if (type == TokenType::Assign) return 0;
+     if (isMathAssignOperatorType(type)) return 0;
     return -1;
 }
 // -------------------------------------------------------------------------
@@ -271,8 +273,27 @@ bool Parser::parseMath(int minPrecedence) {
         }
         advance();
 
-        if (!parseMath(precedence + 1)) return false;
+        if (isInlineMathType(op.mType)) {
+            size_t pc = vm->tape.size();
+            // override op_load_global
+            if (pc >= 2 && vm->tape[pc - 2].code == op_load_global) {
+                if (op.mType == TokenType::PlusPlus) {
+                    vm->tape[pc - 2].code = op_inc;
+                } else { // must be MinusMinus
+                    vm->tape[pc - 2].code = op_dec;
+                }
+                // if (requestParam <= 0) vm->emitCode( op_pop_stack );
 
+            } else {
+                PrintParseError("Inline Math need Variable!");
+                return false;
+            }
+
+            continue;
+        }
+        // ----- we need both ---------
+        if (!parseMath(precedence + 1)) return false;
+        bool handled = true;
         switch (op.mType) {
             case TokenType::Plus:    vm->emitCode(op_add); break;
             case TokenType::Minus:   vm->emitCode(op_sub); break;
@@ -292,9 +313,11 @@ bool Parser::parseMath(int minPrecedence) {
             case TokenType::BitAnd:  vm->emitCode(op_bit_and); break;
             case TokenType::SHL:     vm->emitCode(op_bit_shl); break;
             case TokenType::SHR:     vm->emitCode(op_bit_shr); break;
-            default: break;
-        }
 
+
+            default: handled = false; break;
+        }
+        // if (handled && requestParam <= 0) vm->emitCode( op_pop_stack );
 
 
     } // while
@@ -393,13 +416,17 @@ bool Parser::parseForRange() {
     size_t loop_start_slot = vm->tell();
 
     // ---- increment iter
-    vm->emitCode(op_load_global);
+
+    vm->emitCode(op_inc);
     vm->emitTapeChunk((size_t)varidx);
-    vm->emitCode(op_literal);
-    vm->emitValue(Value(1.0));
-    vm->emitCode(op_add);
-    vm->emitCode(op_save_global);
-    vm->emitTapeChunk((size_t)varidx);
+
+    // vm->emitCode(op_load_global);
+    // vm->emitTapeChunk((size_t)varidx);
+    // vm->emitCode(op_literal);
+    // vm->emitValue(Value(1.0));
+    // vm->emitCode(op_add);
+    // vm->emitCode(op_save_global);
+    // vm->emitTapeChunk((size_t)varidx);
 
     // ---- condition iter < count
     vm->emitCode(op_load_global);

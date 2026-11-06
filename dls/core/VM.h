@@ -323,7 +323,7 @@ namespace DLS {
         // Run script  functions
         // ------------------------------------------
         bool PlaceTapeAtScriptFunction(Value& var) {
-            if (var.type != ValueType::Function ) return false;
+            if (var.type != ValueType::Function ) [[unlikely]] return false;
             Variables.mReturnStack.push_back(pc);
             pc = Variables.mFunctions[(size_t)var.getFastLong()];
             return true;
@@ -365,8 +365,6 @@ namespace DLS {
         Value& var = vm.Variables.getGlobal(varIndex);
         if (var.type == ValueType::Function) [[unlikely]] {
             vm.PlaceTapeAtScriptFunction(var);
-            // vm.Variables.mReturnStack.push_back(vm.pc);
-            // vm.pc = vm.Variables.mFunctions[(size_t)var.getFastLong()];
         } else {
             vm.PUSH_STACK( var );
         }
@@ -525,6 +523,20 @@ namespace DLS {
         Value res = Value(a.getDouble() + b.getDouble());
         vm.PUSH_STACK(res);
     }
+
+    void op_inc(VM& vm) {
+        size_t varIndex = vm.advanceSlot().tapeChunk;
+        Value& dstValue = vm.Variables.getGlobal(varIndex);
+        dstValue = Value(dstValue.getDouble() + 1.0);
+        // vm.PUSH_STACK(dstValue);
+    }
+    void op_dec(VM& vm) {
+        size_t varIndex = vm.advanceSlot().tapeChunk;
+        Value& dstValue = vm.Variables.getGlobal(varIndex);
+        dstValue = Value(dstValue.getDouble() - 1.0);
+        // vm.PUSH_STACK(dstValue);
+    }
+
 
     void op_sub(VM& vm) {
         Value b = vm.POP_STACK();

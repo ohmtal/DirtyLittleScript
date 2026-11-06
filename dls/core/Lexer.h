@@ -69,6 +69,8 @@ std::vector<Token> Lexer::tokenize() {
             advance();
             tokens.push_back({TokenType::NotEqual, "!="});
         }
+        if (peek() == '+' && peekNext() == '+') { advance();advance(); tokens.push_back({TokenType::PlusPlus, "++"}); continue; }
+        if (peek() == '-' && peekNext() == '-') { advance();advance(); tokens.push_back({TokenType::MinusMinus, "--"}); continue; }
 
         if (peek() == '(') { advance(); tokens.push_back({TokenType::LParen, "("}); continue; }
         if (peek() == ')') { advance(); tokens.push_back({TokenType::RParen, ")"}); continue; }

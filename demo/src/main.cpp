@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
 
     std::string mySrc = "";
     std::cout << "============= Dirty Little Script ===============\n";
-goto jump_to_test;
+// goto jump_to_test;
 
     std::cout << "Value size check:" << sizeof(Value) << "\n";
     std::cout << "ValueType size check:" << sizeof(ValueType) << "\n";
@@ -274,16 +274,25 @@ mySrc = R"(
 )";
 Run(mySrc);
 
-jump_to_test:
 mySrc = R"(
     arr[0] = { 10 20 30 }
     arr[0][4]  = 815
     print arr[0][4]
 )";
 Run(mySrc);
-    // goto jump_to_end;
+
+jump_to_test:
+mySrc = R"(
+    a = 0
+    a++
+    print a
+    a--
+    print a
+)";
+Run(mySrc);
 
 
+// goto jump_to_end;
 jump_to_end:
 Tools::printf("");
 }

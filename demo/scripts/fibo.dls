@@ -1,0 +1,42 @@
+# recurive example with global variables and function without parameters.
+
+stack[0] = 0
+sp = 0
+
+fib_n = 0
+fib_res = 0
+
+fib = function ;; # pre define / forward. inside the function fib is not defined
+
+fib = function
+    if fib_n <= 1
+        fib_res = fib_n
+        return
+    end
+
+    stack[sp] = fib_n
+    sp = sp + 1
+
+    fib_n = fib_n - 1
+
+    fib
+
+    sp = sp - 1
+    local_n = stack[sp]
+
+    stack[sp] = fib_res
+    sp = sp + 1
+
+    fib_n = local_n - 2
+
+    fib
+
+    sp = sp - 1
+    res_ast1 = stack[sp]
+
+    fib_res = res_ast1 + fib_res
+end
+
+fib_n = 24
+fib
+print fib_res

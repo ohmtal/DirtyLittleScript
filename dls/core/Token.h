@@ -21,6 +21,7 @@ namespace DLS{
         , LCurly, RCurly
         // math
         , Plus , Minus , Mul , Div
+        , PlusPlus, MinusMinus
         // if ...
         , If,  Else , ElIf
         , Greater, Less, Equal, NotEqual
@@ -71,6 +72,10 @@ namespace DLS{
             case TokenType::Div:           return "Div";
             case TokenType::Modulo:        return "Modulo";
 
+            // inline math
+            case TokenType::PlusPlus:      return "PlusPlus";
+            case TokenType::MinusMinus:    return "MinusMinus";
+
             // if ...
             case TokenType::If:            return "If";
             case TokenType::Greater:       return "Greater";
@@ -120,6 +125,23 @@ namespace DLS{
         ;
     }
 
+
+    bool isMathAssignOperatorType(TokenType tokenType) {
+        return false;
+        // return tokenType == TokenType::AssignPlus
+        // || tokenType == TokenType::AssignMinus
+        // || tokenType == TokenType::AssignMul
+        // || tokenType == TokenType::AssignDiv
+        // ;
+    }
+
+    bool isInlineMathType(const TokenType tokenType) {
+        return
+        tokenType == TokenType::PlusPlus
+        || tokenType == TokenType::MinusMinus
+        ;
+    }
+
     // punkt vor strich :P orders of ...
 
     bool isMathType(const Token& op) {
@@ -139,6 +161,8 @@ namespace DLS{
         || op.mType == TokenType::SHL
         || op.mType == TokenType::SHR
         || op.mType == TokenType::Modulo
+        || isInlineMathType(op.mType)
+        || isMathAssignOperatorType(op.mType)
         ;
     }
 
