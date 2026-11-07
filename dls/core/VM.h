@@ -242,6 +242,7 @@ namespace DLS {
         VariableStorage Variables;
 
         void run() {
+            STK = 0;
             while (pc < tape.size()) {
                 tape[pc++].code(*this);
             }
@@ -286,6 +287,7 @@ namespace DLS {
         // ------------------------------------------
         // Stack functions
         // ------------------------------------------
+        // ---- pop
         Value& POP_STACK() {
             // assert(stack.size() > 0 && "PEEK_STACK but stack empty!");
             // Value result = stack.back(); stack.pop_back();
@@ -294,6 +296,7 @@ namespace DLS {
             #endif
             return stack[--STK];
         }
+        // ---- peek
         Value& PEEK_STACK() {
             // assert(stack.size() > 0 && "PEEK_STACK but stack empty!");
             // Value result = stack.back();
@@ -302,12 +305,18 @@ namespace DLS {
             #endif
             return stack[STK - 1];
         }
+        // ---- push
         void PUSH_STACK(const Value& val) {
             // stack.push_back(val);
 
-            // if (STK + 1 >= stack.size()) [[unlikely]]{
-            //     stack.resize(STK * 2);
-            // }
+#ifdef DLS_DEBUG
+            if (STK >= stack.size()) [[unlikely]] {
+                size_t new_size = stack.empty() ? 8 : stack.size() * 2;
+                stack.resize(new_size);
+                PrintRuntimeError("STACK RESIZE!", std::to_string(new_size));
+            }
+#endif
+
 
             stack[STK++] = val;
         }
@@ -321,6 +330,7 @@ namespace DLS {
         // ------------------------------------------
         bool PlaceTapeAtScriptFunction(Value& var) {
             if (var.type != ValueType::Function ) [[unlikely]] return false;
+
             Variables.mReturnStack.push_back(pc);
             pc = Variables.mFunctions[(size_t)var.getFastLong()];
             return true;

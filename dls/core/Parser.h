@@ -23,7 +23,7 @@ private:
     std::vector<Token> mTokens;
     VM* vm;
     size_t mPos = 0;
-    U32 requestParam = 0;
+    S64 requestParam = 0;
     U32 lineNumber = 0;
     // ------------------------------
     Token peek() { return mTokens[mPos]; }
@@ -153,10 +153,7 @@ bool Parser::parsePrimary() {
             if (FunctionMap::IsCFunction(symId)) {
                 U32 argCount = 0;
                 while (isContinueToken(peek())) {
-                    requestParam++;
                     if (!getArg( "c function parameters" )) return false;
-                    requestParam--;
-
                     argCount++;
                 }
                 vm->emitCode( op_cfunc );
@@ -185,9 +182,7 @@ bool Parser::parsePrimary() {
 
                 if (peek().mType == TokenType::Assign) {
                     advance(); //Assign
-                    requestParam++;
                     if (!getArg("array assign")) return false;
-                    requestParam--;
                     S64 varidx = vm->Variables.getGlobalRegister(symId);
                     if (varidx < 0) {
                         varidx = vm->Variables.reserveGlobal(symId);
@@ -208,9 +203,7 @@ bool Parser::parsePrimary() {
             else
             if (peek().mType == TokenType::Assign) {
                 advance(); // eat Assign
-                requestParam++;
                 if (!getArg("Assign")) return false;
-                requestParam--;
                 size_t varidx = vm->Variables.reserveGlobal(symId);
                 vm->emitCode(op_save_global);
                 vm->emitTapeChunk(varidx);
@@ -505,6 +498,10 @@ bool Parser::parseFn() {
     vm->patchJumpOffset(func_start_slot, vm->tell());
 
     // main loop:
+
+    // down want to push it into sub
+    S64 saveReq = requestParam;
+    requestParam  = 0;
     while (peek().mType != TokenType::EOFToken &&
         peek().mType != TokenType::End)
     {
@@ -513,6 +510,7 @@ bool Parser::parseFn() {
             return false;
         }
     }
+    requestParam = saveReq; // normalize again
     if (peek().mType != TokenType::End) {
         PrintParseError("Function missing end!");
         vm->rewindTape(rewind_POS);
