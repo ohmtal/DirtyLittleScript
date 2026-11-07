@@ -16,7 +16,7 @@ doWhile = function
         elif i % 5 == 0
             printraw "Buzz "
         else
-            printraw int::cast i, " ";
+            printraw (int::cast i) " ";
         end
         i  = i + 1
     end
