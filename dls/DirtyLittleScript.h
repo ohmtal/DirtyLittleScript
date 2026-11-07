@@ -14,8 +14,10 @@
 #include "core/Parser.h"
 #include "toolbox/Tools.h"
 
+#ifndef DLS_NO_EXTRA_FUNCTIONS
 #include "functions/MathFunctions.h"
 #include "functions/StringFunctions.h"
+#endif
 
 #include <fstream>
 #include <istream>
@@ -71,6 +73,12 @@ namespace DLS {
     // -------------------------------------------------------------------------
     inline void Init( ) {
         static bool registered = false; if (registered) return; registered = true;
+
+        #ifndef DLS_NO_EXTRA_FUNCTIONS
+            RegisterMathFunctions();
+            RegisterStringFunctions();
+        #endif
+
 
         using namespace FunctionMap;
 

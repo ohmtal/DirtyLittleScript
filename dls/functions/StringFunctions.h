@@ -434,9 +434,7 @@ namespace DLS {
     // =============================================================================
 
     void RegisterStringFunctions( ) {
-        static bool registered = false;
-        if (registered) return;
-        registered = true;
+        static bool registered = false; if (registered) return; registered = true;
 
         using namespace FunctionMap;
 
