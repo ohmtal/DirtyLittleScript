@@ -138,7 +138,7 @@ namespace DLS {
                 PrintRuntimeError("This is not a array Value!");
                 return Value(0.0);
             }
-            size_t masterIndex =arrValue.getUInt();
+            size_t masterIndex =(size_t)arrValue.getFastLong();
 
             if (index >= mArrays[masterIndex].Elements.size()) {
                 mArrays[masterIndex].Elements.resize(index + 1);
@@ -170,12 +170,12 @@ namespace DLS {
             Value finaleValue = (value.type == ValueType::Array) ? copyArray((size_t)value.getFastLong()) : value;
 
             if (arrValue.isArray()) {
-                size_t masterIndex =arrValue.getUInt();
+                size_t masterIndex =(size_t)arrValue.getFastLong();
                 if (index >= mArrays[masterIndex].Elements.size()) {
                     mArrays[masterIndex].Elements.resize(index + 1);
                 }
                 if (mArrays[masterIndex].Elements[index].isArray()) {
-                    size_t oldIndex = mArrays[masterIndex].Elements[index].getFastLong();
+                    size_t oldIndex = (size_t)mArrays[masterIndex].Elements[index].getFastLong();
                     mArrays[oldIndex].setAssigned(false);
                 }
                 // copyArray already set AssingCount
@@ -209,15 +209,22 @@ namespace DLS {
     // FWD
     // ------------------------------------------
     struct VM;
-    using OpFunc = void(*)(VM&);
     // ------------------------------------------
     // Slot
     // ------------------------------------------
+    // using OpFunc = void(*)(VM&);
+    // union Slot {
+    //     OpFunc code;
+    //     Value value;
+    //     size_t jump_offset;
+    //     size_t tapeChunk;
+    // };
+
     union Slot {
-        OpFunc code;
+        uint64_t code;
         Value value;
-        size_t jump_offset;
-        size_t tapeChunk;
+        uint64_t jump_offset;
+        uint64_t tapeChunk;
     };
     // ------------------------------------------
     // Loops
@@ -230,7 +237,6 @@ namespace DLS {
     // ------------------------------------------
     // VM
     // ------------------------------------------
-    #define DISPATCH() vm.tape[vm.pc++].code(*vm);
 
     struct VM {
         size_t pc = 0;
@@ -241,12 +247,13 @@ namespace DLS {
         std::vector<LoopContext> mLoopStack;
         VariableStorage Variables;
 
-        void run() {
-            STK = 0;
-            while (pc < tape.size()) {
-                tape[pc++].code(*this);
-            }
-        }
+        void run() ;
+        // void run() {
+        //     STK = 0;
+        //     while (pc < tape.size()) {
+        //         tape[pc++].code(*this);
+        //     }
+        // }
 
         VM() {
             Globals::CurrentVM = this;
@@ -259,12 +266,12 @@ namespace DLS {
         // ------------------------------------------
         // Tape functions
         // ------------------------------------------
-        void emitCode(const OpFunc& opcode ) { tape.push_back({.code = opcode}); }
+        void emitCode(const uint64_t opcode ) { tape.push_back({.code = opcode}); }
         void emitValue(const Value& value)   { tape.push_back({.value = value}); }
-        void emitTapeChunk(const size_t tapeChunk)   { tape.push_back({.tapeChunk = tapeChunk}); }
+        void emitTapeChunk(const uint64_t tapeChunk)   { tape.push_back({.tapeChunk = tapeChunk}); }
 
-        void emitJumpOffset(const size_t offset)   { tape.push_back({.jump_offset = offset}); }
-        void patchJumpOffset(const size_t tapePosition, const size_t offset)   { tape[tapePosition].jump_offset = offset; }
+        void emitJumpOffset(const uint64_t offset)   { tape.push_back({.jump_offset = offset}); }
+        void patchJumpOffset(const uint64_t tapePosition, const size_t offset)   { tape[tapePosition].jump_offset = offset; }
 
         size_t tell() { return tape.size(); }
 
@@ -331,459 +338,549 @@ namespace DLS {
         bool PlaceTapeAtScriptFunction(Value& var) {
             if (var.type != ValueType::Function ) [[unlikely]] return false;
 
-            Variables.mReturnStack.push_back(pc);
+            if (pc < tape.size() - 1) Variables.mReturnStack.push_back(pc);
             pc = Variables.mFunctions[(size_t)var.getFastLong()];
             return true;
         }
     };
     // =========================================================================
+
+
+
+
+    #define OP_CODE_LIST \
+    X(op_exit,          0, "exit") \
+    X(op_pop_stack,     0, "pop the stack") \
+    X(op_load_global,    1, "load a global variable") \
+    X(op_save_global,    1, "save a global variable") \
+    X(op_load_array,     2, "load a array") \
+    X(op_save_array,     2, "save a array") \
+    X(op_constuct_array,  1, "construct a array") \
+    X(op_literal,        1, "push a value") \
+    X(op_add,            0, "math +") \
+    X(op_inc,            1, "math ++") \
+    X(op_dec,            1, "math --") \
+    X(op_sub,            0, "math -") \
+    X(op_mul,           0, "math *") \
+    X(op_div,            0, "math /") \
+    X(op_modulo,         0, "math %") \
+    X(op_bit_or,         0, "bit |") \
+    X(op_bit_xor,        0, "bit ^") \
+    X(op_bit_and,        0, "bit &") \
+    X(op_bit_shl,        0, "bit <<") \
+    X(op_bit_shr,        0, "bit >>") \
+    X(op_or,             0, "logical ||") \
+    X(op_and,            0, "logical &&") \
+    X(op_greater,        0, "compare >") \
+    X(op_lower,          0, "compare <") \
+    X(op_equal,          0, "compare ==") \
+    X(op_not_equal,      0, "compare !=") \
+    X(op_lower_equal,      0, "compare <=") \
+    X(op_greater_equal,      0, "compare >=") \
+    X(op_jump,               1, "jump") \
+    X(op_jump_if_true,       1, "jump true") \
+    X(op_jump_if_false,      1, "jump false") \
+    X(op_jump_if_true_no_pop,      1, "jump false no pop") \
+    X(op_jump_if_false_no_pop,      1, "jump false no pop") \
+    X(op_cfunc,      2, "call a c registered func") \
+    X(op_func_def,      1, "define a lambda") \
+    X(op_return,      0, "return")
+
+    #define X(name, args, comment) name,
+    enum OpCodes : uint64_t {
+        OP_CODE_LIST
+    };
+    #undef X
+
+
 #ifdef IMPLEMENT_DLS
+
+    #define DISPATCH() goto *dispatch_table[vm.tape[vm.pc++].code]
+    #define DISPATCH_OPCODE(op) goto *dispatch_table[op]
+
     void PrintRuntimeError(const std::string& message
     , const std::string& p1,const std::string& p2,const std::string& p3) {
         Tools::errorf("[Runtime-ERROR]: %s %s %s %s\n", message.c_str(),p1.c_str(),p2.c_str(),p3.c_str());
     }
-    // ------------------------------------------
-    // Exit (last for jump offsets)
-    // ------------------------------------------
-    void op_exit(VM& vm) {}
-    // ------------------------------------------
-    // POP
-    // ------------------------------------------
-    inline void op_pop_stack(VM& vm) {
-        vm.POP_STACK();
-    }
-    void op_pop_stack_count(VM& vm) {
-        size_t count = vm.advanceSlot().tapeChunk;
-        for (size_t i = 0; i < count; i++) {
+    // -----------------------------------------------------------------------------
+    void VM::run()  {
+        VM& vm = *this; // for conversation
+        STK = 0;
+
+        #define X(name, args, comment) &&handle_##name,
+        constexpr void* dispatch_table[] = {
+            OP_CODE_LIST
+        };
+        #undef X
+
+        DISPATCH();
+        // ------------------------------------------
+        // Exit (last for jump offsets)
+        // ------------------------------------------
+        handle_op_exit: {
+            return;
+        }
+        // ------------------------------------------
+        // POP
+        // ------------------------------------------
+        handle_op_pop_stack: {
             vm.POP_STACK();
-        }
-    }
-
-    // ------------------------------------------
-    // Variables
-    // ------------------------------------------
-    inline void op_save_global(VM& vm) {
-        size_t varIndex = vm.advanceSlot().tapeChunk;
-        vm.Variables.saveGlobal(varIndex,vm.POP_STACK());
-    }
-
-    inline void op_load_global(VM& vm) {
-        size_t varIndex = vm.advanceSlot().tapeChunk;
-        Value& var = vm.Variables.getGlobal(varIndex);
-        if (var.type == ValueType::Function) [[unlikely]] {
-            vm.PlaceTapeAtScriptFunction(var);
-        } else {
-            vm.PUSH_STACK( var );
-        }
-    }
-
-    // ------------------------------------------
-    // Array
-    // ------------------------------------------
-    void op_save_array(VM& vm) {
-        U32 varIndex = (U32)vm.advanceSlot().tapeChunk;
-        U32 dimension = (U32)vm.advanceSlot().tapeChunk;
-
-        //-------- ... what a mess ;) ...
-        if ( dimension > 1 ) {
-            Value assignValue = vm.POP_STACK();
-            std::vector<S64> indexStack;
-            Value arrayIndexValue;
-            // PrintRuntimeError("FIXME op_save_array dimensions! = ", std::to_string(dimension), "value:", assignValue.toString());
-
-            // --- Build index Stack ----
-            for (U32 i = 0; i < dimension; i++) {
-                arrayIndexValue = vm.POP_STACK();
-                if (!arrayIndexValue.isLong() && !arrayIndexValue.isDouble()) [[unlikely]]{
-                    PrintRuntimeError("Array index must be an number: ", arrayIndexValue.toString());
-                    return;
-                }
-                indexStack.push_back(arrayIndexValue.getLong());
-            }
-            std::reverse(indexStack.begin(), indexStack.end());
-
-            // ---- Load initial variable ----
-            Value var = vm.Variables.getGlobal(varIndex);
-
-            // --- loop the index values -----
-            for (S64 i = 0; i < dimension; i++) {
-                if (!var.isArray()) [[unlikely]]{
-                    PrintRuntimeError("Not a Array - Multidimensional Arrays must be initialied! dimension:", std::to_string(i));
-                    return;
-                }
-                // PrintRuntimeError("FIXME dimensions! index => ", std::to_string(i),"::", std::to_string(indexStack[i]));
-                if (var.getFastLong() >= vm.Variables.mArrays.size()) [[unlikely]] {
-                    PrintRuntimeError("Array Index out of bounds!");
-                    return;
-                }
-                if (i == dimension - 1) {
-                   vm.Variables.saveArray(var, indexStack[i], assignValue);
-                   return;
-                }
-                /*const*/ std::vector<Value>& curArr = vm.Variables.getArrayByMasterIndex(var.getFastLong());
-                if (indexStack[i] >= curArr.size() ) [[unlikely]]{
-                    PrintRuntimeError("Array Index out of bounds!");
-                    return;
-                }
-                var = curArr[indexStack[i]];
-            }
-            return;
-        }
-        //--------
-
-
-        Value assignValue = vm.POP_STACK();
-        Value arrayIndexValue = vm.POP_STACK();
-        if (!arrayIndexValue.isLong() && !arrayIndexValue.isDouble()) [[unlikely]]{
-            PrintRuntimeError("Array index must be an number: ", arrayIndexValue.toString());
-            return;
+            DISPATCH();
         }
 
-        vm.Variables.saveArray(varIndex,arrayIndexValue.getUInt(), assignValue);
-    }
-    // --------------------------------------------------
-    void op_load_array(VM& vm) {
-        size_t varIndex = vm.advanceSlot().tapeChunk;
-        U32 dimension = (U32)vm.advanceSlot().tapeChunk;
-
-        //-------- ... what a mess ;) ...
-        if ( dimension > 1 ) {
-            std::vector<S64> indexStack;
-            Value arrayIndexValue;
-            // PrintRuntimeError("FIXME op_load_array dimensions! = ", std::to_string(dimension));
-            // --- Build index Stack ----
-            for (U32 i = 0; i < dimension; i++) {
-                arrayIndexValue = vm.POP_STACK();
-                if (!arrayIndexValue.isLong() && !arrayIndexValue.isDouble()) [[unlikely]]{
-                    PrintRuntimeError("Array index must be an number: ", arrayIndexValue.toString());
-                    return;
-                }
-                indexStack.push_back(arrayIndexValue.getLong());
-            }
-            std::reverse(indexStack.begin(), indexStack.end());
-
-            // ---- Load initial variable ----
-            Value var = vm.Variables.getGlobal(varIndex);
-            // --- loop the index values -----
-            for (S64 i = 0; i < dimension; i++) {
-                if (!var.isArray()) [[unlikely]]{
-                    PrintRuntimeError("Not a Array!");
-                    vm.PUSH_STACK(Value());
-                    return;
-                }
-                // PrintRuntimeError("FIXME dimensions! index => ", std::to_string(i),"::", std::to_string(indexStack[i]));
-                if (var.getFastLong() >= vm.Variables.mArrays.size()) [[unlikely]] {
-                    PrintRuntimeError("Array Index out of bounds!");
-                    vm.PUSH_STACK(Value());
-                    return;
-                }
-                const std::vector<Value>& curArr = vm.Variables.getArrayByMasterIndex(var.getFastLong());
-                if (indexStack[i] >= curArr.size() ) [[unlikely]]{
-                    PrintRuntimeError("Array Index out of bounds!");
-                    vm.PUSH_STACK(Value());
-                    return;
-                }
-                var = curArr[indexStack[i]];
-            }
-            vm.PUSH_STACK(var);
-            return;
-        }
-        //--------
-        Value arrayIndexValue = vm.POP_STACK();
-        if (!arrayIndexValue.isLong() && !arrayIndexValue.isDouble()) [[unlikely]]{
-            PrintRuntimeError("Array index must be an number: ", arrayIndexValue.toString());
-            return;
-        }
-        vm.PUSH_STACK(vm.Variables.getArray(varIndex,arrayIndexValue.getUInt()));
-    }
-
-    void op_constuct_array(VM& vm) {
-        size_t count = vm.advanceSlot().tapeChunk;
-        std::vector<Value> arr;
-        for (S32 i = 0; i < (S32)count; i++) {
-            arr.push_back(vm.POP_STACK());
-        }
-        std::reverse(arr.begin(), arr.end());
-
-        vm.PUSH_STACK(vm.Variables.createArray(arr));
-
-        // S64 masterIndex = (S64)vm.Variables.reserveArray();
-        // Value result = Value(masterIndex);
-        // result.type = ValueType::Array;
-        // vm.Variables.mArrays[masterIndex].Elements = arr;
-        // vm.PUSH_STACK(result);
-    }
-    // ------------------------------------------
-    // Literal
-    // ------------------------------------------
-    void op_literal(VM& vm) {
-        Value val = vm.tape[vm.pc++].value;
-        vm.PUSH_STACK(val);
-    }
-    // ------------------------------------------
-    // Basic Math
-    // ------------------------------------------
-    void op_add(VM& vm) {
-        Value b = vm.POP_STACK();
-        Value a = vm.POP_STACK();
-
-        Value res = Value(a.getDouble() + b.getDouble());
-        vm.PUSH_STACK(res);
-    }
-
-    inline void op_inc(VM& vm) {
-        size_t varIndex = vm.advanceSlot().tapeChunk;
-        Value& dstValue = vm.Variables.getGlobal(varIndex);
-        dstValue = Value(dstValue.getDouble() + 1.0);
-        // vm.PUSH_STACK(dstValue);
-    }
-    void op_dec(VM& vm) {
-        size_t varIndex = vm.advanceSlot().tapeChunk;
-        Value& dstValue = vm.Variables.getGlobal(varIndex);
-        dstValue = Value(dstValue.getDouble() - 1.0);
-        // vm.PUSH_STACK(dstValue);
-    }
-
-
-    void op_sub(VM& vm) {
-        Value b = vm.POP_STACK();
-        Value a = vm.POP_STACK();
-
-        Value res = Value(a.getDouble() - b.getDouble());
-        vm.PUSH_STACK(res);
-    }
-
-    void op_mul(VM& vm) {
-        Value b = vm.POP_STACK();
-        Value a = vm.POP_STACK();
-
-        Value res = Value(a.getDouble() * b.getDouble());
-        vm.PUSH_STACK(res);
-    }
-
-    void op_div(VM& vm) {
-        Value b = vm.POP_STACK();
-        Value a = vm.POP_STACK();
-        double right = b.getDouble();
-        if (right == 0.0) [[unlikely]]  {
-            vm.PUSH_STACK(Value(0.0));
-            return ;
-        }
-        Value res = Value(a.getDouble() / right);
-        vm.PUSH_STACK(res);
-    }
-
-    void op_modulo(VM& vm) {
-        Value b = vm.POP_STACK();
-        Value a = vm.POP_STACK();
-        S64 right = b.getLong();
-        if (right == 0.0) [[unlikely]]  {
-            vm.PUSH_STACK(Value(0.0));
-            return ;
-        }
-        Value res = Value(a.getLong() % right);
-        vm.PUSH_STACK(res);
-    }
-    // ------------------------------------------
-    // Bit's
-    // ------------------------------------------
-    void op_bit_or(VM& vm) {
-        Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
-        Value res = Value(a.getUInt() | b.getUInt());
-        vm.PUSH_STACK(res);
-    }
-    void op_bit_xor(VM& vm) {
-        Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
-        Value res = Value(a.getUInt() ^ b.getUInt());
-        vm.PUSH_STACK(res);
-    }
-    void op_bit_and(VM& vm) {
-        Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
-        Value res = Value(a.getUInt() & b.getUInt());
-        vm.PUSH_STACK(res);
-    }
-    void op_bit_shl(VM& vm) {
-        Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
-        Value res = Value(a.getUInt() << b.getUInt());
-        vm.PUSH_STACK(res);
-    }
-    void op_bit_shr(VM& vm) {
-        Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
-        Value res = Value(a.getUInt() >> b.getUInt());
-        vm.PUSH_STACK(res);
-    }
-    // ------------------------------------------
-    // And/OR
-    // ------------------------------------------
-    void op_or(VM& vm) {
-        Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
-        Value res = Value(a.getBool() || b.getBool());
-        vm.PUSH_STACK(res);
-    }
-    void op_and(VM& vm) {
-        Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
-        Value res = Value(a.getBool() && b.getBool());
-        vm.PUSH_STACK(res);
-    }
-    // ------------------------------------------
-    // Comparison
-    // ------------------------------------------
-    void op_greater(VM& vm) {
-        Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
-        Value res = Value(a.getDouble() > b.getDouble());
-        vm.PUSH_STACK(res);
-    }
-    void op_lower(VM& vm) {
-        Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
-        Value res = Value(a.getDouble() < b.getDouble());
-        vm.PUSH_STACK(res);
-    }
-    void op_equal(VM& vm) {
-        Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
-        Value res = Value(a.getDouble() == b.getDouble());
-        vm.PUSH_STACK(res);
-    }
-    void op_not_equal(VM& vm) {
-        Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
-        Value res = Value(a.getDouble() != b.getDouble());
-        vm.PUSH_STACK(res);
-    }
-    void op_lower_equal(VM& vm) {
-        Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
-        Value res = Value(a.getDouble() <= b.getDouble());
-        vm.PUSH_STACK(res);
-    }
-    void op_greater_equal(VM& vm) {
-        Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
-        Value res = Value(a.getDouble() >= b.getDouble());
-        vm.PUSH_STACK(res);
-    }
-
-
-    // ------------------------------------------
-    // JUMP
-    // ------------------------------------------
-    void op_jump(VM& vm) {
-        size_t target = vm.advanceSlot().jump_offset;
-        vm.pc = target;
-    }
-
-    void op_jump_if_true(VM& vm) {
-        Value a = vm.POP_STACK();
-        size_t target = vm.advanceSlot().jump_offset;
-        if (a.getBool()) {
-            vm.pc = target;
-        }
-    }
-    void op_jump_if_false(VM& vm) {
-        Value a = vm.POP_STACK();
-        size_t target = vm.advanceSlot().jump_offset;
-        if (!a.getBool()) {
-            vm.pc = target;
-        }
-    }
-
-    void op_jump_if_true_no_pop(VM& vm) {
-        Value a = vm.PEEK_STACK();
-        size_t target = vm.advanceSlot().jump_offset;
-        if (a.getBool()) {
-            vm.pc = target;
-        }
-    }
-    void op_jump_if_false_no_pop(VM& vm) {
-        Value a = vm.PEEK_STACK();
-        size_t target = vm.advanceSlot().jump_offset;
-        if (!a.getBool()) {
-            vm.pc = target;
-        }
-    }
-    // ------------------------------------------
-    // C-Function call
-    // ------------------------------------------
-    void op_cfunc(VM& vm) {
-        // args count
-        U32 symid = (U32) vm.advanceSlot().tapeChunk;
-        U32 numArgs = (U32) vm.advanceSlot().tapeChunk;
-
-        // func cache on tape but not a ms faster?!
-        // Value* pointerCacheValue = &vm.advanceSlot().value;
-        //
-        // FunctionMap::CallBack* cb = nullptr;
-        // if ( pointerCacheValue->getPointer()) {
-        //     cb = static_cast<FunctionMap::CallBack*>(pointerCacheValue->getPointer());
-        // } else {
-        //     cb = FunctionMap::GetCFunction(symid);
-        //     if (!cb) [[unlikely]]{
-        //         for (size_t i = 0; i < numArgs; ++i) {
-        //             vm.POP_STACK();
-        //         }
-        //         //FIXME error!? or special push value
-        //         vm.PUSH_STACK(Value(0));
-        //         return;
-        //     }
-        //     *pointerCacheValue = Value(cb);
-        // }
-
-        const FunctionMap::CallBack* cb = FunctionMap::GetCFunction(symid);
-        if (!cb) [[unlikely]]{
-            for (size_t i = 0; i < numArgs; ++i) {
+        handle_op_pop_stack_count: {
+            size_t count = vm.advanceSlot().tapeChunk;
+            for (size_t i = 0; i < count; i++) {
                 vm.POP_STACK();
             }
-            vm.PUSH_STACK(Value(0));
-            return;
+            DISPATCH();
         }
 
-        // Tools::printf("CALL FUNC: %s [args:%f]\n", SymbolTable::getName(symid).c_str(), numArgs);
-
-        if (numArgs <= 12) {
-            Value evaluatedArgsStack[12];
-
-            for (S64 i = numArgs ; i > 0  ; i--) {
-                evaluatedArgsStack[i - 1] = vm.POP_STACK();
-            }
-            Value returnValue = Value(0);
-            bool success = (*cb)(std::span<Value>(evaluatedArgsStack, numArgs), returnValue);
-
-            if (!success) [[unlikely]] {
-                Tools::errorf("Runtime Error in function: %s\n", SymbolTable::getName(symid).c_str());
-            }
-            vm.PUSH_STACK(returnValue);
-        } else {
-            // --- more than 12 parameters fallback ---
-            std::vector<Value> evaluatedArgs;
-            evaluatedArgs.resize(numArgs);
-            for (S64 i = numArgs ; i > 0  ; i--) {
-                evaluatedArgs[i - 1] = vm.POP_STACK();
-            }
-            Value returnValue = Value(0);
-            bool success = (*cb)(evaluatedArgs, returnValue);
-
-            if (!success) [[unlikely]] {
-                Tools::errorf("Runtime Error in function: %s\n", SymbolTable::getName(symid).c_str());
-            }
-            vm.PUSH_STACK(returnValue);
+        // ------------------------------------------
+        // Variables
+        // ------------------------------------------
+        handle_op_save_global: {
+            size_t varIndex = vm.advanceSlot().tapeChunk;
+            vm.Variables.saveGlobal(varIndex,vm.POP_STACK());
+            DISPATCH();
         }
-    }
 
-    // ------------------------------------------
-    // Script function def
-    // ------------------------------------------
-    void op_func_def(VM& vm) {
-        size_t startPosition =  vm.advanceSlot().jump_offset;
-        vm.Variables.mFunctions.push_back(startPosition);
-        Value subValue = Value((S64)(vm.Variables.mFunctions.size() - 1));
-        subValue.type = ValueType::Function;
-        vm.PUSH_STACK(subValue);
-    }
-    void op_return(VM& vm) {
-        if (vm.Variables.mReturnStack.size() == 0) {
-            vm.pc = vm.tape.size() - 1;
-            return;
+        handle_op_load_global: {
+            size_t varIndex = vm.advanceSlot().tapeChunk;
+            Value& var = vm.Variables.getGlobal(varIndex);
+            if (var.type == ValueType::Function) [[unlikely]] {
+                vm.PlaceTapeAtScriptFunction(var);
+            } else {
+                vm.PUSH_STACK( var );
+            }
+            DISPATCH();
         }
-        vm.pc = vm.Variables.mReturnStack.back();
-        vm.Variables.mReturnStack.pop_back();
-    }
-    // ------------------------------------------
+
+        // ------------------------------------------
+        // Array
+        // ------------------------------------------
+        handle_op_save_array: {
+
+            U32 varIndex = (U32)vm.advanceSlot().tapeChunk;
+            U32 dimension = (U32)vm.advanceSlot().tapeChunk;
+
+            //-------- ... what a mess ;) ...
+
+            if ( dimension > 1 ) {
+
+                Value assignValue = vm.POP_STACK();
+                static std::vector<S64> indexStack;
+                indexStack.clear();
+                Value arrayIndexValue;
+                // PrintRuntimeError("FIXME op_save_array dimensions! = ", std::to_string(dimension), "value:", assignValue.toString());
+
+                // --- Build index Stack ----
+                for (U32 i = 0; i < dimension; i++) {
+                    arrayIndexValue = vm.POP_STACK();
+                    if (!arrayIndexValue.isLong() && !arrayIndexValue.isDouble()) [[unlikely]]{
+                        PrintRuntimeError("Array index must be an number: ", arrayIndexValue.toString());
+                        DISPATCH();
+                    }
+                    indexStack.push_back(arrayIndexValue.getLong());
+                }
+                std::reverse(indexStack.begin(), indexStack.end());
+
+                // ---- Load initial variable ----
+                Value var = vm.Variables.getGlobal(varIndex);
+
+                // --- loop the index values -----
+                for (S64 i = 0; i < dimension; i++) {
+                    if (!var.isArray()) [[unlikely]]{
+                        PrintRuntimeError("Not a Array - Multidimensional Arrays must be initialied! dimension:", std::to_string(i));
+                        DISPATCH();
+                    }
+                    // PrintRuntimeError("FIXME dimensions! index => ", std::to_string(i),"::", std::to_string(indexStack[i]));
+                    if (var.getFastLong() >= vm.Variables.mArrays.size()) [[unlikely]] {
+                        PrintRuntimeError("Array Index out of bounds!");
+                        DISPATCH();
+                    }
+                    if (i == dimension - 1) {
+                        vm.Variables.saveArray(var, indexStack[i], assignValue);
+                        DISPATCH();
+                    }
+                    /*const*/ std::vector<Value>& curArr = vm.Variables.getArrayByMasterIndex(var.getFastLong());
+                    if (indexStack[i] >= curArr.size() ) [[unlikely]]{
+                        PrintRuntimeError("Array Index out of bounds!");
+                        DISPATCH();
+                    }
+                    var = curArr[indexStack[i]];
+                }
+
+                DISPATCH();
+            }
+
+            //--------
+
+
+            Value assignValue = vm.POP_STACK();
+            Value arrayIndexValue = vm.POP_STACK();
+            if (!arrayIndexValue.isLong() && !arrayIndexValue.isDouble()) [[unlikely]]{
+                PrintRuntimeError("Array index must be an number: ", arrayIndexValue.toString());
+                DISPATCH();
+            }
+
+            vm.Variables.saveArray(varIndex,arrayIndexValue.getUInt(), assignValue);
+            DISPATCH();
+        }
+        // --------------------------------------------------
+        handle_op_load_array: {
+            size_t varIndex = vm.advanceSlot().tapeChunk;
+            U32 dimension = (U32)vm.advanceSlot().tapeChunk;
+
+            //-------- ... what a mess ;) ...
+            if ( dimension > 1 ) {
+                static std::vector<S64> indexStack;
+                indexStack.clear();
+                Value arrayIndexValue;
+                // PrintRuntimeError("FIXME op_load_array dimensions! = ", std::to_string(dimension));
+                // --- Build index Stack ----
+                for (U32 i = 0; i < dimension; i++) {
+                    arrayIndexValue = vm.POP_STACK();
+                    if (!arrayIndexValue.isLong() && !arrayIndexValue.isDouble()) [[unlikely]]{
+                        PrintRuntimeError("Array index must be an number: ", arrayIndexValue.toString());
+                        DISPATCH();
+                    }
+                    indexStack.push_back(arrayIndexValue.getLong());
+                }
+                std::reverse(indexStack.begin(), indexStack.end());
+
+                // ---- Load initial variable ----
+                Value var = vm.Variables.getGlobal(varIndex);
+                // --- loop the index values -----
+                for (S64 i = 0; i < dimension; i++) {
+                    if (!var.isArray()) [[unlikely]]{
+                        PrintRuntimeError("Not a Array!");
+                        vm.PUSH_STACK(Value());
+                        DISPATCH();
+                    }
+                    // PrintRuntimeError("FIXME dimensions! index => ", std::to_string(i),"::", std::to_string(indexStack[i]));
+                    if (var.getFastLong() >= vm.Variables.mArrays.size()) [[unlikely]] {
+                        PrintRuntimeError("Array Index out of bounds!");
+                        vm.PUSH_STACK(Value());
+                        DISPATCH();
+                    }
+                    const std::vector<Value>& curArr = vm.Variables.getArrayByMasterIndex(var.getFastLong());
+                    if (indexStack[i] >= curArr.size() ) [[unlikely]]{
+                        PrintRuntimeError("Array Index out of bounds!");
+                        vm.PUSH_STACK(Value());
+                        DISPATCH();
+                    }
+                    var = curArr[indexStack[i]];
+                }
+                vm.PUSH_STACK(var);
+                DISPATCH();
+            }
+            //--------
+            Value arrayIndexValue = vm.POP_STACK();
+            if (!arrayIndexValue.isLong() && !arrayIndexValue.isDouble()) [[unlikely]]{
+                PrintRuntimeError("Array index must be an number: ", arrayIndexValue.toString());
+                DISPATCH();
+            }
+            vm.PUSH_STACK(vm.Variables.getArray(varIndex,arrayIndexValue.getUInt()));
+            DISPATCH();
+        }
+
+        handle_op_constuct_array: {
+            size_t count = vm.advanceSlot().tapeChunk;
+            static std::vector<Value> arr;
+            arr.clear();
+            for (S32 i = 0; i < (S32)count; i++) {
+                arr.push_back(vm.POP_STACK());
+            }
+            std::reverse(arr.begin(), arr.end());
+
+            vm.PUSH_STACK(vm.Variables.createArray(arr));
+            DISPATCH();
+        }
+        // ------------------------------------------
+        // Literal
+        // ------------------------------------------
+        handle_op_literal: {
+            Value val = vm.tape[vm.pc++].value;
+            vm.PUSH_STACK(val);
+            DISPATCH();
+        }
+        // ------------------------------------------
+        // Basic Math
+        // ------------------------------------------
+        handle_op_add: {
+            Value b = vm.POP_STACK();
+            Value a = vm.POP_STACK();
+
+            Value res = Value(a.getDouble() + b.getDouble());
+            vm.PUSH_STACK(res);
+            DISPATCH();
+        }
+
+
+        handle_op_inc: {
+            size_t varIndex = vm.advanceSlot().tapeChunk;
+            Value& dstValue = vm.Variables.getGlobal(varIndex);
+            dstValue = Value(dstValue.getDouble() + 1.0);
+            DISPATCH();
+        }
+        handle_op_dec: {
+            size_t varIndex = vm.advanceSlot().tapeChunk;
+            Value& dstValue = vm.Variables.getGlobal(varIndex);
+            dstValue = Value(dstValue.getDouble() - 1.0);
+            DISPATCH();
+        }
+
+
+        handle_op_sub: {
+            Value b = vm.POP_STACK();
+            Value a = vm.POP_STACK();
+
+            Value res = Value(a.getDouble() - b.getDouble());
+            vm.PUSH_STACK(res);
+            DISPATCH();
+        }
+
+        handle_op_mul: {
+            Value b = vm.POP_STACK();
+            Value a = vm.POP_STACK();
+
+            Value res = Value(a.getDouble() * b.getDouble());
+            vm.PUSH_STACK(res);
+            DISPATCH();
+        }
+
+        handle_op_div: {
+            Value b = vm.POP_STACK();
+            Value a = vm.POP_STACK();
+            double right = b.getDouble();
+            if (right == 0.0) [[unlikely]]  {
+                vm.PUSH_STACK(Value(0.0));
+                return ;
+            }
+            Value res = Value(a.getDouble() / right);
+            vm.PUSH_STACK(res);
+            DISPATCH();
+        }
+
+        handle_op_modulo: {
+            Value b = vm.POP_STACK();
+            Value a = vm.POP_STACK();
+            S64 right = b.getLong();
+            if (right == 0.0) [[unlikely]]  {
+                vm.PUSH_STACK(Value(0.0));
+                return ;
+            }
+            Value res = Value(a.getLong() % right);
+            vm.PUSH_STACK(res);
+            DISPATCH();
+        }
+        // ------------------------------------------
+        // Bit's
+        // ------------------------------------------
+        handle_op_bit_or: {
+            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
+            Value res = Value(a.getUInt() | b.getUInt());
+            vm.PUSH_STACK(res);
+            DISPATCH();
+        }
+        handle_op_bit_xor: {
+            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
+            Value res = Value(a.getUInt() ^ b.getUInt());
+            vm.PUSH_STACK(res);
+            DISPATCH();
+        }
+        handle_op_bit_and: {
+            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
+            Value res = Value(a.getUInt() & b.getUInt());
+            vm.PUSH_STACK(res);
+            DISPATCH();
+        }
+        handle_op_bit_shl: {
+            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
+            Value res = Value(a.getUInt() << b.getUInt());
+            vm.PUSH_STACK(res);
+            DISPATCH();
+        }
+        handle_op_bit_shr: {
+            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
+            Value res = Value(a.getUInt() >> b.getUInt());
+            vm.PUSH_STACK(res);
+            DISPATCH();
+        }
+        // ------------------------------------------
+        // And/OR
+        // ------------------------------------------
+        handle_op_or: {
+            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
+            Value res = Value(a.getBool() || b.getBool());
+            vm.PUSH_STACK(res);
+            DISPATCH();
+        }
+        handle_op_and: {
+            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
+            Value res = Value(a.getBool() && b.getBool());
+            vm.PUSH_STACK(res);
+            DISPATCH();
+        }
+        // ------------------------------------------
+        // Comparison
+        // ------------------------------------------
+        handle_op_greater: {
+            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
+            Value res = Value(a.getDouble() > b.getDouble());
+            vm.PUSH_STACK(res);
+            DISPATCH();
+        }
+        handle_op_lower: {
+            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
+            Value res = Value(a.getDouble() < b.getDouble());
+            vm.PUSH_STACK(res);
+            DISPATCH();
+        }
+        handle_op_equal: {
+            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
+            Value res = Value(a.getDouble() == b.getDouble());
+            vm.PUSH_STACK(res);
+            DISPATCH();
+        }
+        handle_op_not_equal: {
+            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
+            Value res = Value(a.getDouble() != b.getDouble());
+            vm.PUSH_STACK(res);
+            DISPATCH();
+        }
+        handle_op_lower_equal: {
+            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
+            Value res = Value(a.getDouble() <= b.getDouble());
+            vm.PUSH_STACK(res);
+            DISPATCH();
+        }
+        handle_op_greater_equal: {
+            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
+            Value res = Value(a.getDouble() >= b.getDouble());
+            vm.PUSH_STACK(res);
+            DISPATCH();
+        }
+
+
+        // ------------------------------------------
+        // JUMP
+        // ------------------------------------------
+        handle_op_jump: {
+            size_t target = vm.advanceSlot().jump_offset;
+            vm.pc = target;
+            DISPATCH();
+        }
+
+        handle_op_jump_if_true: {
+            Value a = vm.POP_STACK();
+            size_t target = vm.advanceSlot().jump_offset;
+            if (a.getBool()) {
+                vm.pc = target;
+            }
+            DISPATCH();
+        }
+        handle_op_jump_if_false: {
+            Value a = vm.POP_STACK();
+            size_t target = vm.advanceSlot().jump_offset;
+            if (!a.getBool()) {
+                vm.pc = target;
+            }
+            DISPATCH();
+        }
+
+        handle_op_jump_if_true_no_pop: {
+            Value a = vm.PEEK_STACK();
+            size_t target = vm.advanceSlot().jump_offset;
+            if (a.getBool()) {
+                vm.pc = target;
+            }
+            DISPATCH();
+        }
+        handle_op_jump_if_false_no_pop: {
+            Value a = vm.PEEK_STACK();
+            size_t target = vm.advanceSlot().jump_offset;
+            if (!a.getBool()) {
+                vm.pc = target;
+            }
+            DISPATCH();
+        }
+        // ------------------------------------------
+        // C-Function call
+        // ------------------------------------------
+        handle_op_cfunc: {
+            // args count
+            U32 symid = (U32) vm.advanceSlot().tapeChunk;
+            U32 numArgs = (U32) vm.advanceSlot().tapeChunk;
+
+            const FunctionMap::CallBack* cb = FunctionMap::GetCFunction(symid);
+            if (!cb) [[unlikely]]{
+                for (size_t i = 0; i < numArgs; ++i) {
+                    vm.POP_STACK();
+                }
+                vm.PUSH_STACK(Value(0));
+                DISPATCH();
+            }
+
+            // Tools::printf("CALL FUNC: %s [args:%f]\n", SymbolTable::getName(symid).c_str(), numArgs);
+
+            if (numArgs <= 12) {
+                Value evaluatedArgsStack[12];
+
+                for (S64 i = numArgs ; i > 0  ; i--) {
+                    evaluatedArgsStack[i - 1] = vm.POP_STACK();
+                }
+                Value returnValue = Value(0);
+                bool success = (*cb)(std::span<Value>(evaluatedArgsStack, numArgs), returnValue);
+
+                if (!success) [[unlikely]] {
+                    Tools::errorf("Runtime Error in function: %s\n", SymbolTable::getName(symid).c_str());
+                }
+                vm.PUSH_STACK(returnValue);
+                DISPATCH();
+            } else {
+                // --- more than 12 parameters fallback ---
+                static std::vector<Value> evaluatedArgs;
+                evaluatedArgs.clear();
+                evaluatedArgs.resize(numArgs);
+                for (S64 i = numArgs ; i > 0  ; i--) {
+                    evaluatedArgs[i - 1] = vm.POP_STACK();
+                }
+                Value returnValue = Value(0);
+                bool success = (*cb)(evaluatedArgs, returnValue);
+
+                if (!success) [[unlikely]] {
+                    Tools::errorf("Runtime Error in function: %s\n", SymbolTable::getName(symid).c_str());
+                }
+                vm.PUSH_STACK(returnValue);
+                DISPATCH();
+            }
+            DISPATCH();
+        }
+
+        // ------------------------------------------
+        // Script function def
+        // ------------------------------------------
+        handle_op_func_def: {
+            size_t startPosition =  vm.advanceSlot().jump_offset;
+            vm.Variables.mFunctions.push_back(startPosition);
+            Value subValue = Value((S64)(vm.Variables.mFunctions.size() - 1));
+            subValue.type = ValueType::Function;
+            vm.PUSH_STACK(subValue);
+            DISPATCH();
+        }
+        handle_op_return: {
+            if (vm.Variables.mReturnStack.size() == 0) {
+                vm.pc = vm.tape.size() - 1;
+                return;
+            }
+            vm.pc = vm.Variables.mReturnStack.back();
+            vm.Variables.mReturnStack.pop_back();
+            DISPATCH();
+        }
+        // ------------------------------------------
+    } //run
 #endif // IMPLEMENT_DLS
 } //namespace
 
