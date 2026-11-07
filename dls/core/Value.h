@@ -39,7 +39,8 @@ namespace DLS {
         } ;
         U32 flags = 0;      // 4 byte flags can be used to type something like pointers
         ValueType type = ValueType::None; // 1 byte
-        U8  padding[3]; // 3 bytes padding for future use
+        U8 subType = 0;
+        U8  padding[2]; // 3 bytes padding for future use
 
         // ------------------
         Value() { type = ValueType::None;  }
@@ -50,12 +51,14 @@ namespace DLS {
         Value(S64 val) { type = ValueType::Long; l = val; }
         Value(std::string val) { type = ValueType::String; strId = StringTable::insert(val); }
         Value(void* val) { type = ValueType::Pointer; p = val; }
+        Value(void* val, U8 val_subtype) { type = ValueType::Pointer; p = val; subType = val_subtype;}
         // ------------------
         inline bool isDouble() { return type == ValueType::Double; }
         inline bool isFloat() { return type == ValueType::Double; }
         inline bool isLong() { return type == ValueType::Long; }
         inline bool isInt() { return type == ValueType::Long; }
         inline bool isPointer() { return type == ValueType::Pointer; }
+        inline bool isPointerSubType(U8 val_subtype) { return type == ValueType::Pointer && subType == val_subtype; }
         inline bool isString() { return type == ValueType::String; }
         inline bool isFunction() { return type == ValueType::Function; }
         inline bool isArray() { return type == ValueType::Array; }
