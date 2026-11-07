@@ -392,7 +392,8 @@ namespace DLS {
     };
     #undef X
 
-
+// =============================================================================
+// =============================================================================
 #ifdef IMPLEMENT_DLS
 
     #define DISPATCH() goto *dispatch_table[vm.tape[vm.pc++].code]
@@ -631,7 +632,6 @@ namespace DLS {
             DISPATCH();
         }
 
-
         handle_op_sub: {
             Value b = vm.POP_STACK();
             Value a = vm.POP_STACK();
@@ -740,12 +740,20 @@ namespace DLS {
         }
         handle_op_equal: {
             Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
+            if (a.isString() && b.isString()) [[unlikely]] {
+                vm.PUSH_STACK(a.getString() == b.getString());
+                DISPATCH();
+            }
             Value res = Value(a.getDouble() == b.getDouble());
             vm.PUSH_STACK(res);
             DISPATCH();
         }
         handle_op_not_equal: {
             Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
+            if (a.isString() && b.isString()) [[unlikely]] {
+                vm.PUSH_STACK(a.getString() != b.getString());
+                DISPATCH();
+            }
             Value res = Value(a.getDouble() != b.getDouble());
             vm.PUSH_STACK(res);
             DISPATCH();

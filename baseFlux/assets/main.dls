@@ -1,0 +1,67 @@
+print "-------- DLS Flux Main --------"
+# NOTE this is not what DLS is made for
+
+caption = "DLS Baseflux"
+
+SDL_EVENT_KEY_DOWN = 0x300
+SDL_EVENT_MOUSE_BUTTON_DOWN = 1025
+SDLK_ESCAPE     = 0x0000001b
+SDLK_PAGEDOWN   = 0x4000004e
+SDLK_RIGHT      = 0x4000004f
+SDLK_LEFT       = 0x40000050
+SDLK_DOWN       = 0x40000051
+SDLK_UP         = 0x40000052
+
+WIDTH  = 600.0
+HEIGTH = 380.0
+COUNT  = 500
+flux::size WIDTH HEIGTH WIDTH HEIGTH
+
+
+
+InitRects = function
+
+    forRange i COUNT
+        w = (5 + math::randomf * 30)
+        h = (5 + math::randomf * 20)
+        Rects[i]  = { (math::random 0 WIDTH - w) (math::random 0 HEIGTH - h ) w h }
+        Colors[i] = { (math::random 0 255) (math::random 0 255) (math::random 0 255) 255 }
+        Vec[i]    = { (math::randomf * 2.0 - 1.0) (math::randomf * 2.0 - 1.0) }
+        Filled[i] = math::random 0 1
+    end
+end
+
+InitRects
+# -----------------------------------------------------------------------------
+
+processRects = function
+    forRange i COUNT
+        flux::DrawRect Rects[i] Colors[i] Filled[i]
+        Rects[i][0] = Rects[i][0] + Vec[i][0] * flux::ft
+        if Rects[i][0] + Rects[i][2] >= WIDTH || Rects[i][0] <= 0.0;  Vec[i][0] =  Vec[i][0] * -1.0;;
+
+        Rects[i][1] = Rects[i][1] + Vec[i][1] * flux::ft
+        if Rects[i][1] + Rects[i][3] >= HEIGTH || Rects[i][1] <= 0;  Vec[i][1] =  Vec[i][1] * -1.0;;
+    end
+end
+
+OnRender = function
+    processRects
+    flux::DrawFPS 10 30 2;
+    flux::Text 120 30 (str::format "mouse: %d %d" event::mx event::my) 2
+    flux::Text 10 60 caption 4
+end
+
+# -----------------------------------------------------------------------------
+
+OnKey = function
+    if event::type == SDL_EVENT_KEY_DOWN
+       if event::key == SDLK_ESCAPE ; flux::Close;;
+    end
+end
+
+OnMouse = function
+    if event::type == SDL_EVENT_MOUSE_BUTTON_DOWN
+        print "button" event::button "down"
+    end
+end
