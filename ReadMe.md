@@ -2,12 +2,20 @@
 
 **Dirty Little Script** is a **header only** subset of [DreiZehnScript](https://github.com/ohmtal/DreiZehnScript)
 
-## Usage in your Project: 
+## Usage in your Project
+
+### header only :: faster implementation to you project:
 - Download and add `DirtyLittleScript/dls` to your include path 
 - `#define IMPLEMENT_DLS` *only once* and include the header `DirtyLittleScript.h` 
 - call `DLS::Init();`
 - call `DLS::Run("print "Hello World");` 
 - if you dont need math and string extra functions: `#define DLS_NO_EXTRA_FUNCTIONS` .This make compiling faster. 
+
+
+## Using as Lib :: faster compile time
+- Download `DirtyLittleScript` 
+- in cmake `include ("../dls/DLS_lib.cmake")` replace `../` with the path where you installed it
+- add `DirtyLittleScript` to your target_link_libraries
 
 
 ## Cheat Sheet 

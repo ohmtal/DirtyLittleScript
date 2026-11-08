@@ -19,7 +19,8 @@ endif()
 project(dlsSDL C CXX)
 
 
-set (LINK_LIBS)
+include ("../dls/DLS_lib.cmake")
+set (LINK_LIBS DirtyLittleScript)
 
 set(PROJECT_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
@@ -42,7 +43,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
-     "${CMAKE_CURRENT_SOURCE_DIR}/../dls"
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE

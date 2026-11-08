@@ -2,7 +2,7 @@
 #include "BaseFlux/Main.h"
 #include "BaseFlux/Draw.h"
 
-#define IMPLEMENT_DLS
+//using lib!  #define IMPLEMENT_DLS
 #include "DirtyLittleScript.h"
 #include "toolbox/Tools.h" //NOTE: DLS: for log redirect
 

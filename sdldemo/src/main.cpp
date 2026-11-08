@@ -7,7 +7,7 @@
 #include <iostream>
 #include <string>
 
-#define IMPLEMENT_DLS
+// using lib here! #define IMPLEMENT_DLS
 #include "DirtyLittleScript.h"
 
 

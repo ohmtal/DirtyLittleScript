@@ -48,6 +48,9 @@ else()
 endif()
 
 
+include ("${DLS_DIR}/dls/DLS_lib.cmake")
+
+
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_definitions(DLS_DEBUG)
 endif()
@@ -69,11 +72,12 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 target_include_directories(${PROJECT_NAME} BEFORE PUBLIC
   "${CMAKE_CURRENT_SOURCE_DIR}/include"
   # NOTE  include path here:
-  "${DLS_INCLUDE}"
+  # "${DLS_INCLUDE}"
 )
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
     BaseFlux
+    DirtyLittleScript
 )
 
 
