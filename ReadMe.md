@@ -25,6 +25,7 @@
 | `f = (10 * 5 + 2 ) / 4 - 1`| basic math, the parser respect the order|
 | `b = true && false` |  boolean and, or |
 | `b = b + 1` |  increment one |
+| `b++; b--` |  increment and decrement again|
 | Loops |  |
 | `forRange i 10; print i;  end`| forRange loop count i 0..9 | 
 | `i = 5; while i > 0; print i; i = i - 1; end`| while loop | 
