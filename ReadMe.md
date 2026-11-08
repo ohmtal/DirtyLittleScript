@@ -7,7 +7,6 @@
 - `#define IMPLEMENT_DLS` *only once* and include the header `DirtyLittleScript.h` 
 - call `DLS::Init();`
 - call `DLS::Run("print "Hello World");` 
-- optional add dls/functions/*.cpp to you project. (see also demo)
 - if you dont need math and string extra functions: `#define DLS_NO_EXTRA_FUNCTIONS` .This make compiling faster. 
 
 

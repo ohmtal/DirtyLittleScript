@@ -198,6 +198,7 @@ put this in a extra function ,,,, should work with peek forward
 - [X] math/str also as header with IMPL
     
     
+- [X] changed VM loop to threaded .. nearly as fast as DreiZehn ByteCode in BaseFlux :)
     
     
 ## maybe:
