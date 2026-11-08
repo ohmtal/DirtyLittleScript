@@ -295,36 +295,28 @@ namespace DLS {
         // Stack functions
         // ------------------------------------------
         // ---- pop
-        Value& POP_STACK() {
-            // assert(stack.size() > 0 && "PEEK_STACK but stack empty!");
-            // Value result = stack.back(); stack.pop_back();
+        FORCE_INLINE Value& POP_STACK() {
             #ifdef DLS_DEBUG
             assert(STK > 0 && "POP_STACK but stack empty!");
             #endif
             return stack[--STK];
         }
         // ---- peek
-        Value& PEEK_STACK() {
-            // assert(stack.size() > 0 && "PEEK_STACK but stack empty!");
-            // Value result = stack.back();
+        FORCE_INLINE Value& PEEK_STACK() {
             #ifdef DLS_DEBUG
             assert(STK > 0 && "POP_STACK but stack empty!");
             #endif
             return stack[STK - 1];
         }
         // ---- push
-        void PUSH_STACK(const Value& val) {
-            // stack.push_back(val);
-
-#ifdef DLS_DEBUG
+        FORCE_INLINE void PUSH_STACK(const Value& val) {
+            #ifdef DLS_DEBUG
             if (STK >= stack.size()) [[unlikely]] {
                 size_t new_size = stack.empty() ? 8 : stack.size() * 2;
                 stack.resize(new_size);
                 PrintRuntimeError("STACK RESIZE!", std::to_string(new_size));
             }
-#endif
-
-
+            #endif
             stack[STK++] = val;
         }
 
@@ -610,11 +602,10 @@ namespace DLS {
         // Basic Math
         // ------------------------------------------
         handle_op_add: {
-            Value b = vm.POP_STACK();
-            Value a = vm.POP_STACK();
+            Value& b = vm.POP_STACK();
+            Value& a = vm.PEEK_STACK();
 
-            Value res = Value(a.getDouble() + b.getDouble());
-            vm.PUSH_STACK(res);
+            a = Value(a.getDouble() + b.getDouble());
             DISPATCH();
         }
 
@@ -633,141 +624,136 @@ namespace DLS {
         }
 
         handle_op_sub: {
-            Value b = vm.POP_STACK();
-            Value a = vm.POP_STACK();
-
-            Value res = Value(a.getDouble() - b.getDouble());
-            vm.PUSH_STACK(res);
+            Value& b = vm.POP_STACK();
+            Value& a = vm.PEEK_STACK();
+            a = Value(a.getDouble() - b.getDouble());
             DISPATCH();
         }
 
         handle_op_mul: {
-            Value b = vm.POP_STACK();
-            Value a = vm.POP_STACK();
-
-            Value res = Value(a.getDouble() * b.getDouble());
-            vm.PUSH_STACK(res);
+            Value& b = vm.POP_STACK();
+            Value& a = vm.PEEK_STACK();
+            a = Value(a.getDouble() * b.getDouble());
             DISPATCH();
         }
 
         handle_op_div: {
-            Value b = vm.POP_STACK();
-            Value a = vm.POP_STACK();
+            Value& b = vm.POP_STACK();
+            Value& a = vm.PEEK_STACK();
             double right = b.getDouble();
             if (right == 0.0) [[unlikely]]  {
-                vm.PUSH_STACK(Value(0.0));
+                a = Value(0.0);
                 return ;
             }
-            Value res = Value(a.getDouble() / right);
-            vm.PUSH_STACK(res);
+            a = Value(a.getDouble() / right);
             DISPATCH();
         }
 
         handle_op_modulo: {
-            Value b = vm.POP_STACK();
-            Value a = vm.POP_STACK();
+            Value& b = vm.POP_STACK();
+            Value& a = vm.PEEK_STACK();
             S64 right = b.getLong();
             if (right == 0.0) [[unlikely]]  {
-                vm.PUSH_STACK(Value(0.0));
+                a = Value(0.0);
                 return ;
             }
-            Value res = Value(a.getLong() % right);
-            vm.PUSH_STACK(res);
+            a = Value(a.getLong() % right);
             DISPATCH();
         }
         // ------------------------------------------
         // Bit's
         // ------------------------------------------
         handle_op_bit_or: {
-            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
-            Value res = Value(a.getUInt() | b.getUInt());
-            vm.PUSH_STACK(res);
+            Value& b = vm.POP_STACK();
+            Value& a = vm.PEEK_STACK();
+            a = Value(a.getUInt() | b.getUInt());
             DISPATCH();
         }
         handle_op_bit_xor: {
-            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
-            Value res = Value(a.getUInt() ^ b.getUInt());
-            vm.PUSH_STACK(res);
+            Value& b = vm.POP_STACK();
+            Value& a = vm.PEEK_STACK();
+            a = Value(a.getUInt() ^ b.getUInt());
             DISPATCH();
         }
         handle_op_bit_and: {
-            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
-            Value res = Value(a.getUInt() & b.getUInt());
-            vm.PUSH_STACK(res);
+            Value& b = vm.POP_STACK();
+            Value& a = vm.PEEK_STACK();
+            a = Value(a.getUInt() & b.getUInt());
             DISPATCH();
         }
         handle_op_bit_shl: {
-            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
-            Value res = Value(a.getUInt() << b.getUInt());
-            vm.PUSH_STACK(res);
+            Value& b = vm.POP_STACK();
+            Value& a = vm.PEEK_STACK();
+            a = Value(a.getUInt() << b.getUInt());
             DISPATCH();
         }
         handle_op_bit_shr: {
-            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
-            Value res = Value(a.getUInt() >> b.getUInt());
-            vm.PUSH_STACK(res);
+            Value& b = vm.POP_STACK();
+            Value& a = vm.PEEK_STACK();
+            a = Value(a.getUInt() >> b.getUInt());
             DISPATCH();
         }
         // ------------------------------------------
         // And/OR
         // ------------------------------------------
         handle_op_or: {
-            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
-            Value res = Value(a.getBool() || b.getBool());
-            vm.PUSH_STACK(res);
+            Value& b = vm.POP_STACK();
+            Value& a = vm.PEEK_STACK();
+            a = Value(a.getBool() || b.getBool());
             DISPATCH();
         }
         handle_op_and: {
-            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
-            Value res = Value(a.getBool() && b.getBool());
-            vm.PUSH_STACK(res);
+            Value& b = vm.POP_STACK();
+            Value& a = vm.PEEK_STACK();
+            a = Value(a.getBool() && b.getBool());
             DISPATCH();
         }
         // ------------------------------------------
         // Comparison
         // ------------------------------------------
         handle_op_greater: {
-            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
-            Value res = Value(a.getDouble() > b.getDouble());
-            vm.PUSH_STACK(res);
+            Value& b = vm.POP_STACK();
+            Value& a = vm.PEEK_STACK();
+            a = Value(a.getDouble() > b.getDouble());
             DISPATCH();
         }
         handle_op_lower: {
-            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
-            Value res = Value(a.getDouble() < b.getDouble());
-            vm.PUSH_STACK(res);
+            Value& b = vm.POP_STACK();
+            Value& a = vm.PEEK_STACK();
+            a = Value(a.getDouble() < b.getDouble());
             DISPATCH();
         }
         handle_op_equal: {
-            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
+            Value& b = vm.POP_STACK();
+            Value& a = vm.PEEK_STACK();
             if (a.isString() && b.isString()) [[unlikely]] {
-                vm.PUSH_STACK(a.getString() == b.getString());
+                a = Value(a.getString() == b.getString());
                 DISPATCH();
             }
-            Value res = Value(a.getDouble() == b.getDouble());
-            vm.PUSH_STACK(res);
+            a = Value(a.getDouble() == b.getDouble());
             DISPATCH();
         }
         handle_op_not_equal: {
-            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
+            Value& b = vm.POP_STACK();
+            Value& a = vm.PEEK_STACK();
+
             if (a.isString() && b.isString()) [[unlikely]] {
-                vm.PUSH_STACK(a.getString() != b.getString());
+                a = Value(a.getString() != b.getString());
                 DISPATCH();
             }
-            Value res = Value(a.getDouble() != b.getDouble());
-            vm.PUSH_STACK(res);
+            a = Value(a.getDouble() != b.getDouble());
             DISPATCH();
         }
         handle_op_lower_equal: {
-            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
-            Value res = Value(a.getDouble() <= b.getDouble());
-            vm.PUSH_STACK(res);
+            Value& b = vm.POP_STACK();
+            Value& a = vm.PEEK_STACK();
+            a = Value(a.getDouble() <= b.getDouble());
             DISPATCH();
         }
         handle_op_greater_equal: {
-            Value b = vm.POP_STACK(); Value a = vm.POP_STACK();
-            Value res = Value(a.getDouble() >= b.getDouble());
-            vm.PUSH_STACK(res);
+            Value& b = vm.POP_STACK();
+            Value& a = vm.PEEK_STACK();
+            a = Value(a.getDouble() >= b.getDouble());
             DISPATCH();
         }
 

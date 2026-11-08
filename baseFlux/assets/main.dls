@@ -1,6 +1,13 @@
 print "-------- DLS Flux Main --------"
 # NOTE this is not what DLS is made for
 
+# ~~~ Baseflux ~~~
+# Events: OnRender, OnKey and OnMouse
+# Vars  : event::mx, event::my, event::type, event::key, event::mod, event::button
+#       : flux::ft
+# func  : flux::size, flux::maxfps, flux::Close, flux::Text, flux::DrawRect,
+#       : flux::DrawFPS
+
 caption = "DLS Baseflux"
 
 SDL_EVENT_KEY_DOWN = 0x300
@@ -17,13 +24,13 @@ HEIGTH = 380.0
 COUNT  = 500
 flux::size WIDTH HEIGTH WIDTH HEIGTH
 
-
+RW = 50
+RH = 40
 
 InitRects = function
-
     forRange i COUNT
-        w = (5 + math::randomf * 30)
-        h = (5 + math::randomf * 20)
+        w = (5 + math::randomf * RW)
+        h = (5 + math::randomf * RH)
         Rects[i]  = { (math::random 0 WIDTH - w) (math::random 0 HEIGTH - h ) w h }
         Colors[i] = { (math::random 0 255) (math::random 0 255) (math::random 0 255) 255 }
         Vec[i]    = { (math::randomf * 2.0 - 1.0) (math::randomf * 2.0 - 1.0) }
@@ -38,10 +45,14 @@ processRects = function
     forRange i COUNT
         flux::DrawRect Rects[i] Colors[i] Filled[i]
         Rects[i][0] = Rects[i][0] + Vec[i][0] * flux::ft
-        if Rects[i][0] + Rects[i][2] >= WIDTH || Rects[i][0] <= 0.0;  Vec[i][0] =  Vec[i][0] * -1.0;;
+        if Rects[i][0] + Rects[i][2] >= WIDTH || Rects[i][0] <= 0.0
+            Vec[i][0] =  Vec[i][0] * -1.0
+        end
 
         Rects[i][1] = Rects[i][1] + Vec[i][1] * flux::ft
-        if Rects[i][1] + Rects[i][3] >= HEIGTH || Rects[i][1] <= 0;  Vec[i][1] =  Vec[i][1] * -1.0;;
+        if Rects[i][1] + Rects[i][3] >= HEIGTH || Rects[i][1] <= 0
+            Vec[i][1] =  Vec[i][1] * -1.0
+        end
     end
 end
 
