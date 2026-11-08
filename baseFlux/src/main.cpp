@@ -16,6 +16,7 @@
 #include <vector>
 
 #include "DirtyLittleScript.h"
+#include "functions/StringFunctions.h"
 
 namespace fs = std::filesystem;
 
@@ -47,7 +48,17 @@ void SDLCALL ConsoleLogFunction(void *userdata, int category, SDL_LogPriority pr
 {
     char lBuffer[1024];
     snprintf(lBuffer, sizeof(lBuffer), "%s", message);
-    gConsole.AddLog("%s", message);
+    int wc = DLS::StrTools::getWordCount(lBuffer,'\n');
+    if (wc > 1) {
+        std::string str;
+        for (int i = 0; i < wc; i++) {
+            str = DLS::StrTools::getWord(lBuffer,i,'\n');
+            if (!str.empty()) gConsole.AddLog("%s", str.c_str());
+        }
+    } else {
+        gConsole.AddLog("%s", message);
+
+    }
 }
 //-----------------------------------------------------------------------------
 

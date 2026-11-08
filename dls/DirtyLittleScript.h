@@ -17,6 +17,7 @@
 #ifndef DLS_NO_EXTRA_FUNCTIONS
 #include "functions/MathFunctions.h"
 #include "functions/StringFunctions.h"
+#include "functions/HelpFunctions.h"
 #endif
 
 #include <fstream>

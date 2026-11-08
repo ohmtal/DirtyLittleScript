@@ -16,17 +16,10 @@ using namespace DLS;
 
 // bool DEBUG_TOKEN = false;
 
-namespace DLS {
-extern void RegisterMathFunctions();
-extern void RegisterStringFunctions();
-
-}
 
 int main(int argc, char* argv[]) {
 
     DLS::Init();
-    RegisterMathFunctions();
-    RegisterStringFunctions();
 
     int minargs = 1; // for more params
     if (argc > minargs) {
@@ -291,6 +284,10 @@ mySrc = R"(
 )";
 Run(mySrc);
 
+mySrc = R"(
+    help
+)";
+Run(mySrc);
 
 // goto jump_to_end;
 jump_to_end:

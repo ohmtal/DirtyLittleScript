@@ -36,6 +36,8 @@ set(DLS_SRC
     ${CMAKE_CURRENT_LIST_DIR}/core/VM.cpp
 
     # Functions and objects
+    ${CMAKE_CURRENT_LIST_DIR}/functions/HelpFunctions.h
+    ${CMAKE_CURRENT_LIST_DIR}/functions/HelpFunctions.cpp
     ${CMAKE_CURRENT_LIST_DIR}/functions/MathFunctions.h
     ${CMAKE_CURRENT_LIST_DIR}/functions/MathFunctions.cpp
     ${CMAKE_CURRENT_LIST_DIR}/functions/StringFunctions.h

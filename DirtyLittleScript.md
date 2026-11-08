@@ -200,6 +200,9 @@ put this in a extra function ,,,, should work with peek forward
     
 - [X] changed VM loop to threaded .. nearly as fast as DreiZehn ByteCode in BaseFlux :)
     
+- [X] changed from union Slot to flat U32
+- [X] hybrid header only or lib
+
 - [ ] add help for functions and globals 
     
     

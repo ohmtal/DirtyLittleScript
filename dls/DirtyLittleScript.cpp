@@ -70,6 +70,7 @@ namespace DLS {
         #ifndef DLS_NO_EXTRA_FUNCTIONS
             RegisterMathFunctions();
             RegisterStringFunctions();
+            RegisterHelpFunctions();
         #endif
 
 
