@@ -62,7 +62,7 @@ namespace DLSFlux {
         vm.Variables.saveGlobal(var_frametime, DLS::Value(BaseFlux::getFrameTime() * 100.0));
 
         DLS::Value& funcVar = vm.Variables.getGlobal(renderEventVarRegister);
-        vm.PlaceTapeAtScriptFunction(funcVar);
+        if (!vm.PlaceTapeAtScriptFunction(funcVar)) return;
         vm.run();
 
         //NOTE debug/stats:
@@ -79,7 +79,7 @@ namespace DLSFlux {
         vm.Variables.saveGlobal(var_mod, DLS::Value(mod));
 
         DLS::Value& funcVar = vm.Variables.getGlobal(keyEventVarRegister);
-        vm.PlaceTapeAtScriptFunction(funcVar);
+        if (!vm.PlaceTapeAtScriptFunction(funcVar)) return;
         vm.run();
     }
 
@@ -96,7 +96,7 @@ namespace DLSFlux {
 
         if (mouseEventVarRegister < 0) return;
         DLS::Value& funcVar = vm.Variables.getGlobal(mouseEventVarRegister);
-        vm.PlaceTapeAtScriptFunction(funcVar);
+        if (!vm.PlaceTapeAtScriptFunction(funcVar)) return;
         vm.run();
     }
 

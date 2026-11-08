@@ -337,9 +337,9 @@ namespace DLS {
         // ------------------------------------------
         bool PlaceTapeAtScriptFunction(Value& var) {
             if (var.type != ValueType::Function ) [[unlikely]] return false;
-
             if (pc < tape.size() - 1) Variables.mReturnStack.push_back(pc);
             pc = Variables.mFunctions[(size_t)var.getFastLong()];
+            if (pc >= tape.size()) [[unlikely]] return false;
             return true;
         }
     };
