@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <memory>
 #include <vector>
+#include <cstring> //mem ...
 #include <span>
 #include "Types.h"
 #include "Value.h"
@@ -220,12 +221,14 @@ namespace DLS {
     //     size_t tapeChunk;
     // };
 
-    union Slot {
-        uint64_t code;
-        Value value;
-        uint64_t jump_offset;
-        uint64_t tapeChunk;
-    };
+    // union Slot {
+    //     uint64_t code;
+    //     Value value;
+    //     uint64_t jump_offset;
+    //     uint64_t tapeChunk;
+    // };
+
+
     // ------------------------------------------
     // Loops
     // ------------------------------------------
@@ -239,9 +242,9 @@ namespace DLS {
     // ------------------------------------------
 
     struct VM {
-        size_t pc = 0;
-        std::vector<Slot> tape;
-        size_t STK = 0;
+        U32 pc = 0;
+        std::vector<U32> tape;
+        U32 STK = 0;
         std::vector<Value> stack;
 
         std::vector<LoopContext> mLoopStack;
@@ -266,31 +269,56 @@ namespace DLS {
         // ------------------------------------------
         // Tape functions
         // ------------------------------------------
-        void emitCode(const uint64_t opcode ) { tape.push_back({.code = opcode}); }
-        void emitValue(const Value& value)   { tape.push_back({.value = value}); }
-        void emitTapeChunk(const uint64_t tapeChunk)   { tape.push_back({.tapeChunk = tapeChunk}); }
+        void emitCode(const U32 opcode ) { tape.push_back(opcode); }
+        U32 emitValue(Value val) {
+            #ifdef DLS_DEBUG
+            assert(sizeof(Value) <= 4 * sizeof(U32) && "Value size missmatch! Only 16 byte Values allowed.");
+            #endif
+            U32 startIp = (U32)tape.size();
+            tape.resize(startIp + 4);
 
-        void emitJumpOffset(const uint64_t offset)   { tape.push_back({.jump_offset = offset}); }
-        void patchJumpOffset(const uint64_t tapePosition, const size_t offset)   { tape[tapePosition].jump_offset = offset; }
+            if (sizeof(Value) < 16) {
+                tape[startIp] = 0;
+                tape[startIp + 1] = 0;
+                tape[startIp + 2] = 0;
+                tape[startIp + 3] = 0;
+            }
 
-        size_t tell() { return tape.size(); }
+            std::memcpy(&tape[startIp], &val, sizeof(Value));
+            return startIp;
+        }
 
-        void rewindTape(size_t slot) {
+        void emitTapeChunk(const U32 tapeChunk)   { tape.push_back( tapeChunk); }
+
+        void emitJumpOffset(const U32 offset)   { tape.push_back( offset); }
+        void patchJumpOffset(const U32 tapePosition, const U32 offset)   { tape[tapePosition] = offset; }
+
+        U32 tell() { return (U32)tape.size(); }
+
+        void rewindTape(U32 slot) {
             while (tape.size() > slot) {
                 tape.pop_back();
             }
         }
 
-        Slot& peekSlot(size_t reverseOffset) {
+        U32& peekSlot(U32 reverseOffset) {
             return tape[pc - reverseOffset];
         }
 
-        Slot& advanceSlot() {
+        U32& advanceSlot() {
 #ifdef DLS_DEBUG
             assert (pc < tape.size() && "TAPE OVERFLOW");
 #endif
             return tape[pc++];
         }
+
+        inline Value advance_value() {
+            Value val;
+            std::memcpy(&val, &tape[pc], sizeof(Value));
+            pc += 4; // 16 bytes
+            return val;
+        }
+
         // ------------------------------------------
         // Stack functions
         // ------------------------------------------
@@ -320,7 +348,7 @@ namespace DLS {
             stack[STK++] = val;
         }
 
-        size_t STACK_SIZE() {
+        U32 STACK_SIZE() {
             return STK;
         }
 
@@ -388,7 +416,7 @@ namespace DLS {
 // =============================================================================
 #ifdef IMPLEMENT_DLS
 
-    #define DISPATCH() goto *dispatch_table[vm.tape[vm.pc++].code]
+    #define DISPATCH() goto *dispatch_table[vm.tape[vm.pc++]]
     #define DISPATCH_OPCODE(op) goto *dispatch_table[op]
 
     void PrintRuntimeError(const std::string& message
@@ -417,14 +445,14 @@ namespace DLS {
         // POP
         // ------------------------------------------
         handle_op_pop_stack: {
-            vm.POP_STACK();
+            (void) vm.POP_STACK();
             DISPATCH();
         }
 
         handle_op_pop_stack_count: {
-            size_t count = vm.advanceSlot().tapeChunk;
-            for (size_t i = 0; i < count; i++) {
-                vm.POP_STACK();
+            U32 count = vm.advanceSlot();
+            for (int i = 0; i < count; i++) {
+                (void) vm.POP_STACK();
             }
             DISPATCH();
         }
@@ -433,13 +461,13 @@ namespace DLS {
         // Variables
         // ------------------------------------------
         handle_op_save_global: {
-            size_t varIndex = vm.advanceSlot().tapeChunk;
+            U32 varIndex = vm.advanceSlot();
             vm.Variables.saveGlobal(varIndex,vm.POP_STACK());
             DISPATCH();
         }
 
         handle_op_load_global: {
-            size_t varIndex = vm.advanceSlot().tapeChunk;
+            U32 varIndex = vm.advanceSlot();
             Value& var = vm.Variables.getGlobal(varIndex);
             if (var.type == ValueType::Function) [[unlikely]] {
                 vm.PlaceTapeAtScriptFunction(var);
@@ -454,8 +482,8 @@ namespace DLS {
         // ------------------------------------------
         handle_op_save_array: {
 
-            U32 varIndex = (U32)vm.advanceSlot().tapeChunk;
-            U32 dimension = (U32)vm.advanceSlot().tapeChunk;
+            U32 varIndex = (U32)vm.advanceSlot();
+            U32 dimension = (U32)vm.advanceSlot();
 
             //-------- ... what a mess ;) ...
 
@@ -522,8 +550,8 @@ namespace DLS {
         }
         // --------------------------------------------------
         handle_op_load_array: {
-            size_t varIndex = vm.advanceSlot().tapeChunk;
-            U32 dimension = (U32)vm.advanceSlot().tapeChunk;
+            U32 varIndex = vm.advanceSlot();
+            U32 dimension = (U32)vm.advanceSlot();
 
             //-------- ... what a mess ;) ...
             if ( dimension > 1 ) {
@@ -579,7 +607,7 @@ namespace DLS {
         }
 
         handle_op_constuct_array: {
-            size_t count = vm.advanceSlot().tapeChunk;
+            U32 count = vm.advanceSlot();
             static std::vector<Value> arr;
             arr.clear();
             for (S32 i = 0; i < (S32)count; i++) {
@@ -594,8 +622,7 @@ namespace DLS {
         // Literal
         // ------------------------------------------
         handle_op_literal: {
-            Value val = vm.tape[vm.pc++].value;
-            vm.PUSH_STACK(val);
+            vm.PUSH_STACK(vm.advance_value());
             DISPATCH();
         }
         // ------------------------------------------
@@ -611,13 +638,13 @@ namespace DLS {
 
 
         handle_op_inc: {
-            size_t varIndex = vm.advanceSlot().tapeChunk;
+            U32 varIndex = vm.advanceSlot();
             Value& dstValue = vm.Variables.getGlobal(varIndex);
             dstValue = Value(dstValue.getDouble() + 1.0);
             DISPATCH();
         }
         handle_op_dec: {
-            size_t varIndex = vm.advanceSlot().tapeChunk;
+            U32 varIndex = vm.advanceSlot();
             Value& dstValue = vm.Variables.getGlobal(varIndex);
             dstValue = Value(dstValue.getDouble() - 1.0);
             DISPATCH();
@@ -762,14 +789,14 @@ namespace DLS {
         // JUMP
         // ------------------------------------------
         handle_op_jump: {
-            size_t target = vm.advanceSlot().jump_offset;
+            U32 target = vm.advanceSlot();
             vm.pc = target;
             DISPATCH();
         }
 
         handle_op_jump_if_true: {
             Value a = vm.POP_STACK();
-            size_t target = vm.advanceSlot().jump_offset;
+            U32 target = vm.advanceSlot();
             if (a.getBool()) {
                 vm.pc = target;
             }
@@ -777,7 +804,7 @@ namespace DLS {
         }
         handle_op_jump_if_false: {
             Value a = vm.POP_STACK();
-            size_t target = vm.advanceSlot().jump_offset;
+            U32 target = vm.advanceSlot();
             if (!a.getBool()) {
                 vm.pc = target;
             }
@@ -786,7 +813,7 @@ namespace DLS {
 
         handle_op_jump_if_true_no_pop: {
             Value a = vm.PEEK_STACK();
-            size_t target = vm.advanceSlot().jump_offset;
+            U32 target = vm.advanceSlot();
             if (a.getBool()) {
                 vm.pc = target;
             }
@@ -794,7 +821,7 @@ namespace DLS {
         }
         handle_op_jump_if_false_no_pop: {
             Value a = vm.PEEK_STACK();
-            size_t target = vm.advanceSlot().jump_offset;
+            U32 target = vm.advanceSlot();
             if (!a.getBool()) {
                 vm.pc = target;
             }
@@ -805,13 +832,13 @@ namespace DLS {
         // ------------------------------------------
         handle_op_cfunc: {
             // args count
-            U32 symid = (U32) vm.advanceSlot().tapeChunk;
-            U32 numArgs = (U32) vm.advanceSlot().tapeChunk;
+            U32 symid =  vm.advanceSlot();
+            U32 numArgs = vm.advanceSlot();
 
             const FunctionMap::CallBack* cb = FunctionMap::GetCFunction(symid);
             if (!cb) [[unlikely]]{
-                for (size_t i = 0; i < numArgs; ++i) {
-                    vm.POP_STACK();
+                for (U32 i = 0; i < numArgs; ++i) {
+                    (void)vm.POP_STACK();
                 }
                 vm.PUSH_STACK(Value(0));
                 DISPATCH();
@@ -857,7 +884,7 @@ namespace DLS {
         // Script function def
         // ------------------------------------------
         handle_op_func_def: {
-            size_t startPosition =  vm.advanceSlot().jump_offset;
+            U32 startPosition =  vm.advanceSlot();
             vm.Variables.mFunctions.push_back(startPosition);
             Value subValue = Value((S64)(vm.Variables.mFunctions.size() - 1));
             subValue.type = ValueType::Function;

@@ -269,11 +269,11 @@ bool Parser::parseMath(int minPrecedence) {
         if (isInlineMathType(op.mType)) {
             size_t pc = vm->tape.size();
             // override op_load_global
-            if (pc >= 2 && vm->tape[pc - 2].code == op_load_global) {
+            if (pc >= 2 && vm->tape[pc - 2] == op_load_global) {
                 if (op.mType == TokenType::PlusPlus) {
-                    vm->tape[pc - 2].code = op_inc;
+                    vm->tape[pc - 2] = op_inc;
                 } else { // must be MinusMinus
-                    vm->tape[pc - 2].code = op_dec;
+                    vm->tape[pc - 2] = op_dec;
                 }
                 // if (requestParam <= 0) vm->emitCode( op_pop_stack );
 
