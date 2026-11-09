@@ -28,7 +28,11 @@ namespace DLSFlux {
 
     std::string currentFileName = "";
 
+    DLS::S64 setupEventVarRegister = -1;
+    DLS::S64 initEventVarRegister = -1;
+    DLS::S64 updateEventVarRegister = -1;
     DLS::S64 renderEventVarRegister = -1;
+    DLS::S64 shutDownEventVarRegister = -1;
     DLS::S64 keyEventVarRegister = -1;
     DLS::S64 var_mouseX, var_mouseY, var_eventType,var_mod, var_key, var_button, var_frametime;
 
@@ -36,9 +40,48 @@ namespace DLSFlux {
 
     DLS::S64 EventVarRegister = -1;
 
+    // -----------------------------------------------------------------------------
+    bool MapArrayFRect( DLS::Value& value, SDL_FRect& rect) {
+        if (value.type != DLS::ValueType::Array) return false;
+        auto arr = vm.Variables.getArrayByMasterIndex((size_t)value.getFastLong());
+        if (arr.size() < 4) return false;
+        rect.x = arr[0].getFloat();
+        rect.y = arr[1].getFloat();
+        rect.w = arr[2].getFloat();
+        rect.h = arr[3].getFloat();
+        if (rect.w == 0.f || rect.h == 0.f) return false;
+        return true;
+    }
+    // -----------------------------------------------------------------------------
+    bool MapArrayColor( DLS::Value& value, SDL_Color& color) {
+        if (value.type != DLS::ValueType::Array) return false;
+        auto arr = vm.Variables.getArrayByMasterIndex((size_t)value.getFastLong());
+        if (arr.size() < 3) return false;
+        color.r = arr[0].getU8();
+        color.g = arr[1].getU8();
+        color.b = arr[2].getU8();
+        if (arr.size() > 3) color.a = arr[3].getU8();
+        else color.a = 255;
+        return true;
+    }
+    // -----------------------------------------------------------------------------
+    bool MapArrayFPoint( DLS::Value& value, SDL_FPoint& point) {
+        if (value.type != DLS::ValueType::Array) return false;
+        auto arr = vm.Variables.getArrayByMasterIndex((size_t)value.getFastLong());
+        if (arr.size() < 2) return false;
+        point.x = arr[0].getFloat();
+        point.y = arr[1].getFloat();
+        return true;
+
+    }
+    // -----------------------------------------------------------------------------
     void RegisterGlobals() {
+        setupEventVarRegister = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "OnSetup" ));
+        initEventVarRegister = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "OnInit" ));
+        updateEventVarRegister = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "OnUpdate" ));
         renderEventVarRegister = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "OnRender" ));
         keyEventVarRegister = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "OnKey" ));
+        shutDownEventVarRegister = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "OnShutdown" ));
         mouseEventVarRegister = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "OnMouse" ));
         var_mouseX      = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "event::mx" ));
         var_mouseY      = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "event::my" ));
@@ -53,6 +96,55 @@ namespace DLSFlux {
 
     }
 
+    void OnSetup() {
+        DLS::Value& funcVar = vm.Variables.getGlobal(setupEventVarRegister);
+        if (!vm.PlaceTapeAtScriptFunction(funcVar)) return;
+        vm.run();
+
+        DLS::Value val;
+        if (vm.Variables.getGlobalVariableValueRef("flux::EnableVSync", val))
+            app.getSettings().EnableVSync = val.getBool();
+
+        if (vm.Variables.getGlobalVariableValueRef("flux::Company", val))
+            app.getSettings().Company = val.getString();
+
+        if (vm.Variables.getGlobalVariableValueRef("flux::Caption", val))
+            app.getSettings().Caption = val.getString();
+
+        if (vm.Variables.getGlobalVariableValueRef("flux::Version", val))
+            app.getSettings().Version = val.getString();
+
+        if (vm.Variables.getGlobalVariableValueRef("flux::SoundPathAppend", val))
+            app.getSettings().SoundPathAppend = val.getString();
+
+        if (vm.Variables.getGlobalVariableValueRef("flux::TexturePathAppend", val))
+            app.getSettings().TexturePathAppend = val.getString();
+
+        if (vm.Variables.getGlobalVariableValueRef("flux::sdlWindowFlagsOverwrite", val))
+            app.getSettings().sdlWindowFlagsOverwrite = (Uint64)val.getLong();
+
+        if (vm.Variables.getGlobalVariableValueRef("flux::clearColor", val)) {
+            SDL_Color col;
+            if (MapArrayColor(val,col))
+                app.getSettings().clearColor = col;
+        }
+
+    }
+    void OnInit() {
+        DLS::Value& funcVar = vm.Variables.getGlobal(initEventVarRegister);
+        if (!vm.PlaceTapeAtScriptFunction(funcVar)) return;
+        vm.run();
+    }
+    void OnUpdate() {
+        DLS::Value& funcVar = vm.Variables.getGlobal(updateEventVarRegister);
+        if (!vm.PlaceTapeAtScriptFunction(funcVar)) return;
+        vm.run();
+    }
+    void OnShutdown() {
+        DLS::Value& funcVar = vm.Variables.getGlobal(shutDownEventVarRegister);
+        if (!vm.PlaceTapeAtScriptFunction(funcVar)) return;
+        vm.run();
+    }
     void OnRender() {
         // example:
         // OnRender = function; flux::DrawFPS 50 50 5;;
@@ -119,30 +211,6 @@ namespace DLSFlux {
     size_t getGlobalCount() { return GlobalsCount;}
     size_t getStackCount() { return StackCount;}
     //  -----------------------------------------------------------------------------
-    bool MapArrayFRect( DLS::Value& value, SDL_FRect& rect) {
-        if (value.type != DLS::ValueType::Array) return false;
-        auto arr = vm.Variables.getArrayByMasterIndex((size_t)value.getFastLong());
-        if (arr.size() < 4) return false;
-        rect.x = arr[0].getFloat();
-        rect.y = arr[1].getFloat();
-        rect.w = arr[2].getFloat();
-        rect.h = arr[3].getFloat();
-        if (rect.w == 0.f || rect.h == 0.f) return false;
-        return true;
-    }
-    // -----------------------------------------------------------------------------
-    bool MapArrayColor( DLS::Value& value, SDL_Color& color) {
-        if (value.type != DLS::ValueType::Array) return false;
-        auto arr = vm.Variables.getArrayByMasterIndex((size_t)value.getFastLong());
-        if (arr.size() < 3) return false;
-        color.r = arr[0].getU8();
-        color.g = arr[1].getU8();
-        color.b = arr[2].getU8();
-        if (arr.size() > 3) color.a = arr[3].getU8();
-        else color.a = 255;
-        return true;
-
-    }
 
     void RegisterFluxFunctions() {
         using namespace DLS;
@@ -187,7 +255,7 @@ namespace DLSFlux {
             arr.push_back(Value(logiX));
             arr.push_back(Value(logiY));
 
-            ret = Globals::CurrentVM->Variables.createArray(arr);
+            ret = Globals::CurrentVM->Variables.createArray(arr, false);
 
 
             return true;
@@ -260,6 +328,23 @@ namespace DLSFlux {
             return true;
         }, "Draw Rectangle Vector 4 floats, Vector 4 int, bool fill");
         // ---------------------------------
+        // void DrawLine(SDL_Renderer *renderer, const SDL_FPoint& p1,const SDL_FPoint& p2 , const SDL_Color& color) {
+        FunctionMap::RegisterFunction("flux::DrawLine", [](std::span<Value> args, Value& ret) -> bool {
+            if (args.size() < 2 || !args[0].isArray() || !args[1].isArray()) {
+                Tools::errorf("flux::DrawLine: Missing Parameter");
+                return false;
+            }
+            SDL_FPoint p1,p2;
+            SDL_Color color;
+            if (!MapArrayFPoint(args[0], p1)) return false;
+            if (!MapArrayFPoint(args[1], p2)) return false;
+            if (!MapArrayColor(args[2], color)) return false;
+            BaseFlux::DrawLine(app.getRenderer(),p1, p2, color);
+            return true;
+        }, "Draw Line arrayOfFPoint arrayOfFPoint arrayOfColor");
+
+
+        // ---------------------------------
         FunctionMap::RegisterFunction("flux::DrawFPS", [](std::span<Value> args, Value& ret) -> bool {
             if (args.size() < 2) return false;
 
@@ -288,11 +373,54 @@ namespace DLSFlux {
             BaseFlux::DrawDebugText(app.getRenderer(),x,y,fps_text.c_str(), fontSize, color, true/*, shadowColor*/);
             return true;
         }, "Draw FPS as position x y ");
+        // ---------------------------------------------------------------------
+        FunctionMap::RegisterFunction("debug::arraycount", [](std::span<Value> args, Value& ret) -> bool {
+            size_t assigned = 0;
+            for (auto& arr: vm.Variables.mArrays) {
+                if (arr.isAssigned()) assigned++;
+            }
 
+            ret = Value(assigned);
+            return true;
+        }, "debug return assigned array count");
+        FunctionMap::RegisterFunction("debug::gc", [](std::span<Value> args, Value& ret) -> bool {
+            vm.Variables.ArrayFreeTemp();
+            size_t assigned = 0;
+            for (auto& arr: vm.Variables.mArrays) {
+                if (arr.isAssigned()) assigned++;
+            }
 
+            ret = Value(assigned);
+            return true;
+        }, "debug return assigned array count");
 
+        // ---------------------------------------------------------------------
+        FunctionMap::RegisterFunction("flux::BatchRect", [](std::span<Value> args, Value& ret) -> bool {
+            if (args.size() < 3) return false;
+            if (args[0].type != DLS::ValueType::Array) return false;
+            if (args[1].type != DLS::ValueType::Array) return false;
+            if (args[2].type != DLS::ValueType::Array) return false;
+
+            auto rects = vm.Variables.getArrayByMasterIndex((size_t)args[0].getFastLong());
+            auto colors = vm.Variables.getArrayByMasterIndex((size_t)args[1].getFastLong());
+            auto filled = vm.Variables.getArrayByMasterIndex((size_t)args[2].getFastLong());
+
+            size_t count = rects.size();
+            if (colors.size() != count || filled.size() != count) return false;
+
+            SDL_FRect sdlrect;
+            SDL_Color sdlcolor;
+            bool fill = false;
+            for (size_t i = 0; i < count; i++) {
+                if (!MapArrayFRect(rects[i], sdlrect)) return false;
+                if (!MapArrayColor(colors[i], sdlcolor)) return false;
+                fill = filled[i].getBool();
+                BaseFlux::DrawRect(app.getRenderer(),sdlrect, sdlcolor, fill);
+            }
+
+            return true;
+        }, "Draw Rects params ArrayOfRects ArrayOfColors ArrayofBoolFilled ");
     }
-
 
     // -------------------------------------------------------------------------
     static void DLS_Logger(DLS::Tools::LogLevel level, const char* message){
@@ -341,9 +469,16 @@ namespace DLSFlux {
             vm.tape.clear();
             vm.pc = 0;
             vm.Variables.reset();
+
+            ArrayCount = 0;
+            GlobalsCount = 0;
+            StackCount = 0;
+
             RegisterGlobals();
         }
-        return Run(DLS::loadScript(fileName));
+        if (!Run(DLS::loadScript(fileName))) return false;
+        if (ResetTape) DLSFlux::OnInit();
+        return true;
     }
 
 }

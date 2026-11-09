@@ -52,6 +52,7 @@ namespace DLS {
         std::vector<Value> mGlobalsRegister;
 
         std::vector<ArrayEntry> mArrays;
+        std::vector<size_t> mArrayTempAssigned;
 
         std::vector<size_t> mFunctions;
         std::vector<size_t> mReturnStack;
@@ -64,6 +65,7 @@ namespace DLS {
             mReturnStack.clear();
             mFunctions.clear();
             mArrays.clear();
+            mArrayTempAssigned.clear();
             mGlobalsRegister.clear();
             mGlobalsLookUp.clear();
         }
@@ -119,9 +121,22 @@ namespace DLS {
         }
 
         // --------------------------------------------------------------------
-        Value createArray(const std::vector<Value>& values) {
-
+        void ArrayFreeTemp() {
+            for (auto idx : mArrayTempAssigned) {
+                mArrays[idx].setAssigned(false);
+            }
+            mArrayTempAssigned.clear();
+        }
+        // --------------------------------------------------------------------
+        Value createArray(const std::vector<Value>& values, bool assignTemp = false) {
             S64 masterIndex = (S64)reserveArray();
+
+            // i need the temp assigned, when it's added as a func param
+            if (assignTemp) [[unlikely]]{
+                mArrays[(size_t)masterIndex].setAssigned(true);
+                mArrayTempAssigned.push_back((size_t)masterIndex);
+            }
+
             Value result = Value(masterIndex);
             result.type = ValueType::Array;
             mArrays[masterIndex].Elements = values;
@@ -198,11 +213,12 @@ namespace DLS {
         void saveArray(size_t varIndex, U32 index, const Value& value) {
             Value arrValue = getGlobal(varIndex);
 
-            Value finaleValue = (value.type == ValueType::Array) ? copyArray((size_t)value.getFastLong()) : value;
+            //double copy! Value finaleValue = (value.type == ValueType::Array) ? copyArray((size_t)value.getFastLong()) : value;
 
             // changed to saveArray
             bool doSave =  !arrValue.isArray();
-            saveArray(arrValue, index, finaleValue);
+            saveArray(arrValue, index, value);
+            // saveArray(arrValue, index, finaleValue);
             if (doSave) saveGlobal(varIndex,arrValue);
 
         }
@@ -374,6 +390,8 @@ namespace DLS {
     #define OP_CODE_LIST \
     X(op_exit,          0, "exit") \
     X(op_pop_stack,     0, "pop the stack") \
+    X(op_pop_stack_count, 1, "pop stack with count") \
+    X(op_clear_temp_arrays, 0, "clear temp arrays") \
     X(op_load_global,    1, "load a global variable") \
     X(op_save_global,    1, "save a global variable") \
     X(op_load_array,     2, "load a array") \

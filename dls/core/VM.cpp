@@ -214,8 +214,14 @@ namespace DLS {
             DISPATCH();
         }
 
+        handle_op_clear_temp_arrays:{
+            vm.Variables.ArrayFreeTemp();
+            DISPATCH();
+        }
+
         handle_op_constuct_array: {
             U32 count = vm.advanceSlot();
+            U32 assignTemp = vm.advanceSlot();
             static std::vector<Value> arr;
             arr.clear();
             for (S32 i = 0; i < (S32)count; i++) {
@@ -223,7 +229,7 @@ namespace DLS {
             }
             std::reverse(arr.begin(), arr.end());
 
-            vm.PUSH_STACK(vm.Variables.createArray(arr));
+            vm.PUSH_STACK(vm.Variables.createArray(arr, assignTemp));
             DISPATCH();
         }
         // ------------------------------------------
@@ -467,6 +473,7 @@ namespace DLS {
                     Tools::errorf("Runtime Error in function: %s\n", SymbolTable::getName(symid).c_str());
                 }
                 vm.PUSH_STACK(returnValue);
+
                 DISPATCH();
             } else {
                 // --- more than 12 parameters fallback ---
@@ -478,6 +485,7 @@ namespace DLS {
                 }
                 Value returnValue = Value(0);
                 bool success = (*cb)(evaluatedArgs, returnValue);
+
 
                 if (!success) [[unlikely]] {
                     Tools::errorf("Runtime Error in function: %s\n", SymbolTable::getName(symid).c_str());

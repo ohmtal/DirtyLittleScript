@@ -32,6 +32,10 @@ namespace DLSFlux {
     extern size_t getArrayCount();
     extern size_t getGlobalCount();
     extern size_t getStackCount();
+    extern void OnSetup();
+    extern void OnInit();
+    extern void OnUpdate();
+    extern void OnShutdown();
     extern void OnRender();
     extern bool RunFile(const std::string& fileName, bool ResetTape );
     extern void OnKey(SDL_Keycode key, DLS::U32 EventType, SDL_Keymod mod);
@@ -143,25 +147,21 @@ void shutDown() {
 //-----------------------------------------------------------------------------
 bool initApp() {
 
+
+
     if ( !app.InitSDL() ) return false;
     app.initImGui();
+
+
 
     app.OnRender = [&](SDL_Renderer* renderer) {
         onDraw(renderer);
         DLSFlux::OnRender();
     };
 
-    // // app.OnUpdate = [&](const float deltaTime) {
-    // //     const float fixedStep = 1.0f / 60.0f;
-    // //     static float accumulator = 0.0f;
-    // //
-    // //     accumulator += deltaTime;
-    // //     while (accumulator >= fixedStep) {
-    // //         // // LuaState.OnUpdate(fixedStep);
-    // //
-    // //         accumulator -= fixedStep;
-    // //     }
-    // // };
+    app.OnUpdate = [&](const float deltaTime) {
+        DLSFlux::OnUpdate();
+    };
 
     app.OnEvent = [&](const SDL_Event& event) {
         if (app.getImGuiIO())  {
@@ -193,9 +193,7 @@ bool initApp() {
             case SDL_EVENT_KEY_UP:
             case SDL_EVENT_KEY_DOWN:
             {
-
                 DLSFlux::OnKey(event.key.key, event.type, event.key.mod);
-
             }
             break;
             case SDL_EVENT_MOUSE_BUTTON_DOWN:
@@ -210,6 +208,9 @@ bool initApp() {
 
     };
 
+    app.OnShutDown = [&]() {
+        DLSFlux::OnShutdown();
+    };
 
     return true;
 }
@@ -227,14 +228,19 @@ int main(int argc, char* argv[]) {
         .TexturePathAppend = "texture/"
     };
 
+    DLSFlux::Init();
+    DLSFlux::RunFile("assets/main.dls", false);
+    DLSFlux::OnSetup();
+
+
+
+
     if (!initApp()) return 1;
 
-    DLSFlux::Init();
-
+    DLSFlux::OnInit();
     fetchDLSFiles();
     initConsole();
     SDL_Log("[info] Welcome to BaseFlux DLS Console!");
-    DLSFlux::RunFile("assets/main.dls", false);
     app.Execute();
     shutDown();
 

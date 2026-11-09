@@ -21,6 +21,8 @@
 
 namespace DLS{
 
+static bool ArrayConstructed = false;
+static bool ArrayAssign = false;
 // -------------------------------------------------------------------------
 void Parser::PrintParseError(const std::string& message
 , const std::string& p1 ,const std::string& p2 ,const std::string& p3 ) {
@@ -111,6 +113,8 @@ bool Parser::parsePrimary() {
 
             if (FunctionMap::IsCFunction(symId)) {
                 U32 argCount = 0;
+                ArrayConstructed = false;
+                ArrayAssign = true;
                 while (isContinueToken(peek())) {
                     if (!getArg( "c function parameters" )) return false;
                     argCount++;
@@ -120,6 +124,9 @@ bool Parser::parsePrimary() {
                 vm->emitTapeChunk((size_t)argCount);
                 //not faster! vm->emitValue(Value(nullptr));
 
+                if (ArrayConstructed) vm->emitCode(op_clear_temp_arrays);
+                ArrayAssign = false;
+                ArrayConstructed = false;
                 if (requestParam <= 0) vm->emitCode( op_pop_stack );
             }
             else
@@ -589,6 +596,8 @@ bool Parser::parseCurly() {
 
     vm->emitCode(op_constuct_array);
     vm->emitTapeChunk(count);
+    vm->emitTapeChunk(ArrayAssign);
+    ArrayConstructed = true;
     return true;
 }
 

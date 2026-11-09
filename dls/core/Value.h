@@ -49,6 +49,7 @@ namespace DLS {
         Value(U32 val) { type = ValueType::Long; l = (S64)val; }
         Value(U8 val)  { type = ValueType::Long; l = (S64)val; }
         Value(S64 val) { type = ValueType::Long; l = val; }
+        Value(size_t val) { type = ValueType::Long; l = (S64)val; }
         Value(std::string val) { type = ValueType::String; strId = StringTable::insert(val); }
         Value(void* val) { type = ValueType::Pointer; p = val; }
         Value(void* val, U8 val_subtype) { type = ValueType::Pointer; p = val; subType = val_subtype;}
