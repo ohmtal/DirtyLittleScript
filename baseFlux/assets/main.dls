@@ -21,6 +21,7 @@ WIDTH  = 800.0
 HEIGTH = 450.0
 COUNT  = 500
 
+COLOR::CYAN = {0 255 255}
 
 RW = 50
 RH = 40
@@ -32,7 +33,7 @@ OnSetup = function
     flux::Caption = "The flux is here"
     flux::Version = "0.261109.01"
 #     print " -------- SETUP 1 count" debug::arraycount
-    flux::clearColor = { 0 20 30 255 }
+    flux::clearColor = { 30 50 50 255 }
 #     print " -------- SETUP 2 count" debug::arraycount
 end
 
@@ -80,7 +81,8 @@ OnRender = function
     flux::BatchRect Rects Colors Filled
     flux::DrawFPS 10 30 2;
     flux::Text 120 30 (str::format "mouse: %d %d" event::mx event::my) 2
-    flux::DrawLine {10 55} {WIDTH - 10 55} {0 255 255}
+    # bad practice better define the arrays somewhere else !
+    flux::DrawLine {10 55} {WIDTH - 10 55} COLOR::CYAN
     flux::Text 10 60 caption 4
 end
 

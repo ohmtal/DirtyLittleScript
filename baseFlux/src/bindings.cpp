@@ -373,26 +373,7 @@ namespace DLSFlux {
             BaseFlux::DrawDebugText(app.getRenderer(),x,y,fps_text.c_str(), fontSize, color, true/*, shadowColor*/);
             return true;
         }, "Draw FPS as position x y ");
-        // ---------------------------------------------------------------------
-        FunctionMap::RegisterFunction("debug::arraycount", [](std::span<Value> args, Value& ret) -> bool {
-            size_t assigned = 0;
-            for (auto& arr: vm.Variables.mArrays) {
-                if (arr.isAssigned()) assigned++;
-            }
 
-            ret = Value(assigned);
-            return true;
-        }, "debug return assigned array count");
-        FunctionMap::RegisterFunction("debug::gc", [](std::span<Value> args, Value& ret) -> bool {
-            vm.Variables.ArrayFreeTemp();
-            size_t assigned = 0;
-            for (auto& arr: vm.Variables.mArrays) {
-                if (arr.isAssigned()) assigned++;
-            }
-
-            ret = Value(assigned);
-            return true;
-        }, "debug return assigned array count");
 
         // ---------------------------------------------------------------------
         FunctionMap::RegisterFunction("flux::BatchRect", [](std::span<Value> args, Value& ret) -> bool {
@@ -420,6 +401,84 @@ namespace DLSFlux {
 
             return true;
         }, "Draw Rects params ArrayOfRects ArrayOfColors ArrayofBoolFilled ");
+        // ---------------------------------------------------------------------
+        // ---------------------------------------------------------------------
+        FunctionMap::RegisterFunction("debug::arraycount", [](std::span<Value> args, Value& ret) -> bool {
+            size_t assigned = 0;
+            for (auto& arr: vm.Variables.mArrays) {
+                if (arr.isAssigned()) assigned++;
+            }
+
+            ret = Value(assigned);
+            return true;
+        }, "debug return assigned array count");
+        FunctionMap::RegisterFunction("debug::gc", [](std::span<Value> args, Value& ret) -> bool {
+            vm.Variables.ArrayFreeTemp();
+            size_t assigned = 0;
+            for (auto& arr: vm.Variables.mArrays) {
+                if (arr.isAssigned()) assigned++;
+            }
+
+            ret = Value(assigned);
+            return true;
+        }, "debug return assigned array count");
+        // ---------------------------------------------------------------------
+        // NOTE not really nice to work with:
+        // I guess i need a Dot and marshalling !
+        // Here i can do this because i dont use pointers to values
+        // like in DreiZehn - thats why iam not so fast here !
+        FunctionMap::RegisterFunction("Rect::new", [](std::span<Value> args, Value& ret) -> bool {
+            SDL_FRect* rect = new SDL_FRect();
+            if (args.size() > 0 && args[0].isArray()) {
+                MapArrayFRect(args[0], *rect);
+            }
+            ret = Value(rect);
+            //FIXME subtype
+            ret.subType = 1;
+            return true;
+        }, "Create a Rect. must be destroy on the end!");
+
+        FunctionMap::RegisterFunction("Rect::destroy", [](std::span<Value> args, Value& ret) -> bool {
+            //FIXME subtype
+            if (args.size() < 1 || !args[0].isPointerSubType(1)) return false;
+            free(args[0].getPointer());
+            ret = Value(0);
+            return true;
+        }, "Destroy a Rect");
+
+        FunctionMap::RegisterFunction("Rect::x", [](std::span<Value> args, Value& ret) -> bool {
+            //FIXME subtype
+            if (args.size() < 1 || !args[0].isPointerSubType(1)) return false;
+            SDL_FRect* rect = static_cast<SDL_FRect*>(args[0].getPointer());
+            if (args.size() > 1) rect->x  = args[1].getFloat();
+            ret = Value(rect->x);
+            return true;
+        }, "get set rect x");
+        FunctionMap::RegisterFunction("Rect::y", [](std::span<Value> args, Value& ret) -> bool {
+            //FIXME subtype
+            if (args.size() < 1 || !args[0].isPointerSubType(1)) return false;
+            SDL_FRect* rect = static_cast<SDL_FRect*>(args[0].getPointer());
+            if (args.size() > 1) rect->y  = args[1].getFloat();
+            ret = Value(rect->y);
+            return true;
+        }, "get set rect y");
+        FunctionMap::RegisterFunction("Rect::w", [](std::span<Value> args, Value& ret) -> bool {
+            //FIXME subtype
+            if (args.size() < 1 || !args[0].isPointerSubType(1)) return false;
+            SDL_FRect* rect = static_cast<SDL_FRect*>(args[0].getPointer());
+            if (args.size() > 1) rect->w  = args[1].getFloat();
+            ret = Value(rect->w);
+            return true;
+        }, "get set rect w");
+        FunctionMap::RegisterFunction("rect::h", [](std::span<Value> args, Value& ret) -> bool {
+            //FIXME subtype
+            if (args.size() < 1 || !args[0].isPointerSubType(1)) return false;
+            SDL_FRect* rect = static_cast<SDL_FRect*>(args[0].getPointer());
+            if (args.size() > 1) rect->h  = args[1].getFloat();
+            ret = Value(rect->h);
+            return true;
+        }, "get set rect h");
+        // ---------------------------------------------------------------------
     }
 
     // -------------------------------------------------------------------------

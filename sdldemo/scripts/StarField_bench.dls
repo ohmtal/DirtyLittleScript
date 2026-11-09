@@ -133,8 +133,6 @@ while Running
 
     end
 
-
-
     SDL_SetRenderDrawColor Renderer 200 200 255 255
     SDL_SetRenderScale Renderer  fontScale fontScale
     SDL_RenderDebugText Renderer 10 10 str::concat "StarField Dirty Little Script:" STAR_COUNT " FPS:" FPS

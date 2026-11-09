@@ -1,0 +1,141 @@
+# -----------------------------------------------------------------------------
+# ported from raylib-elfScript to BaseElf / NativSDL to CrazyElf to DreiZehn
+# to Dirty Little Script
+# original: BSD-License, Copyright (c) 2025 JP Mortiboys (@themushroompirates)
+# -----------------------------------------------------------------------------
+print " StarField Dirty Little Script"
+
+W = 640
+H = 320
+maxW = W / 2
+minW = maxW * -1
+maxH = H / 2
+minH = maxH * -1
+
+STAR_COUNT  = 4200
+START_DIV   = 0.03125
+Speed       = 0.2
+fontScale   = 1.2
+
+
+print "* Init Video"
+
+if ( SDL_Init SDL_INIT_VIDEO ) == false
+    print "Failed to init SDL3"
+    return false
+end
+
+print "* Create Window"
+Window = SDL_CreateWindow "StarField DreiZehn" W H 0
+if Window == 0
+    print "Failed to create window"
+    return
+end
+
+print "* Create Render and Event"
+Renderer = SDL_CreateRenderer Window
+Event = SDL_CreateEvent
+
+fnShutDown = function
+    Renderer = SDL_DestroyRenderer Renderer
+    Window = SDL_DestroyWindow Window
+    Event = SDL_DestroyEvent Event
+    print "ShutDown Complete "
+end
+
+if (Renderer == 0)
+    print "Failed to Create Renderer!"
+end
+if (Event == 0)
+
+    print "Failed to Create Event!"
+end
+
+# print "renderer is: " Renderer
+
+
+print "* Init Points"
+i = 0
+forRange i  STAR_COUNT
+     Points[i] =  {(math::random minW maxW ) (math::random minH maxH) ( math::randomf)}
+end
+# --------- MAIN -----------
+Running = true
+
+Time_Last = SDL_GetTicks
+counter = 0
+fpsSum  = 0.0
+FPS = 0
+loops = 0.0
+
+print "* Launch Main Loop"
+
+while Running
+    loops++
+    Time_Now = SDL_GetTicks
+    Dt = (Time_Now - Time_Last) / 1000.0
+    Time_Last = Time_Now
+
+    if (Dt > 0.0 )
+        counter++
+        fpsSum = fpsSum + 1.0 / Dt
+
+    end
+
+    if (counter == 50 )
+        FPS = int::cast fpsSum / 50.0
+        fpsSum = 0.0
+        counter = 0
+    end
+
+    while SDL_PollEvent Event
+        Type = SDL_GetEventType Event
+        if Type == SDL_EVENT_QUIT
+            Running = false
+        end
+        if Type == SDL_EVENT_KEY_DOWN
+            if (SDL_GetEventKey Event) == SDLK_ESCAPE
+                Running = false
+            end
+        end
+    end
+
+    SDL_SetRenderDrawColor Renderer 20 20 40 255
+    SDL_RenderClear Renderer
+
+    SDL_SetRenderDrawColor Renderer 180 180 255 255
+
+    forRange i STAR_COUNT
+        Points[i][2] = Points[i][2] - Dt * Speed
+
+        invZ = 1.0 / Points[i][2]
+        screenX = (W * 0.5) + (Points[i][0] * invZ)
+        screenY = (H * 0.5) + (Points[i][1] * invZ)
+
+        if (Points[i][2] < 0.0) || (screenX < 0.0) || (screenX > W) || (screenY < 0.0)  || (screenY > H)
+
+            Points[i] =  {(math::random minW maxW ) (math::random minH maxH) 1.0}
+
+            screenX = W + Points[i][0]
+            screenY = H + Points[i][1]
+        end
+
+        radius = math::lerp 2.0 0.3 Points[i][2]
+        SDL_RenderFillRect Renderer screenX screenY radius radius
+    end
+
+    SDL_SetRenderDrawColor Renderer 200 200 255 255
+    SDL_SetRenderScale Renderer  fontScale fontScale
+    SDL_RenderDebugText Renderer 10 10 str::concat "StarField Dirty Little Script (slower multidim):" STAR_COUNT " FPS:" FPS
+    SDL_SetRenderScale Renderer  1 1
+
+
+    SDL_RenderPresent Renderer
+    # 1 ms breath
+#     SDL_Delay 1
+
+     if loops >= 3000; break;;
+end
+
+
+fnShutDown

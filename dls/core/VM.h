@@ -343,31 +343,38 @@ namespace DLS {
         // ------------------------------------------
         // Stack functions
         // ------------------------------------------
-        // ---- pop
-        FORCE_INLINE Value& POP_STACK() {
-            #ifdef DLS_DEBUG
-            assert(STK > 0 && "POP_STACK but stack empty!");
-            #endif
-            return stack[--STK];
-        }
-        // ---- peek
-        FORCE_INLINE Value& PEEK_STACK() {
-            #ifdef DLS_DEBUG
-            assert(STK > 0 && "POP_STACK but stack empty!");
-            #endif
-            return stack[STK - 1];
-        }
-        // ---- push
-        FORCE_INLINE void PUSH_STACK(const Value& val) {
-            #ifdef DLS_DEBUG
-            if (STK >= stack.size()) [[unlikely]] {
-                size_t new_size = stack.empty() ? 8 : stack.size() * 2;
-                stack.resize(new_size);
-                PrintRuntimeError("STACK RESIZE!", std::to_string(new_size));
-            }
-            #endif
-            stack[STK++] = val;
-        }
+        // // ---- pop
+        // FORCE_INLINE Value& POP_STACK() {
+        //     #ifdef DLS_DEBUG
+        //     assert(STK > 0 && "POP_STACK but stack empty!");
+        //     #endif
+        //     return stack[--STK];
+        // }
+        // // ---- peek
+        // FORCE_INLINE Value& PEEK_STACK(U32 offset = 0) {
+        //     #ifdef DLS_DEBUG
+        //     assert((STK - offset) >= 0 && "PEEK_STACK underflow!!");
+        //     #endif
+        //     return stack[STK - 1 - offset];
+        // }
+        // // ---- peek
+        //  void DROP_STACK(U32 count) {
+        //     #ifdef DLS_DEBUG
+        //     assert((STK - count) >= 0 && "DROP_STACK underflow!");
+        //     #endif
+        //     STK -= count;
+        // }
+        // // ---- push
+        // FORCE_INLINE void PUSH_STACK(const Value& val) {
+        //     #ifdef DLS_DEBUG
+        //     if (STK >= stack.size()) [[unlikely]] {
+        //         size_t new_size = stack.empty() ? 8 : stack.size() * 2;
+        //         stack.resize(new_size);
+        //         PrintRuntimeError("STACK RESIZE!", std::to_string(new_size));
+        //     }
+        //     #endif
+        //     stack[STK++] = val;
+        // }
 
         U32 STACK_SIZE() {
             return STK;
