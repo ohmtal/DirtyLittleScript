@@ -33,7 +33,7 @@
 | `f = (10 * 5 + 2 ) / 4 - 1`| basic math, the parser respect the order|
 | `b = true && false` |  boolean and, or |
 | `b = b + 1` |  increment one |
-| `b++; b--` |  increment and decrement again|
+| `b++; b--` |  increment and decrement again (only on variables)|
 | Loops |  |
 | `forRange i 10; print i;  end`| forRange loop count i 0..9 | 
 | `i = 5; while i > 0; print i; i = i - 1; end`| while loop | 
@@ -46,11 +46,17 @@
 | `arr[0]=10; arr[20]=100` | Numeric indexed Array auto initialized (*2)|
 | `arr = { 10 20 30}` | construct a array with three elements |
 | `arr[0][0] = 10` | multi dimension array. must be initialized before! like `arr[0]={10 20 30}` |
+| Objects | Rect Example from BaseFlux Demo(*3) |
+| `r = Rect::new {10 10 30 30}` | Create an Rect and push it into Garbage Collections|
+| `r.x = 10` | set x to 10 |
+| `print r.x` | Read X from the Rect |
+
 
 (*1) only in DLS and not in DreiZehnScript available
 
 (*2) DreiZehnScript handle arrays with objects so it's different
 
+(*3) DreiZehnScript use a system to modify values directly by Pointer which is faster but disable Marshalling. So this Pointer to Struct System is only in DLS.
 
 ## Bind your C-Functions
 

@@ -203,8 +203,13 @@ put this in a extra function ,,,, should work with peek forward
 - [X] changed from union Slot to flat U32
 - [X] hybrid header only or lib
 
-- [ ] add help for functions and globals 
-    
+- [X] add help for functions and globals 
+  
+- --------------- TAGGED 0.6 ---------------
+
+- [X] Dot object Access with Marshall System \o/
+- [X] ArenaAllocator for "soft" Garbage Collection
+
     
 ## maybe:
 - add a callframe too to enable real functions 
