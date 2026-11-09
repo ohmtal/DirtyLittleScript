@@ -20,6 +20,7 @@ using namespace DLS;
 int main(int argc, char* argv[]) {
 
     DLS::Init();
+    assert(sizeof(Value) == 16 && "Check Value! It's not 16 byte!");
 
     int minargs = 1; // for more params
     if (argc > minargs) {
@@ -33,7 +34,6 @@ int main(int argc, char* argv[]) {
 
     std::cout << "Value size check:" << sizeof(Value) << "\n";
     std::cout << "ValueType size check:" << sizeof(ValueType) << "\n";
-
 
     std::cout << "=============  TAPE TEST ===============\n";
     std::cout << "------------ String  ---------------\n";

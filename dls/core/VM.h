@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Thomas Hühn (XXTH)
 // SPDX-License-Identifier: MIT
 //-----------------------------------------------------------------------------
-// VM Flat Tape
+// VM Flat Tape - rewritten to pure flat 32bit OP_CODE Stack
 //-----------------------------------------------------------------------------
 #pragma once
 
@@ -19,8 +19,6 @@
 #include "Value.h"
 #include "FunctionMap.h"
 #include "Globals.h"
-
-
 
 
 namespace DLS {
@@ -405,6 +403,8 @@ namespace DLS {
     X(op_save_global,    1, "save a global variable") \
     X(op_load_array,     2, "load a array") \
     X(op_save_array,     2, "save a array") \
+    X(op_load_field,     2, "load a object field") \
+    X(op_save_field,     2, "save a object field") \
     X(op_constuct_array,  1, "construct a array") \
     X(op_literal,        1, "push a value") \
     X(op_add,            0, "math +") \

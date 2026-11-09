@@ -111,6 +111,7 @@ bool Parser::parsePrimary() {
             advance(); // eat
             U32 symId = SymbolTable::insert(t.mValue);
 
+            // --- Function ----
             if (FunctionMap::IsCFunction(symId)) {
                 U32 argCount = 0;
                 ArrayConstructed = false;
@@ -128,8 +129,8 @@ bool Parser::parsePrimary() {
                 ArrayAssign = false;
                 ArrayConstructed = false;
                 if (requestParam <= 0) vm->emitCode( op_pop_stack );
-            }
-            else
+            } else
+            // --- Array ----
             if (peek().mType == TokenType::LSquare) {
                 U32 dimension = 0;
                 do {
@@ -154,37 +155,62 @@ bool Parser::parsePrimary() {
                         varidx = vm->Variables.reserveGlobal(symId);
                     }
                     vm->emitCode(op_save_array);
-                    vm->emitTapeChunk((size_t)varidx);
-                    vm->emitTapeChunk((size_t)dimension);
+                    vm->emitTapeChunk((U32)varidx);
+                    vm->emitTapeChunk((U32)dimension);
                 } else if (S64 varidx = vm->Variables.getGlobalRegister(symId); varidx >= 0)  {
                     vm->emitCode(op_load_array);
-                    vm->emitTapeChunk((size_t)varidx);
-                    vm->emitTapeChunk((size_t)dimension);
+                    vm->emitTapeChunk((U32)varidx);
+                    vm->emitTapeChunk((U32)dimension);
 
                 } else {
                     PrintParseError("Unknown Variable", t.mValue);
                     return false;
                 }
-            }
-            else
+            } else
+            if (peek().mType == TokenType::Dot) {
+                advance(); //eat dot
+                if (peek().mType != TokenType::Identifier) {
+                    PrintParseError("Dot need a fieldname");
+                    return false;
+                }
+                U32 fieldSymId = SymbolTable::insert( peek().mValue );
+                advance();
+                if (peek().mType == TokenType::Assign) {
+                    advance(); //Assign
+                    if (!getArg("object field assign")) return false;
+                    S64 varidx = vm->Variables.getGlobalRegister(symId);
+                    if (varidx < 0) {
+                        varidx = vm->Variables.reserveGlobal(symId);
+                    }
+                    vm->emitCode(op_save_field);
+                    vm->emitTapeChunk((U32)varidx);
+                    vm->emitTapeChunk(fieldSymId);
+                } else if (S64 varidx = vm->Variables.getGlobalRegister(symId); varidx >= 0)  {
+                    vm->emitCode(op_load_field);
+                    vm->emitTapeChunk((U32)varidx);
+                    vm->emitTapeChunk(fieldSymId);
+
+                } else {
+                    PrintParseError("Unknown Variable");
+                    return false;
+                }
+
+            } else
             if (peek().mType == TokenType::Assign) {
                 advance(); // eat Assign
                 if (!getArg("Assign")) return false;
                 size_t varidx = vm->Variables.reserveGlobal(symId);
                 vm->emitCode(op_save_global);
                 vm->emitTapeChunk(varidx);
-            }
-            else
+            } else
             if (S64 varidx = vm->Variables.getGlobalRegister(symId); varidx >= 0)  {
                 vm->emitCode(op_load_global);
                 vm->emitTapeChunk((size_t)varidx);
-            }
-            else
+            } else
             if (Value* constansPointer = FunctionMap::getConstants(symId);constansPointer) {
                 vm->emitCode(op_literal );
                 vm->emitValue(*constansPointer);
-            }
-            else
+            } else
             {
                 PrintParseError("Unhandled Identifier:", t.mValue);
                 return false;

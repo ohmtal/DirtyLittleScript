@@ -5,6 +5,8 @@
 //using lib!  #define IMPLEMENT_DLS
 #include "DirtyLittleScript.h"
 #include "toolbox/Tools.h" //NOTE: DLS: for log redirect
+#include "core/Marshall.h" //NOTE: DLS: Object Test
+#include "core/ArenaAllocator.h" //NOTE: DLS: Object Test
 
 
 
@@ -18,7 +20,6 @@ namespace DLS {
 }
 
 namespace DLSFlux {
-
     // =========================================================================
     DLS::VM vm; // let the tape grow ?!
     size_t TapePos = 0;
@@ -40,8 +41,42 @@ namespace DLSFlux {
 
     DLS::S64 EventVarRegister = -1;
 
+    inline DLS::U16 SDL_FPointID = 0;
+    inline DLS::U16 SDL_FRectID = 0;
+    inline DLS::U16 SDL_ColorID = 0;
+
+    bool isPoint(const DLS::Value& value) { return value.isPointerMarshall(SDL_FPointID); }
+    bool isRect(const DLS::Value& value) { return value.isPointerMarshall(SDL_FRectID); }
+    bool isColor(const DLS::Value& value) { return value.isPointerMarshall(SDL_ColorID); }
     // -----------------------------------------------------------------------------
+    // struct SoftGarbageDef {
+    //     std::vector<void*> objects;
+    //
+    //     void Add(void* obj) {
+    //         objects.push_back(obj);
+    //     }
+    //     // handle with care!!
+    //     void Clear() {
+    //         for (auto o: objects) {
+    //             free(o);
+    //         }
+    //         objects.clear();
+    //     }
+    //     ~SoftGarbageDef() {
+    //         Clear();
+    //     }
+    // } SoftGarbage;
+
+
+
+    // // // -----------------------------------------------------------------------------
     bool MapArrayFRect( DLS::Value& value, SDL_FRect& rect) {
+
+        if (isRect(value)) {
+            rect = *(static_cast<SDL_FRect*>(value.getPointer()));
+            return true;
+        }
+
         if (value.type != DLS::ValueType::Array) return false;
         auto arr = vm.Variables.getArrayByMasterIndex((size_t)value.getFastLong());
         if (arr.size() < 4) return false;
@@ -54,6 +89,12 @@ namespace DLSFlux {
     }
     // -----------------------------------------------------------------------------
     bool MapArrayColor( DLS::Value& value, SDL_Color& color) {
+
+        if (isColor(value)) {
+            color = *(static_cast<SDL_Color*>(value.getPointer()));
+            return true;
+        }
+
         if (value.type != DLS::ValueType::Array) return false;
         auto arr = vm.Variables.getArrayByMasterIndex((size_t)value.getFastLong());
         if (arr.size() < 3) return false;
@@ -66,13 +107,18 @@ namespace DLSFlux {
     }
     // -----------------------------------------------------------------------------
     bool MapArrayFPoint( DLS::Value& value, SDL_FPoint& point) {
+
+        if (isPoint(value)) {
+            point = *(static_cast<SDL_FPoint*>(value.getPointer()));
+            return true;
+        }
+
         if (value.type != DLS::ValueType::Array) return false;
         auto arr = vm.Variables.getArrayByMasterIndex((size_t)value.getFastLong());
         if (arr.size() < 2) return false;
         point.x = arr[0].getFloat();
         point.y = arr[1].getFloat();
         return true;
-
     }
     // -----------------------------------------------------------------------------
     void RegisterGlobals() {
@@ -393,10 +439,20 @@ namespace DLSFlux {
             SDL_Color sdlcolor;
             bool fill = false;
             for (size_t i = 0; i < count; i++) {
-                if (!MapArrayFRect(rects[i], sdlrect)) return false;
-                if (!MapArrayColor(colors[i], sdlcolor)) return false;
-                fill = filled[i].getBool();
-                BaseFlux::DrawRect(app.getRenderer(),sdlrect, sdlcolor, fill);
+                if (isRect(rects[i]) && isColor(colors[i])) [[likely]] {
+
+                    BaseFlux::DrawRect(app.getRenderer()
+                        ,*(static_cast<SDL_FRect*>(rects[i].getPointer()))
+                        ,*(static_cast<SDL_Color*>(colors[i].getPointer()))
+                        ,filled[i].getBool());
+                } else {
+                    if (!MapArrayFRect(rects[i], sdlrect)) return false;
+                    if (!MapArrayColor(colors[i], sdlcolor)) return false;
+                    fill = filled[i].getBool();
+                    BaseFlux::DrawRect(app.getRenderer(),sdlrect, sdlcolor, fill);
+
+                }
+
             }
 
             return true;
@@ -423,61 +479,74 @@ namespace DLSFlux {
             return true;
         }, "debug return assigned array count");
         // ---------------------------------------------------------------------
-        // NOTE not really nice to work with:
-        // I guess i need a Dot and marshalling !
-        // Here i can do this because i dont use pointers to values
-        // like in DreiZehn - thats why iam not so fast here !
+        auto* frectTranslator = new DLS::Marshall::GenericStructTranslator<SDL_FRect>();
+        frectTranslator->registerField("x", &SDL_FRect::x);
+        frectTranslator->registerField("y", &SDL_FRect::y);
+        frectTranslator->registerField("w", &SDL_FRect::w);
+        frectTranslator->registerField("h", &SDL_FRect::h);
+        SDL_FRectID = RegisterMarshall(frectTranslator);
+
         FunctionMap::RegisterFunction("Rect::new", [](std::span<Value> args, Value& ret) -> bool {
-            SDL_FRect* rect = new SDL_FRect();
+            SDL_FRect* p = new SDL_FRect();
+            DLS::GarbageList.Add(p);
+            ret = Value(p);
+            ret.marshallId = SDL_FRectID;
             if (args.size() > 0 && args[0].isArray()) {
-                MapArrayFRect(args[0], *rect);
+                DLS::Marshall::Translator* tl = DLS::Marshall::getTranslator(ret);
+                if (tl) tl->saveArrayValue(ret,vm.Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
             }
-            ret = Value(rect);
-            //FIXME subtype
-            ret.subType = 1;
             return true;
-        }, "Create a Rect. must be destroy on the end!");
+        }, "Create a Rect with marhalling.");
 
-        FunctionMap::RegisterFunction("Rect::destroy", [](std::span<Value> args, Value& ret) -> bool {
-            //FIXME subtype
-            if (args.size() < 1 || !args[0].isPointerSubType(1)) return false;
-            free(args[0].getPointer());
-            ret = Value(0);
-            return true;
-        }, "Destroy a Rect");
+        // FunctionMap::RegisterFunction("Rect::destroy", [](std::span<Value> args, Value& ret) -> bool {
+        //     if (args.size() < 1 || !args[0].isPointerMarshall(SDL_FRectID)) return false;
+        //     free(args[0].getPointer());
+        //     ret = Value(0);
+        //     return true;
+        // }, "Destroy a Rect");
 
-        FunctionMap::RegisterFunction("Rect::x", [](std::span<Value> args, Value& ret) -> bool {
-            //FIXME subtype
-            if (args.size() < 1 || !args[0].isPointerSubType(1)) return false;
-            SDL_FRect* rect = static_cast<SDL_FRect*>(args[0].getPointer());
-            if (args.size() > 1) rect->x  = args[1].getFloat();
-            ret = Value(rect->x);
+
+        // ---------------------------------------------------------------------
+        // SDL_FPoint with marshalling
+        // ---------------------------------------------------------------------
+        auto* fpointTranslator = new DLS::Marshall::GenericStructTranslator<SDL_FPoint>();
+        fpointTranslator->registerField("x", &SDL_FPoint::x);
+        fpointTranslator->registerField("y", &SDL_FPoint::y);
+        SDL_FPointID = RegisterMarshall(fpointTranslator);
+
+        FunctionMap::RegisterFunction("Point::new", [](std::span<Value> args, Value& ret) -> bool {
+            SDL_FPoint* p = new SDL_FPoint();
+            DLS::GarbageList.Add(p);
+            ret = Value(p);
+            ret.marshallId = SDL_FPointID;
+            if (args.size() > 0 && args[0].isArray()) {
+                // MapArrayFPoint(args[0], *p);
+                DLS::Marshall::Translator* tl = DLS::Marshall::getTranslator(ret);
+                if (tl) tl->saveArrayValue(ret,vm.Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
+            }
             return true;
-        }, "get set rect x");
-        FunctionMap::RegisterFunction("Rect::y", [](std::span<Value> args, Value& ret) -> bool {
-            //FIXME subtype
-            if (args.size() < 1 || !args[0].isPointerSubType(1)) return false;
-            SDL_FRect* rect = static_cast<SDL_FRect*>(args[0].getPointer());
-            if (args.size() > 1) rect->y  = args[1].getFloat();
-            ret = Value(rect->y);
+        }, "Create a Point with marhalling");
+        // ---------------------------------------------------------------------
+        // SDL_Color with marshalling
+        // ---------------------------------------------------------------------
+        auto* colorTranslator = new DLS::Marshall::GenericStructTranslator<SDL_Color>();
+        colorTranslator->registerField("r", &SDL_Color::r);
+        colorTranslator->registerField("g", &SDL_Color::g);
+        colorTranslator->registerField("b", &SDL_Color::b);
+        colorTranslator->registerField("a", &SDL_Color::a);
+        SDL_ColorID = RegisterMarshall(colorTranslator);
+
+        FunctionMap::RegisterFunction("Color::new", [](std::span<Value> args, Value& ret) -> bool {
+            SDL_Color* p = new SDL_Color();
+            DLS::GarbageList.Add(p);
+            ret = Value(p);
+            ret.marshallId = SDL_ColorID;
+            if (args.size() > 0 && args[0].isArray()) {
+                DLS::Marshall::Translator* tl = DLS::Marshall::getTranslator(ret);
+                if (tl) tl->saveArrayValue(ret,vm.Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
+            }
             return true;
-        }, "get set rect y");
-        FunctionMap::RegisterFunction("Rect::w", [](std::span<Value> args, Value& ret) -> bool {
-            //FIXME subtype
-            if (args.size() < 1 || !args[0].isPointerSubType(1)) return false;
-            SDL_FRect* rect = static_cast<SDL_FRect*>(args[0].getPointer());
-            if (args.size() > 1) rect->w  = args[1].getFloat();
-            ret = Value(rect->w);
-            return true;
-        }, "get set rect w");
-        FunctionMap::RegisterFunction("rect::h", [](std::span<Value> args, Value& ret) -> bool {
-            //FIXME subtype
-            if (args.size() < 1 || !args[0].isPointerSubType(1)) return false;
-            SDL_FRect* rect = static_cast<SDL_FRect*>(args[0].getPointer());
-            if (args.size() > 1) rect->h  = args[1].getFloat();
-            ret = Value(rect->h);
-            return true;
-        }, "get set rect h");
+        }, "Create a Color with marhalling");
         // ---------------------------------------------------------------------
     }
 
@@ -533,6 +602,7 @@ namespace DLSFlux {
             GlobalsCount = 0;
             StackCount = 0;
 
+            DLS::GarbageList.Clear();
             RegisterGlobals();
         }
         if (!Run(DLS::loadScript(fileName))) return false;

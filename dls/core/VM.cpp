@@ -17,6 +17,7 @@
 #include "Value.h"
 #include "FunctionMap.h"
 #include "Globals.h"
+#include "Marshall.h"
 
 #ifndef IMPLEMENT_DLS
 #include "VM.h"
@@ -122,8 +123,8 @@ namespace DLS {
         // ------------------------------------------
         handle_op_save_array: {
 
-            U32 varIndex = (U32)vm.advanceSlot();
-            U32 dimension = (U32)vm.advanceSlot();
+            U32 varIndex = vm.advanceSlot();
+            U32 dimension = vm.advanceSlot();
 
             //-------- ... what a mess ;) ...
             if (dimension > 1) {
@@ -625,6 +626,55 @@ namespace DLS {
             }
             DISPATCH();
         }
+
+
+        // ------------------------------------------
+        // Object Fields
+        // ------------------------------------------
+        handle_op_load_field: {
+            U32 varIndex = vm.advanceSlot();
+            U32 fieldSymId = vm.advanceSlot();
+
+            Value result = Value();
+
+            Value& var = vm.Variables.getGlobal(varIndex);
+
+            Marshall::Translator* tl = Marshall::getTranslator(var);
+            if (!tl) [[unlikely]] {
+                PrintRuntimeError("Failed to get Translator for variable");
+                PUSH_STACK(result);
+                DISPATCH();
+            }
+            if (!tl->loadValue(var,fieldSymId,result)) [[unlikely]] {
+                PrintRuntimeError("Failed to get field - unknown fieldname");
+            }
+
+            PUSH_STACK(result);
+
+            DISPATCH();
+        }
+
+        handle_op_save_field: {
+            U32 varIndex = vm.advanceSlot();
+            U32 fieldSymId = vm.advanceSlot();
+            Value& src = POP_STACK();
+
+            Value& var = vm.Variables.getGlobal(varIndex);
+
+
+            Marshall::Translator* tl = Marshall::getTranslator(var);
+            if (!tl) [[unlikely]] {
+                PrintRuntimeError("Failed to get Translator for variable");
+                DISPATCH();
+            }
+            if (!tl->saveValue(var,fieldSymId,src)) [[unlikely]] {
+                PrintRuntimeError("Failed to set field - unknown fieldname");
+            }
+
+
+            DISPATCH();
+        }
+
 
         // ------------------------------------------
         // Script function def

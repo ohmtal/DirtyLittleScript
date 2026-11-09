@@ -19,6 +19,7 @@ namespace DLS{
         , RParen
         , LSquare, RSquare
         , LCurly, RCurly
+        , Dot
         // math
         , Plus , Minus , Mul , Div
         , PlusPlus, MinusMinus

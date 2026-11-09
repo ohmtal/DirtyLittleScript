@@ -269,6 +269,7 @@ namespace DLS {
 
             if (peek() == ';' && peekNext() == ';') { advance();/* NOT! advance();*/ tokens.push_back({TokenType::End, ";;"}); continue; }
             if (peek() == ';') { advance(); tokens.push_back({TokenType::Semicolon, ";"}); continue; }
+            if (peek() == '.') { advance(); tokens.push_back({TokenType::Dot, "."}); continue; }
 
 
 
