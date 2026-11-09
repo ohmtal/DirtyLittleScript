@@ -144,7 +144,7 @@ namespace DLS {
         }
 
 
-        /*const*/ std::vector<Value>& getArrayByMasterIndex(size_t masterIndex) {
+         std::vector<Value>& getArrayByMasterIndex(size_t masterIndex) {
             #ifdef DLS_DEBUG
             assert(masterIndex < mArrays.size() && "Master index array out of range");
             #endif
@@ -159,8 +159,10 @@ namespace DLS {
             }
             size_t masterIndex =(size_t)arrValue.getFastLong();
 
-            if (index >= mArrays[masterIndex].Elements.size()) {
-                mArrays[masterIndex].Elements.resize(index + 1);
+            if (index >= mArrays[masterIndex].Elements.size()) [[unlikely]] {
+                // mArrays[masterIndex].Elements.resize(index + 1);
+                PrintRuntimeError("Array index out of bounds.");
+                return Value();
             }
             return mArrays[masterIndex].Elements[index];
 
