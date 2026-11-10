@@ -677,6 +677,37 @@ namespace DLS {
 
 
         // ------------------------------------------
+        // Special forRange :D
+        // ------------------------------------------
+        handle_op_cast_long: {
+            PEEK_STACK(0) = Value(PEEK_STACK(0).getLong());
+            DISPATCH();
+        }
+
+        handle_op_for_range_jump: {
+            U32 varIndex = vm.advanceSlot();
+            Value& dstValue = vm.Variables.getGlobal(varIndex);
+            if (dstValue.isLong()) [[likely]] {
+                dstValue.l++;
+            } else {
+                dstValue = Value(dstValue.getLong() + 1);
+            }
+
+            Value& limitValue = PEEK_STACK(0);
+            U32 target = vm.advanceSlot();
+            if (dstValue.l >= limitValue.l) {
+                (void) POP_STACK();
+                vm.pc = target;
+            }
+
+
+            DISPATCH();
+
+
+        }
+
+
+        // ------------------------------------------
         // Script function def
         // ------------------------------------------
         handle_op_func_def: {

@@ -229,7 +229,7 @@ inline U16 RegisterMarshall(Translator* trans) {
 inline Translator* getTranslator(const Value& pointerValue) {
     if ( !pointerValue.isPointer()
         || pointerValue.marshallId == 0
-        || pointerValue.marshallId >= TranslatorMap.size())
+        || pointerValue.marshallId >= TranslatorMap.size()) [[unlikely]]
         return nullptr;
     return TranslatorMap[pointerValue.marshallId];
 }

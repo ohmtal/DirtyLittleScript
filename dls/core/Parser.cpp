@@ -369,11 +369,92 @@ bool Parser::parseWhile() {
 // -------------------------------------------------------------------------
 //  Statements sub: forRange [VAR] [COUNT]
 // -------------------------------------------------------------------------
+// bool Parser::parseForRange() {
+//     advance();
+//
+//     std::string variable = "";
+//     U32 count = 0;
+//     if (peek().mType != TokenType::Identifier) {
+//         PrintParseError("forRange need a variable");
+//         return false;
+//     } else {
+//         variable = peek().mValue;
+//         advance();
+//     }
+//
+//
+//     // ---- emit loop variable and set to -1
+//     vm->emitCode(op_literal);
+//     vm->emitValue(Value(-1.0));
+//     U32 symId = SymbolTable::insert(variable);
+//     size_t varidx = vm->Variables.reserveGlobal(symId);
+//     vm->emitCode(op_save_global);
+//     vm->emitTapeChunk((size_t)varidx);
+//
+//     // ---- save tape position
+//     size_t loop_start_slot = vm->tell();
+//
+//     // ---- increment iter
+//
+//     vm->emitCode(op_inc);
+//     vm->emitTapeChunk((size_t)varidx);
+//
+//
+//
+//     // ---- condition iter < count
+//     vm->emitCode(op_load_global);
+//     vm->emitTapeChunk((size_t)varidx);
+//
+//     if (!getArg("ForRange count")) return false;
+//
+//     vm->emitCode(op_lower);
+//
+//     // --- now the same as While.....
+//     vm->emitCode(op_jump_if_false);
+//     size_t false_jump_slot = vm->tell();
+//     vm->emitJumpOffset(0); // false placeholder
+//
+//
+//     // break continue
+//     LoopContext context;
+//     context.continue_target = loop_start_slot;
+//     vm->mLoopStack.push_back(context);
+//
+//
+//     // main loop:
+//     while (peek().mType != TokenType::EOFToken &&
+//         peek().mType != TokenType::End)
+//     {
+//         if (!parseStatements()){
+//             PrintParseError("ForRange: failed to parse Statements");
+//             return false;
+//         }
+//     }
+//     if (peek().mType != TokenType::End) {
+//         PrintParseError("ForRange missing end!");
+//         return false;
+//     }
+//     advance(); //end
+//
+//     vm->emitCode(op_jump);
+//     vm->emitJumpOffset(loop_start_slot);
+//     vm->patchJumpOffset(false_jump_slot,vm->tell());
+//
+//
+//     size_t loop_end_slot = vm->tell();
+//
+//     // handle breaks
+//     for (size_t break_slot : vm->mLoopStack.back().break_slots) {
+//         vm->patchJumpOffset(break_slot, loop_end_slot);
+//     }
+//     vm->mLoopStack.pop_back();
+//
+//     return true;
+// }
 bool Parser::parseForRange() {
     advance();
 
     std::string variable = "";
-    U32 count = 0;
     if (peek().mType != TokenType::Identifier) {
         PrintParseError("forRange need a variable");
         return false;
@@ -381,15 +462,8 @@ bool Parser::parseForRange() {
         variable = peek().mValue;
         advance();
     }
-    // if (peek().mType != TokenType::Number) {
-    //     PrintParseError("forRange need a count");
-    //     return false;
-    // } else {
-    //     count = (U32)std::abs(atoi(peek().mValue.c_str()));
-    //     advance();
-    // }
 
-    // ---- emit loop variable and set to -1
+    // ----1. emit loop variable and set to -1
     vm->emitCode(op_literal);
     vm->emitValue(Value(-1.0));
     U32 symId = SymbolTable::insert(variable);
@@ -397,32 +471,17 @@ bool Parser::parseForRange() {
     vm->emitCode(op_save_global);
     vm->emitTapeChunk((size_t)varidx);
 
+    // ----2. emit count
+    if (!getArg("ForRange count")) return false;
+    vm->emitCode(op_cast_long);
+
     // ---- save tape position
     size_t loop_start_slot = vm->tell();
 
-    // ---- increment iter
-
-    vm->emitCode(op_inc);
+    // ---- increment compare and jump!
+    vm->emitCode(op_for_range_jump);
     vm->emitTapeChunk((size_t)varidx);
 
-    // vm->emitCode(op_load_global);
-    // vm->emitTapeChunk((size_t)varidx);
-    // vm->emitCode(op_literal);
-    // vm->emitValue(Value(1.0));
-    // vm->emitCode(op_add);
-    // vm->emitCode(op_save_global);
-    // vm->emitTapeChunk((size_t)varidx);
-
-    // ---- condition iter < count
-    vm->emitCode(op_load_global);
-    vm->emitTapeChunk((size_t)varidx);
-
-    if (!getArg("ForRange count")) return false;
-
-    vm->emitCode(op_lower);
-
-    // --- now the same as While.....
-    vm->emitCode(op_jump_if_false);
     size_t false_jump_slot = vm->tell();
     vm->emitJumpOffset(0); // false placeholder
 

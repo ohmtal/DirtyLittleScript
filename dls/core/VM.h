@@ -104,7 +104,7 @@ namespace DLS {
             mGlobalsRegister[index] = value;
         }
 
-        Value& getGlobal(size_t index) {
+       Value& getGlobal(size_t index) {
             #ifdef DLS_DEBUG
             assert (index < mGlobalsRegister.size() && "LOAD: GLOBALS REGISTER OUT OF BOUNDS");
             #endif
@@ -432,8 +432,10 @@ namespace DLS {
     X(op_jump_if_false,      1, "jump false") \
     X(op_jump_if_true_no_pop,      1, "jump false no pop") \
     X(op_jump_if_false_no_pop,      1, "jump false no pop") \
+    X(op_for_range_jump,      2, "op_for_range_jump") \
     X(op_cfunc,      2, "call a c registered func") \
     X(op_func_def,      1, "define a lambda") \
+    X(op_cast_long,      0, "cast a stack value to long") \
     X(op_return,      0, "return")
 
     #define X(name, args, comment) name,
