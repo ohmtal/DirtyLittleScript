@@ -25,7 +25,7 @@ minW = maxW * -1
 maxH = HEIGTH / 2
 minH = maxH * -1
 
-STAR_COUNT  = 4200
+STAR_COUNT  = 420
 START_DIV   = 0.03125
 SPEED       = 0.001
 
@@ -66,7 +66,9 @@ OnRender = function
         screen.x = (WIDTH * 0.5) + (point.x * invZ)
         screen.y = (HEIGTH * 0.5) + (point.y * invZ)
 
-        if (point.z < 0.0) || (screen.x < 0.0) || (screen.x > WIDTH) || (screen.y < 0.0)  || (screen.y > HEIGTH)
+        if (point.z < 0.0) || (screen.x < 0.0) \
+            || (screen.x > WIDTH) || (screen.y < 0.0)  \
+            || (screen.y > HEIGTH)
 
             point.x = math::random minW maxW
             point.y = math::random minH maxH

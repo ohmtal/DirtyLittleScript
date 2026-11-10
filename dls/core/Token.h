@@ -32,6 +32,7 @@ namespace DLS{
         , Break, Return
         , Continue
         , Semicolon
+        , BackSlash
         , While
         , ForRange
         , Or, And, BitOr, BitAnd

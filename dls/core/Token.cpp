@@ -66,6 +66,9 @@ namespace DLS{
             case TokenType::SHL:            return "Shift Left <<";
             case TokenType::SHR:            return "Shift Right >>";
 
+            case TokenType::Dot:            return "Dot field";
+            case TokenType::BackSlash:      return "Ignore LineBreak BackSlash";
+
             case TokenType::Semicolon:      return "Semicolon";
             case TokenType::EOLToken:       return "EOLToken";
             case TokenType::EOFToken:       return "EOFToken";
@@ -119,6 +122,7 @@ namespace DLS{
         || op.mType == TokenType::SHL
         || op.mType == TokenType::SHR
         || op.mType == TokenType::Modulo
+        || op.mType == TokenType::BackSlash
         || isInlineMathType(op.mType)
         || isMathAssignOperatorType(op.mType)
         ;

@@ -62,6 +62,7 @@ bool Parser::parsePrimary() {
     Token t = peek();
     TokenType curType = peek().mType;
 
+
     switch (curType) {
         // ~~~~ Number ~~~~
         case TokenType::Number: {
@@ -247,10 +248,23 @@ bool Parser::parsePrimary() {
 // Math
 // -------------------------------------------------------------------------
 bool Parser::parseMath(int minPrecedence) {
+
+    if (peek().mType ==  TokenType::BackSlash) {
+        lineNumber++;
+        advance();
+    }
+
     if (!parsePrimary()) return false;
 
     while (isMathType(peek())) {
         Token op = peek();
+
+        if (op.mType ==  TokenType::BackSlash) {
+            lineNumber++;
+            advance();
+            continue;
+        }
+
         int precedence = getPrecedence(op.mType);
 
         if (precedence < minPrecedence) {
@@ -528,12 +542,6 @@ bool Parser::parseForRange() {
 // -------------------------------------------------------------------------
 bool Parser::parseFn() {
     advance(); //advanceFN
-
-    // // while (peek().mType == TokenType::EOLToken) advance(); //ear all eol away
-    // // if (peek().mType == TokenType::EOFToken) {
-    // //     PrintParseError("function def invalid!");
-    // //     return false;
-    // // }
 
     size_t rewind_POS = vm->tell();
 

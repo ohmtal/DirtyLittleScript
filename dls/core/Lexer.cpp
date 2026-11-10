@@ -25,6 +25,13 @@ namespace DLS {
         std::vector<Token> tokens;
         while (peek() != '\0') {
             // // ----------------------------------------------------------------
+            if (peek() == '\\') {
+                advance();
+                while (peek() != '\n') advance(); //everything until line break
+                advance(); // not the linebreak
+                tokens.push_back({TokenType::BackSlash, "Backslash"});
+            }
+
             if (peek() == '\n') { advance(); tokens.push_back({TokenType::EOLToken, "LINEBREAK"}); continue; }
             if (std::isspace(peek())) { advance(); continue; }
             // ----------------------------------------------------------------
@@ -257,11 +264,6 @@ namespace DLS {
                         tokens.push_back({TokenType::EOLToken, "\n"});
                         break; //end of line
                     }
-                    // NOT!
-                    // // if (peek() == '#') {
-                    // //     advance();
-                    // //     break;
-                    // // }
                     advance();
                 }
                 continue;

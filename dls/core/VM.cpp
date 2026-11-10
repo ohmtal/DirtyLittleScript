@@ -699,14 +699,8 @@ namespace DLS {
                 (void) POP_STACK();
                 vm.pc = target;
             }
-
-
             DISPATCH();
-
-
         }
-
-
         // ------------------------------------------
         // Script function def
         // ------------------------------------------

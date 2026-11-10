@@ -1,0 +1,15 @@
+foo = 1
+if \
+    foo == 1 \
+    print "1!"
+end
+
+if foo == 1 \
+    || foo == 2 \
+    || foo == 3
+end
+
+print "HUHU" \ everthing is ignored !!!
+    "TOM"
+
+# parse error?!
