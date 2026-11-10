@@ -32,6 +32,7 @@ namespace DLSFlux {
     extern size_t getArrayCount();
     extern size_t getGlobalCount();
     extern size_t getStackCount();
+    extern size_t getGarbageCount();
     extern void OnSetup();
     extern void OnInit();
     extern void OnUpdate();
@@ -130,6 +131,7 @@ void onDraw(SDL_Renderer* renderer) {
         ImGui::Text("[ARR: %06zu]", DLSFlux::getArrayCount());
         ImGui::Text("[GLOB: %04zu]", DLSFlux::getGlobalCount());
         ImGui::Text("[STK: %03zu]", DLSFlux::getStackCount());
+        ImGui::Text("[GARB: %03zu]", DLSFlux::getGarbageCount());
         ImGui::EndMainMenuBar();
     }
     if (ImGui::IsKeyPressed(ImGuiKey_GraveAccent)) showConsole = !showConsole;

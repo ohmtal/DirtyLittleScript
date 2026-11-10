@@ -210,6 +210,7 @@ put this in a extra function ,,,, should work with peek forward
 - [X] Dot object Access with Marshall System \o/
 - [X] ArenaAllocator for "soft" Garbage Collection
 
+- [ ] missing linebreak ! '\' or change EOL?!
     
 ## maybe:
 - add a callframe too to enable real functions 

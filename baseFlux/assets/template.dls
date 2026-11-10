@@ -1,0 +1,59 @@
+# Events: OnRender, OnKey and OnMouse
+# Vars  : event::mx, event::my, event::type, event::key, event::mod, event::button
+#       : flux::ft
+# func  : flux::size, flux::maxfps, flux::Close, flux::Text, flux::DrawRect,
+#       : flux::DrawFPS
+
+
+caption = "Hello World"
+
+SDL_EVENT_KEY_DOWN = 0x300
+SDL_EVENT_MOUSE_BUTTON_DOWN = 1025
+SDLK_ESCAPE     = 0x0000001b
+SDLK_PAGEDOWN   = 0x4000004e
+SDLK_RIGHT      = 0x4000004f
+SDLK_LEFT       = 0x40000050
+SDLK_DOWN       = 0x40000051
+SDLK_UP         = 0x40000052
+
+WIDTH  = 800.0
+HEIGTH = 450.0
+
+# ----- THIS IS CALLED ONCE BEFORE THE WINDOW IS OPENED TO SETUP STUFF:
+OnSetup = function
+    flux::EnableVSync = false,
+    flux::Company = "FluxCompany"
+    flux::Caption = "The flux is here"
+    flux::Version = "0.261109.01"
+    flux::clearColor = { 30 50 50 255 }
+end
+
+
+OnInit = function
+    # setup a scalable screen
+    flux::size WIDTH HEIGTH WIDTH HEIGTH
+end
+
+# -----------------------------------------------------------------------------
+
+OnUpdate = function
+end
+
+OnRender = function
+    flux::DrawFPS 10 30 2;
+    flux::Text 10 60 caption 4
+end
+
+# -----------------------------------------------------------------------------
+
+OnKey = function
+    if event::type == SDL_EVENT_KEY_DOWN
+       if event::key == SDLK_ESCAPE ; flux::Close;;
+    end
+end
+
+OnMouse = function
+    if event::type == SDL_EVENT_MOUSE_BUTTON_DOWN
+        print "button" event::button "down"
+    end
+end

@@ -26,6 +26,7 @@ namespace DLSFlux {
     size_t ArrayCount = 0;
     size_t GlobalsCount = 0;
     size_t StackCount = 0;
+    size_t GarbageCount = 0;
 
     std::string currentFileName = "";
 
@@ -41,11 +42,21 @@ namespace DLSFlux {
 
     DLS::S64 EventVarRegister = -1;
 
+
+    typedef struct SDL_FPoint3
+    {
+        float x;
+        float y;
+        float z;
+    } SDL_FPoint3;
+
     inline DLS::U16 SDL_FPointID = 0;
+    inline DLS::U16 SDL_FPoint3ID = 0;
     inline DLS::U16 SDL_FRectID = 0;
     inline DLS::U16 SDL_ColorID = 0;
 
     bool isPoint(const DLS::Value& value) { return value.isPointerMarshall(SDL_FPointID); }
+    bool isPoint3(const DLS::Value& value) { return value.isPointerMarshall(SDL_FPoint3ID); }
     bool isRect(const DLS::Value& value) { return value.isPointerMarshall(SDL_FRectID); }
     bool isColor(const DLS::Value& value) { return value.isPointerMarshall(SDL_ColorID); }
     // -----------------------------------------------------------------------------
@@ -207,6 +218,7 @@ namespace DLSFlux {
         ArrayCount = vm.Variables.mArrays.size();
         GlobalsCount = vm.Variables.mGlobalsRegister.size();
         StackCount = vm.STACK_SIZE();
+        GarbageCount = DLS::GarbageList.objects.size();
     }
 
     void OnKey(SDL_Keycode key, DLS::U32 EventType, SDL_Keymod mod) {
@@ -256,6 +268,7 @@ namespace DLSFlux {
     size_t getArrayCount() { return ArrayCount;}
     size_t getGlobalCount() { return GlobalsCount;}
     size_t getStackCount() { return StackCount;}
+    size_t getGarbageCount() { return GarbageCount;}
     //  -----------------------------------------------------------------------------
 
     void RegisterFluxFunctions() {
@@ -359,20 +372,35 @@ namespace DLSFlux {
         //
         // // ---------------------------------
         FunctionMap::RegisterFunction("flux::DrawRect", [](std::span<Value> args, Value& ret) -> bool {
-            if (args.size() < 3 || !args[0].isArray() || !args[1].isArray()) {
+            if (args.size() < 1 /*|| !args[0].isArray() || !args[1].isArray()*/) {
                 Tools::errorf("flux::DrawRect: Missing Parameter");
                 return false;
             }
             SDL_FRect rect;
             if (!MapArrayFRect(args[0], rect)) return false;
-            SDL_Color color;
-            if  (!MapArrayColor(args[1], color)) return false;
 
-            bool fill = args[2].getBool();
+            SDL_Color color = {255,255,255,255};
+            if (args.size() > 1) MapArrayColor(args[1], color);
+
+            bool fill = true;
+            if (args.size() > 2) fill = args[2].getBool();
 
             BaseFlux::DrawRect(app.getRenderer(),rect, color, fill);
             return true;
         }, "Draw Rectangle Vector 4 floats, Vector 4 int, bool fill");
+        // ---------------------------------
+        FunctionMap::RegisterFunction("flux::fillRect", [](std::span<Value> args, Value& ret) -> bool {
+            if (args.size() != 1 || !args[0].isPointerMarshall(SDL_FRectID)) {
+                Tools::errorf("usage: SDL_RenderFillRect(Rect)\n");
+                return false;
+            }
+            SDL_SetRenderDrawColor(app.getRenderer(),255,255,255,255);
+            SDL_RenderFillRect(app.getRenderer(), static_cast<SDL_FRect*>(args[0].getPointer()));
+
+            // SDL_FRect rect = *(static_cast<SDL_FRect*>(args[0].getPointer()));
+            // SDL_RenderFillRect(app.getRenderer(), &rect);
+            return true;
+        }, "Draw field Rectangle Rect rect");
         // ---------------------------------
         // void DrawLine(SDL_Renderer *renderer, const SDL_FPoint& p1,const SDL_FPoint& p2 , const SDL_Color& color) {
         FunctionMap::RegisterFunction("flux::DrawLine", [](std::span<Value> args, Value& ret) -> bool {
@@ -526,6 +554,26 @@ namespace DLSFlux {
             }
             return true;
         }, "Create a Point with marhalling");
+        // ---------------------------------------------------------------------
+        // SDL_FPoint3 with marshalling
+        // ---------------------------------------------------------------------
+        auto* fpoint3Translator = new DLS::Marshall::GenericStructTranslator<SDL_FPoint3>();
+        fpoint3Translator->registerField("x", &SDL_FPoint3::x);
+        fpoint3Translator->registerField("y", &SDL_FPoint3::y);
+        fpoint3Translator->registerField("z", &SDL_FPoint3::z);
+        SDL_FPoint3ID = RegisterMarshall(fpoint3Translator);
+
+        FunctionMap::RegisterFunction("Point3::new", [](std::span<Value> args, Value& ret) -> bool {
+            SDL_FPoint3* p = new SDL_FPoint3();
+            DLS::GarbageList.Add(p);
+            ret = Value(p);
+            ret.marshallId = SDL_FPoint3ID;
+            if (args.size() > 0 && args[0].isArray()) {
+                DLS::Marshall::Translator* tl = DLS::Marshall::getTranslator(ret);
+                if (tl) tl->saveArrayValue(ret,vm.Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
+            }
+            return true;
+        }, "Create a Point3 (x,y,z) with marhalling");
         // ---------------------------------------------------------------------
         // SDL_Color with marshalling
         // ---------------------------------------------------------------------

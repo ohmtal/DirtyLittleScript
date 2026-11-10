@@ -1,0 +1,103 @@
+# ~~~ Baseflux using Marshalling ~~~
+# Events: OnRender, OnKey and OnMouse
+# Vars  : event::mx, event::my, event::type, event::key, event::mod, event::button
+#       : flux::ft
+# func  : flux::size, flux::maxfps, flux::Close, flux::Text, flux::DrawRect,
+#       : flux::DrawFPS
+
+
+caption = "StarField again - Baseflux DrawRect is slow!"
+
+SDL_EVENT_KEY_DOWN = 0x300
+SDL_EVENT_MOUSE_BUTTON_DOWN = 1025
+SDLK_ESCAPE     = 0x0000001b
+SDLK_PAGEDOWN   = 0x4000004e
+SDLK_RIGHT      = 0x4000004f
+SDLK_LEFT       = 0x40000050
+SDLK_DOWN       = 0x40000051
+SDLK_UP         = 0x40000052
+
+WIDTH  = 640.0
+HEIGTH = 320.0
+
+maxW = WIDTH / 2
+minW = maxW * -1
+maxH = HEIGTH / 2
+minH = maxH * -1
+
+STAR_COUNT  = 4200
+START_DIV   = 0.03125
+SPEED       = 0.001
+
+STAR_COLOR  = Color::new {200 220 220 255}
+
+
+# ----- THIS IS CALLED ONCE BEFORE THE WINDOW IS OPENED TO SETUP STUFF:
+OnSetup = function
+    flux::EnableVSync = false,
+    flux::Company = "FluxCompany"
+    flux::Caption = caption
+    flux::Version = "0.261110.01"
+    flux::clearColor = { 20 20 20 255 }
+end
+
+
+InitStars = function
+    forRange staridx STAR_COUNT
+        Points[staridx] =  Point3::new {(math::random minW maxW) (math::random minH maxH) math::randomf}
+    end
+end
+
+
+OnInit = function
+    # setup a scalable screen
+    flux::size WIDTH HEIGTH WIDTH HEIGTH
+    InitStars
+end
+
+# -----------------------------------------------------------------------------
+screen = Rect::new
+OnRender = function
+    forRange staridx STAR_COUNT
+        point = Points[staridx]
+        point.z = point.z - SPEED * flux::ft
+
+        invZ = 1.0 / point.z
+        screen.x = (WIDTH * 0.5) + (point.x * invZ)
+        screen.y = (HEIGTH * 0.5) + (point.y * invZ)
+
+        if (point.z < 0.0) || (screen.x < 0.0) || (screen.x > WIDTH) || (screen.y < 0.0)  || (screen.y > HEIGTH)
+
+            point.x = math::random minW maxW
+            point.y = math::random minH maxH
+            point.z = 1.0
+
+            screen.x = WIDTH + point.x
+            screen.y = HEIGTH + point.y
+        end
+
+        radius = math::lerp 2.0 0.3 point.z
+        screen.w = radius; screen.h = radius
+
+        #         flux::fillRect screen
+        flux::DrawRect screen STAR_COLOR 1
+        # SDL_RenderFillRect Renderer screenX screenY radius radius
+    end
+
+    flux::DrawFPS 10 30 1
+    flux::Text 10 60 caption 1.5
+end
+
+# -----------------------------------------------------------------------------
+
+OnKey = function
+    if event::type == SDL_EVENT_KEY_DOWN
+       if event::key == SDLK_ESCAPE ; flux::Close;;
+    end
+end
+
+OnMouse = function
+    if event::type == SDL_EVENT_MOUSE_BUTTON_DOWN
+        print "button" event::button "down"
+    end
+end
