@@ -210,8 +210,12 @@ put this in a extra function ,,,, should work with peek forward
 - [X] Dot object Access with Marshall System \o/
 - [X] ArenaAllocator for "soft" Garbage Collection
 - [X] Optimized forRange test_var is 2.2sec now!
-
-- [ ] missing linebreak ! '\' or change EOL?!
+- [X] ignore linebreak with '\' 
+    
+- <<< intern 0.61 -------
+    
+    
+    
     
 ## maybe:
 - add a callframe too to enable real functions 
