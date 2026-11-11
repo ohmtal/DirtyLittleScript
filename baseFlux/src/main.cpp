@@ -72,7 +72,7 @@ void SDLCALL ConsoleLogFunction(void *userdata, int category, SDL_LogPriority pr
 void initConsole() {
     SDL_SetLogOutputFunction(ConsoleLogFunction, nullptr);
 
-    gConsole.OnCommand = [&](ImConsole* console, const char* command_line) {
+    gConsole.OnCommand = [](ImConsole* console, const char* command_line) {
         DLSFlux::Run(command_line);
     };
 
@@ -157,16 +157,16 @@ bool initApp() {
 
 
 
-    app.OnRender = [&](SDL_Renderer* renderer) {
+    app.OnRender = [](SDL_Renderer* renderer) {
         onDraw(renderer);
         DLSFlux::OnRender();
     };
 
-    app.OnUpdate = [&](const float deltaTime) {
+    app.OnUpdate = [](const float deltaTime) {
         DLSFlux::OnUpdate();
     };
 
-    app.OnEvent = [&](const SDL_Event& event) {
+    app.OnEvent = [](const SDL_Event& event) {
         if (app.getImGuiIO())  {
             if (app.getImGuiIO()->WantTextInput) {
                 if (event.type == SDL_EVENT_KEY_DOWN ||

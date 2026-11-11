@@ -13,7 +13,7 @@
 
 namespace DLS::Marshall {
 
-
+    // Translator Interface
     class Translator {
     public:
         U16 mMashallId = 0;

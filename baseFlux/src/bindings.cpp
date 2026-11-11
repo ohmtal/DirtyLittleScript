@@ -4,7 +4,6 @@
 
 //using lib!  #define IMPLEMENT_DLS
 #include "DirtyLittleScript.h"
-#include "toolbox/Tools.h" //NOTE: DLS: for log redirect
 #include "core/Marshall.h" //NOTE: DLS: Object Test
 #include "core/ArenaAllocator.h" //NOTE: DLS: Object Test
 

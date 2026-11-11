@@ -34,6 +34,7 @@ forRange j JLOOPS
 
     ran = 0.0
     forRange i HLOOPS
+#testing break         if i >= HLOOPS break;;
         ran = math::randomf * i
         globalX = globalX - ran
         globalX = globalX + ran

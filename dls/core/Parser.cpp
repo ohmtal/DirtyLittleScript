@@ -523,10 +523,11 @@ bool Parser::parseForRange() {
 
     vm->emitCode(op_jump);
     vm->emitJumpOffset(loop_start_slot);
+
+
+    U32 loop_end_slot = vm->tell();
     vm->patchJumpOffset(false_jump_slot,vm->tell());
-
-
-    size_t loop_end_slot = vm->tell();
+    vm->emitCode(op_pop_stack); // the limit value
 
     // handle breaks
     for (size_t break_slot : vm->mLoopStack.back().break_slots) {

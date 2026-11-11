@@ -223,8 +223,12 @@ put this in a extra function ,,,, should work with peek forward
     - test_struct: 3.824u 0.001s 0:03.83 99.7
     - fibo: 0.820u 0.003s 0:00.82 100.0%
     - DreiZehn/counter: 4.926u 0.001s 0:04.93 99.7%
-    - (sdl) Starfield bench: 5.834u 0.222s 0:06.29 96.1%
+    - (sdl) Starfield bench: 5.834u 0.222s 0:06.29 96.1% << lucky binary!!
 
+    
+- [X] ForRange
+    - the iter variable should be also on stack - much faster than 
+    - break/continue need to pop the stack !! 
         
         
     
