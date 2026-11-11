@@ -36,11 +36,13 @@ namespace DLSFlux {
     DLS::S64 renderEventVarRegister = -1;
     DLS::S64 shutDownEventVarRegister = -1;
     DLS::S64 keyEventVarRegister = -1;
-    DLS::S64 var_mouseX, var_mouseY, var_eventType,var_mod, var_key, var_button, var_frametime;
+    DLS::S64 var_mouseX, var_mouseY, var_eventType,var_mod, var_key, var_button, var_frametime, var_wheel;
 
     DLS::S64 mouseEventVarRegister = -1;
 
     DLS::S64 EventVarRegister = -1;
+
+    DLS::ArenaAllocator marshallArena;
 
 
     typedef struct SDL_FPoint3
@@ -60,27 +62,7 @@ namespace DLSFlux {
     bool isRect(const DLS::Value& value) { return value.isPointerMarshall(SDL_FRectID); }
     bool isColor(const DLS::Value& value) { return value.isPointerMarshall(SDL_ColorID); }
     // -----------------------------------------------------------------------------
-    // struct SoftGarbageDef {
-    //     std::vector<void*> objects;
-    //
-    //     void Add(void* obj) {
-    //         objects.push_back(obj);
-    //     }
-    //     // handle with care!!
-    //     void Clear() {
-    //         for (auto o: objects) {
-    //             free(o);
-    //         }
-    //         objects.clear();
-    //     }
-    //     ~SoftGarbageDef() {
-    //         Clear();
-    //     }
-    // } SoftGarbage;
-
-
-
-    // // // -----------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------
     bool MapArrayFRect( DLS::Value& value, SDL_FRect& rect) {
 
         if (isRect(value)) {
@@ -146,6 +128,7 @@ namespace DLSFlux {
         var_key         = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "event::key" ));
         var_mod         = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "event::mod" ));
         var_button      = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "event::button" ));
+        var_wheel       = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "event::wheel" ));
 
         var_frametime   = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "flux::ft" ));
 
@@ -508,6 +491,7 @@ namespace DLSFlux {
         }, "debug return assigned array count");
         // ---------------------------------------------------------------------
         auto* frectTranslator = new DLS::Marshall::GenericStructTranslator<SDL_FRect>();
+        marshallArena.Add(frectTranslator);
         frectTranslator->registerField("x", &SDL_FRect::x);
         frectTranslator->registerField("y", &SDL_FRect::y);
         frectTranslator->registerField("w", &SDL_FRect::w);
@@ -538,6 +522,7 @@ namespace DLSFlux {
         // SDL_FPoint with marshalling
         // ---------------------------------------------------------------------
         auto* fpointTranslator = new DLS::Marshall::GenericStructTranslator<SDL_FPoint>();
+        marshallArena.Add(fpointTranslator);
         fpointTranslator->registerField("x", &SDL_FPoint::x);
         fpointTranslator->registerField("y", &SDL_FPoint::y);
         SDL_FPointID = RegisterMarshall(fpointTranslator);
@@ -558,6 +543,7 @@ namespace DLSFlux {
         // SDL_FPoint3 with marshalling
         // ---------------------------------------------------------------------
         auto* fpoint3Translator = new DLS::Marshall::GenericStructTranslator<SDL_FPoint3>();
+        marshallArena.Add(fpoint3Translator);
         fpoint3Translator->registerField("x", &SDL_FPoint3::x);
         fpoint3Translator->registerField("y", &SDL_FPoint3::y);
         fpoint3Translator->registerField("z", &SDL_FPoint3::z);
@@ -578,6 +564,7 @@ namespace DLSFlux {
         // SDL_Color with marshalling
         // ---------------------------------------------------------------------
         auto* colorTranslator = new DLS::Marshall::GenericStructTranslator<SDL_Color>();
+        marshallArena.Add(colorTranslator);
         colorTranslator->registerField("r", &SDL_Color::r);
         colorTranslator->registerField("g", &SDL_Color::g);
         colorTranslator->registerField("b", &SDL_Color::b);
@@ -608,16 +595,13 @@ namespace DLSFlux {
         }
     }
 
-    void Init () {
-        DLS::Tools::LogHandler = DLSFlux::DLS_Logger;
-        DLS::Init();
+    void Init (int argc, char* argv[]) {
+        DLS::Init(argc,argv,DLSFlux::DLS_Logger);
         DLS::RegisterMathFunctions();
         DLS::RegisterStringFunctions( );
 
         RegisterFluxFunctions();
         RegisterGlobals();
-
-
     }
 
 

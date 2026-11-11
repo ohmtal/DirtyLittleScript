@@ -23,7 +23,7 @@ extern void RegisterSDL3Functions();
 
 
 int main(int argc, char* argv[]) {
-    DLS::Init();
+    DLS::Init(argc, argv);
     RegisterMathFunctions();
     RegisterStringFunctions();
     RegisterSDL3Functions();

@@ -213,9 +213,11 @@ put this in a extra function ,,,, should work with peek forward
 - [X] ignore linebreak with '\' 
     
 - <<< intern 0.61 -------
-    
-    
-    
+- [ ] optimize Marshall lookup 
+        - test_var (without ++/--): 2.7 sec, test_struct: about 6 sec 
+        - changed to lookup and save/load by register 7sec
+        - inline cache using `BIT 31` => 4.2sec
+        
     
 ## maybe:
 - add a callframe too to enable real functions 

@@ -23,10 +23,12 @@ set(DLS_SRC
     ${CMAKE_CURRENT_LIST_DIR}/DirtyLittleScript.cpp
 
     # core
+    ${CMAKE_CURRENT_LIST_DIR}/core/ArenaAllocator.h
     ${CMAKE_CURRENT_LIST_DIR}/core/FunctionMap.h
     ${CMAKE_CURRENT_LIST_DIR}/core/Globals.h
     ${CMAKE_CURRENT_LIST_DIR}/core/Lexer.h
     ${CMAKE_CURRENT_LIST_DIR}/core/Lexer.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/core/Marshall.h
     ${CMAKE_CURRENT_LIST_DIR}/core/Parser.h
     ${CMAKE_CURRENT_LIST_DIR}/core/Parser.cpp
     ${CMAKE_CURRENT_LIST_DIR}/core/Token.h

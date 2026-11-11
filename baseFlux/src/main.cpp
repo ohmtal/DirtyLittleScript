@@ -26,7 +26,7 @@ ImConsole gConsole;
 
 std::vector<fs::path> dlsFiles;
 namespace DLSFlux {
-    extern void Init();
+    extern void Init (int argc, char* argv[]);
     extern bool Run(const std::string& command);
     extern size_t getTapePos();
     extern size_t getArrayCount();
@@ -201,7 +201,6 @@ bool initApp() {
             case SDL_EVENT_MOUSE_BUTTON_DOWN:
             case SDL_EVENT_MOUSE_BUTTON_UP:
             {
-
                 DLSFlux::OnMouse(event.button.button, event.type);
             }
             break;
@@ -230,7 +229,7 @@ int main(int argc, char* argv[]) {
         .TexturePathAppend = "texture/"
     };
 
-    DLSFlux::Init();
+    DLSFlux::Init(argc, argv);
     DLSFlux::RunFile("assets/main.dls", false);
     DLSFlux::OnSetup();
 

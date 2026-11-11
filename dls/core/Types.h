@@ -9,15 +9,19 @@
 #include <cstdint>
 
 #if defined(_MSC_VER)
-// Microsoft Visual Studio Compiler
+// Microsoft Visual Studio
 #define FORCE_INLINE __forceinline
+#define FORCE_NOINLINE __declspec(noinline)
 #elif defined(__GNUC__) || defined(__clang__)
-// GCC, Clang, and Intel Compiler (on Linux/macOS)
+// GCC and Clang
 #define FORCE_INLINE inline __attribute__((always_inline))
+#define FORCE_NOINLINE __attribute__((noinline))
 #else
-// Fallback for other compilers
+// Fallback
 #define FORCE_INLINE inline
+#define FORCE_NOINLINE
 #endif
+
 
 namespace DLS {
     // ------------------------------------------

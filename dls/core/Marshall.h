@@ -19,10 +19,14 @@ namespace DLS::Marshall {
         U16 mMashallId = 0;
         virtual ~Translator() = default;
 
-        virtual bool saveValue(const Value& pointerValue, U32 fieldSymbolId, const Value& src) = 0;
-        virtual bool loadValue(const Value& pointerValue, U32 fieldSymbolId, Value& dest) = 0;
+        virtual bool getFieldRegister(U32 fieldSymbolId, size_t& target) = 0;
+
+        virtual bool saveValueByRegister(const Value& pointerValue, size_t fieldRegisterId, const Value& src) = 0;
+        virtual bool loadValueByRegister(const Value& pointerValue, size_t fieldRegisterId, Value& dest) = 0;
+
         virtual bool saveArrayValue(const Value& pointerValue, const std::vector<Value>& arr) = 0;
         virtual bool loadArrayValue(const Value& pointerValue, std::vector<Value>& outArr) const = 0;
+
         virtual bool saveInstance(const Value& pointerValue, const void* srcInstance) = 0;
         virtual bool loadInstance(const Value& srcValue, void* destInstance) const = 0;
     };
@@ -38,8 +42,12 @@ namespace DLS::Marshall {
             std::function<void(void* fieldPtr, const Value& src)> saveFn;
             std::function<void(const void* fieldPtr, Value& dest)> loadFn;
         };
-        std::unordered_map<U32, FieldInfo> mFields;
-        std::vector<FieldInfo> mFieldsByIndex;
+
+        std::unordered_map<U32, size_t> mFieldLookup;
+        std::vector<FieldInfo> mFieldStack;
+
+        // std::unordered_map<U32, FieldInfo> mFields;
+        // std::vector<FieldInfo> mFieldsByIndex;
 
 
     public:
@@ -47,11 +55,10 @@ namespace DLS::Marshall {
         void registerField(const char* name, MemberType StructType::* fieldTarget) {
             U32 symbolId = DLS::SymbolTable::insert(name);
             size_t offset = reinterpret_cast<size_t>(&(static_cast<StructType*>(nullptr)->*fieldTarget));
-            size_t currentLength = mFieldsByIndex.size();
 
             FieldInfo info;
             info.offset = offset;
-            info.arrayIndex = currentLength;
+            info.arrayIndex =  mFieldStack.size();
 
             info.saveFn = [](void* fieldPtr, const Value& src) {
                 MemberType* m_ptr = reinterpret_cast<MemberType*>(fieldPtr);
@@ -93,8 +100,8 @@ namespace DLS::Marshall {
                 }
             };
 
-            mFields[symbolId] = info;
-            mFieldsByIndex.push_back(info);
+            mFieldLookup[symbolId] = info.arrayIndex;
+            mFieldStack.push_back(info);
         }
         // ---------------------------------------------------------------------
         // not in use !
@@ -126,40 +133,47 @@ namespace DLS::Marshall {
         //     mFieldsByIndex.push_back(info);
         // }
         // ---------------------------------------------------------------------
-        bool saveValue(const Value& pointerValue, U32 fieldSymbolId, const Value& src) override {
-            auto it = mFields.find(fieldSymbolId);
-            if (it == mFields.end()) return false;
+        bool getFieldRegister(U32 fieldSymbolId, size_t& target) override {
+            auto it = mFieldLookup.find(fieldSymbolId);
+            if (it == mFieldLookup.end()) return false;
+            target = it->second;
+            return true;
+        }
 
+        bool saveValueByRegister(const Value& pointerValue, size_t fieldRegisterId, const Value& src) override
+        {
+            if (fieldRegisterId >= mFieldStack.size())[[unlikely]] return false;
             StructType* instance = reinterpret_cast<StructType*>(pointerValue.getPointer());
             if (!instance) return false;
 
-            void* fieldAddress = reinterpret_cast<char*>(instance) + it->second.offset;
-            it->second.saveFn(fieldAddress, src);
+            auto& info = mFieldStack[fieldRegisterId];
+            void* fieldAddress = reinterpret_cast<char*>(instance) + info.offset;
+            info.saveFn(fieldAddress, src);
 
             return true;
         }
         // ---------------------------------------------------------------------
 
-        bool loadValue(const Value& pointerValue, U32 fieldSymbolId, Value& dest) override {
-            auto it = mFields.find(fieldSymbolId);
-            if (it == mFields.end()) return false;
-
+        bool loadValueByRegister(const Value& pointerValue, size_t fieldRegisterId, Value& dest) override
+        {
+            if (fieldRegisterId >= mFieldStack.size())[[unlikely]] return false;
             StructType* instance = reinterpret_cast<StructType*>(pointerValue.getPointer());
             if (!instance) return false;
-            const void* fieldAddress = reinterpret_cast<const char*>(instance) + it->second.offset;
+            auto& info = mFieldStack[fieldRegisterId];
+            const void* fieldAddress = reinterpret_cast<const char*>(instance) + info.offset;
 
-            it->second.loadFn(fieldAddress, dest);
+            info.loadFn(fieldAddress, dest);
             return true;
         }
         // ---------------------------------------------------------------------
 
         bool saveArrayValue(const Value& pointerValue, const std::vector<Value>& arr) {
-            if (arr.size() < mFieldsByIndex.size()) return false;
+            if (arr.size() < mFieldStack.size()) return false;
             StructType* instance = reinterpret_cast<StructType*>(pointerValue.getPointer());
             if (!instance) return false;
 
-            for (size_t i = 0; i < mFieldsByIndex.size(); ++i) {
-                const auto& field = mFieldsByIndex[i];
+            for (size_t i = 0; i < mFieldStack.size(); ++i) {
+                const auto& field = mFieldStack[i];
                 void* fieldAddress = reinterpret_cast<char*>(instance) + field.offset;
                 field.saveFn(fieldAddress, arr[i]);
             }
@@ -169,9 +183,9 @@ namespace DLS::Marshall {
         bool loadArrayValue(const Value& pointerValue, std::vector<Value>& outArr) const {
             const StructType* instance = reinterpret_cast<const StructType*>(pointerValue.getPointer());
             if (!instance) return false;
-            outArr.resize(mFieldsByIndex.size());
-            for (size_t i = 0; i < mFieldsByIndex.size(); ++i) {
-                const auto& field = mFieldsByIndex[i];
+            outArr.resize(mFieldStack.size());
+            for (size_t i = 0; i < mFieldStack.size(); ++i) {
+                const auto& field = mFieldStack[i];
                 const void* fieldAddress = reinterpret_cast<const char*>(instance) + field.offset;
                 field.loadFn(fieldAddress, outArr[i]);
             }
@@ -211,13 +225,8 @@ namespace DLS::Marshall {
 
             return false;
         }
-
     };
-
-
 // ----------------------------------------------------------------------------
-
-
 inline U16 RegisterMarshall(Translator* trans) {
     if (TranslatorMap.size() == 0) TranslatorMap.push_back(nullptr); //dont want a 0
     U16 result = (U16)TranslatorMap.size();
@@ -225,14 +234,12 @@ inline U16 RegisterMarshall(Translator* trans) {
     TranslatorMap.push_back(trans);
     return result;
 }
-
-inline Translator* getTranslator(const Value& pointerValue) {
+/*FORCE_INLINE*/ inline Translator* getTranslator(const Value& pointerValue) {
     if ( !pointerValue.isPointer()
         || pointerValue.marshallId == 0
         || pointerValue.marshallId >= TranslatorMap.size()) [[unlikely]]
         return nullptr;
     return TranslatorMap[pointerValue.marshallId];
 }
-
 
 } //namespace

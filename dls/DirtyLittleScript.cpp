@@ -64,8 +64,21 @@ namespace DLS {
     // -------------------------------------------------------------------------
     // Init the base functions and constants
     // -------------------------------------------------------------------------
-    void Init( ) {
+    std::vector<std::string> CmdlineArgs;
+
+    void Init(int argc , char* argv[], Tools::LogCallback customLogHandler ) {
         static bool registered = false; if (registered) return; registered = true;
+        using namespace FunctionMap;
+
+        if (customLogHandler) Tools::LogHandler = customLogHandler;
+
+        // see also sys::argv function
+        if (argv) {
+            RegisterConstants("sys::argc",Value(argc));
+            for (int i = 0; i < argc; i++) {
+                CmdlineArgs.push_back(std::string(argv[i]));
+            }
+        }
 
         #ifndef DLS_NO_EXTRA_FUNCTIONS
             RegisterMathFunctions();
@@ -74,7 +87,6 @@ namespace DLS {
         #endif
 
 
-        using namespace FunctionMap;
 
         // ---------------------------------------------------------------------
         // also push some CORE Constants here:
@@ -184,6 +196,20 @@ namespace DLS {
             ret = Value((S64)arr.size());
             return true;
         }, "cast any type to float");
+
+        // ---------------------------------------------------------------------
+        // Argv
+        // ---------------------------------------------------------------------
+        RegisterFunction("sys::argv", [](std::span<Value> args, Value& ret) -> bool {
+            if (args.size() != 1) {
+                Tools::errorf("Usage: sys::argv index\n");
+                return false;
+            }
+            size_t index = (size_t)args[0].getLong();
+            if (index >= CmdlineArgs.size()) return false;
+            ret = Value(CmdlineArgs[index]);
+            return true;
+        }, "get a command line argument by index. see also const sys::argc (count)");
     } //<< Init
 
 } // namespace DLS

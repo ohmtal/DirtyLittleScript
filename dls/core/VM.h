@@ -436,6 +436,7 @@ namespace DLS {
     X(op_cfunc,      2, "call a c registered func") \
     X(op_func_def,      1, "define a lambda") \
     X(op_cast_long,      0, "cast a stack value to long") \
+    X(op_cast_double,      0, "cast a stack value to double") \
     X(op_return,      0, "return")
 
     #define X(name, args, comment) name,

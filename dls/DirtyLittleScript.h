@@ -29,7 +29,8 @@ namespace DLS {
     static bool DEBUG_TOKEN = false;
     std::string Run(const std::string& code);
     std::string loadScript(const std::string& scriptPath);
-    void Init( );
+    // void Init( );
+    void Init(int argc = 0, char* argv[] = nullptr, Tools::LogCallback customLogHandler = nullptr);
 } // namespace DLS
 
 #ifdef IMPLEMENT_DLS

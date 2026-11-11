@@ -122,8 +122,8 @@ bool Parser::parsePrimary() {
                     argCount++;
                 }
                 vm->emitCode( op_cfunc );
-                vm->emitTapeChunk((size_t)symId);
-                vm->emitTapeChunk((size_t)argCount);
+                vm->emitTapeChunk((U32)symId);
+                vm->emitTapeChunk((U32)argCount);
                 //not faster! vm->emitValue(Value(nullptr));
 
                 if (ArrayConstructed) vm->emitCode(op_clear_temp_arrays);
@@ -206,7 +206,7 @@ bool Parser::parsePrimary() {
             } else
             if (S64 varidx = vm->Variables.getGlobalRegister(symId); varidx >= 0)  {
                 vm->emitCode(op_load_global);
-                vm->emitTapeChunk((size_t)varidx);
+                vm->emitTapeChunk((U32)varidx);
             } else
             if (Value* constansPointer = FunctionMap::getConstants(symId);constansPointer) {
                 vm->emitCode(op_literal );
@@ -403,7 +403,7 @@ bool Parser::parseWhile() {
 //     U32 symId = SymbolTable::insert(variable);
 //     size_t varidx = vm->Variables.reserveGlobal(symId);
 //     vm->emitCode(op_save_global);
-//     vm->emitTapeChunk((size_t)varidx);
+//     vm->emitTapeChunk((U32)varidx);
 //
 //     // ---- save tape position
 //     size_t loop_start_slot = vm->tell();
@@ -411,13 +411,13 @@ bool Parser::parseWhile() {
 //     // ---- increment iter
 //
 //     vm->emitCode(op_inc);
-//     vm->emitTapeChunk((size_t)varidx);
+//     vm->emitTapeChunk((U32)varidx);
 //
 //
 //
 //     // ---- condition iter < count
 //     vm->emitCode(op_load_global);
-//     vm->emitTapeChunk((size_t)varidx);
+//     vm->emitTapeChunk((U32)varidx);
 //
 //     if (!getArg("ForRange count")) return false;
 //
@@ -479,11 +479,11 @@ bool Parser::parseForRange() {
 
     // ----1. emit loop variable and set to -1
     vm->emitCode(op_literal);
-    vm->emitValue(Value(-1.0));
+    vm->emitValue(Value(-1));
     U32 symId = SymbolTable::insert(variable);
     size_t varidx = vm->Variables.reserveGlobal(symId);
     vm->emitCode(op_save_global);
-    vm->emitTapeChunk((size_t)varidx);
+    vm->emitTapeChunk((U32)varidx);
 
     // ----2. emit count
     if (!getArg("ForRange count")) return false;
@@ -494,7 +494,7 @@ bool Parser::parseForRange() {
 
     // ---- increment compare and jump!
     vm->emitCode(op_for_range_jump);
-    vm->emitTapeChunk((size_t)varidx);
+    vm->emitTapeChunk((U32)varidx);
 
     size_t false_jump_slot = vm->tell();
     vm->emitJumpOffset(0); // false placeholder

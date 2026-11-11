@@ -14,14 +14,50 @@
 
 using namespace DLS;
 
-// bool DEBUG_TOKEN = false;
+// includes...
+#include "core/ArenaAllocator.h"
+#include "core/Marshall.h"
+// add a cleanup ..
+ArenaAllocator Cleanup;
+// add a struct
+struct TestPoint {
+    double x;
+    double y;
+};
+U16 TestPointTranslatorID = 0;
+
+void RegisterTest() {
+    using namespace FunctionMap;
+    // setup Marshall
+    auto* testPointTranslator = new Marshall::GenericStructTranslator<TestPoint>();
+    Cleanup.Add(testPointTranslator);
+    testPointTranslator->registerField("x", &TestPoint::x);
+    testPointTranslator->registerField("y", &TestPoint::y);
+    TestPointTranslatorID = RegisterMarshall(testPointTranslator);
+    FunctionMap::RegisterFunction("Point::new", [](std::span<Value> args, Value& ret) -> bool {
+        TestPoint* p = new TestPoint();
+        DLS::GarbageList.Add(p);
+        ret = Value(p);
+        ret.marshallId = TestPointTranslatorID;
+        if (args.size() > 0 && args[0].isArray()) {
+            DLS::Marshall::Translator* tl = DLS::Marshall::getTranslator(ret);
+            if (tl) tl->saveArrayValue(ret,Globals::CurrentVM->Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
+        }
+        return true;
+    }, "Create a Point");
+
+}
+
 
 
 int main(int argc, char* argv[]) {
 
-    DLS::Init();
-    assert(sizeof(Value) == 16 && "Check Value! It's not 16 byte!");
+    DLS::Init(argc, argv);
+    RegisterTest();
 
+#ifdef DLS_DEBUG
+    assert(sizeof(Value) == 16 && "Check Value! It's not 16 byte!");
+#endif
     int minargs = 1; // for more params
     if (argc > minargs) {
         Run(loadScript( argv[minargs]));
@@ -286,6 +322,11 @@ Run(mySrc);
 
 mySrc = R"(
     help
+    print sys::argc
+    forRange i sys::argc; print "#" i (sys::argv i);;
+    print "--- Test struct ---"
+    p = Point::new {10.1 20.2}
+    print p.x p.y
 )";
 Run(mySrc);
 

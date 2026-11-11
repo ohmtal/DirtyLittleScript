@@ -631,9 +631,38 @@ namespace DLS {
         // ------------------------------------------
         // Object Fields
         // ------------------------------------------
+        // handle_op_load_field: {
+        //     U32 varIndex = vm.advanceSlot();
+        //     U32 fieldSymId = vm.advanceSlot();
+        //
+        //     Value result = Value();
+        //
+        //     Value& var = vm.Variables.getGlobal(varIndex);
+        //
+        //     Marshall::Translator* tl = Marshall::getTranslator(var);
+        //     if (!tl) [[unlikely]] {
+        //         PrintRuntimeError("Failed to get Translator for variable");
+        //         PUSH_STACK(result);
+        //         DISPATCH();
+        //     }
+        //     size_t registerIndex;
+        //     if (!tl->getFieldRegister(fieldSymId,registerIndex)) [[unlikely]] {
+        //         PrintRuntimeError("Failed to get field - unknown fieldname");
+        //     } else {
+        //         tl->loadValueByRegister(var,registerIndex,result);
+        //     }
+        //
+        //     PUSH_STACK(result);
+        //
+        //     DISPATCH();
+        // }
+
+
         handle_op_load_field: {
             U32 varIndex = vm.advanceSlot();
-            U32 fieldSymId = vm.advanceSlot();
+
+            U32& fieldSlot = vm.advanceSlot();
+            U32 fieldSymId = fieldSlot;
 
             Value result = Value();
 
@@ -645,35 +674,80 @@ namespace DLS {
                 PUSH_STACK(result);
                 DISPATCH();
             }
-            if (!tl->loadValue(var,fieldSymId,result)) [[unlikely]] {
-                PrintRuntimeError("Failed to get field - unknown fieldname");
+
+
+            size_t registerIndex;
+            // inline cache :D per bit 31
+            if (fieldSymId & 0x80000000) {
+                registerIndex = fieldSymId & 0x7FFFFFFF;
+            } else {
+                if (!tl->getFieldRegister(fieldSymId, registerIndex)) [[unlikely]] {
+                    PrintRuntimeError("Failed to set field - unknown fieldname");
+                    DISPATCH();
+                }
+                fieldSlot = registerIndex | 0x80000000;
             }
-
+            tl->loadValueByRegister(var,registerIndex,result);
             PUSH_STACK(result);
-
             DISPATCH();
         }
 
+        // --- save field ----
         handle_op_save_field: {
             U32 varIndex = vm.advanceSlot();
-            U32 fieldSymId = vm.advanceSlot();
+
+            U32& fieldSlot = vm.advanceSlot();
+            U32 fieldSymId = fieldSlot;
+
             Value& src = POP_STACK();
-
             Value& var = vm.Variables.getGlobal(varIndex);
-
 
             Marshall::Translator* tl = Marshall::getTranslator(var);
             if (!tl) [[unlikely]] {
                 PrintRuntimeError("Failed to get Translator for variable");
                 DISPATCH();
             }
-            if (!tl->saveValue(var,fieldSymId,src)) [[unlikely]] {
-                PrintRuntimeError("Failed to set field - unknown fieldname");
-            }
 
+            size_t registerIndex;
+
+            if (fieldSymId & 0x80000000) {
+                registerIndex = fieldSymId & 0x7FFFFFFF;
+            } else {
+                if (!tl->getFieldRegister(fieldSymId, registerIndex)) [[unlikely]] {
+                    PrintRuntimeError("Failed to set field - unknown fieldname");
+                    DISPATCH();
+                }
+                fieldSlot = registerIndex | 0x80000000;
+            }
+            tl->saveValueByRegister(var, registerIndex, src);
 
             DISPATCH();
         }
+
+        // handle_op_save_field: {
+        //     U32 varIndex = vm.advanceSlot();
+        //     U32 fieldSymId = vm.advanceSlot();
+        //     Value& src = POP_STACK();
+        //
+        //     Value& var = vm.Variables.getGlobal(varIndex);
+        //
+        //
+        //     Marshall::Translator* tl = Marshall::getTranslator(var);
+        //     if (!tl) [[unlikely]] {
+        //         PrintRuntimeError("Failed to get Translator for variable");
+        //         DISPATCH();
+        //     }
+        //
+        //     size_t registerIndex;
+        //     if (!tl->getFieldRegister(fieldSymId,registerIndex)) [[unlikely]] {
+        //         PrintRuntimeError("Failed to set field - unknown fieldname");
+        //     } else {
+        //         tl->saveValueByRegister(var,registerIndex,src);
+        //     }
+        //
+        //
+        //     DISPATCH();
+        // }
 
 
         // ------------------------------------------
@@ -683,7 +757,31 @@ namespace DLS {
             PEEK_STACK(0) = Value(PEEK_STACK(0).getLong());
             DISPATCH();
         }
+        handle_op_cast_double: {
+            PEEK_STACK(0) = Value(PEEK_STACK(0).getDouble());
+            DISPATCH();
+        }
 
+        // // as double counter
+        // handle_op_for_range_jump: {
+        //     U32 varIndex = vm.advanceSlot();
+        //     Value& dstValue = vm.Variables.getGlobal(varIndex);
+        //     if (dstValue.isDouble()) [[likely]] {
+        //         dstValue.d++;
+        //     } else {
+        //         dstValue = Value(dstValue.getDouble() + 1.0);
+        //     }
+        //
+        //     Value& limitValue = PEEK_STACK(0);
+        //     U32 target = vm.advanceSlot();
+        //     if (dstValue.l >= limitValue.l) {
+        //         (void) POP_STACK();
+        //         vm.pc = target;
+        //     }
+        //     DISPATCH();
+        // }
+
+        // as int counter
         handle_op_for_range_jump: {
             U32 varIndex = vm.advanceSlot();
             Value& dstValue = vm.Variables.getGlobal(varIndex);
@@ -701,6 +799,7 @@ namespace DLS {
             }
             DISPATCH();
         }
+
         // ------------------------------------------
         // Script function def
         // ------------------------------------------

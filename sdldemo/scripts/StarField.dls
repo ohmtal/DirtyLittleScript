@@ -5,12 +5,12 @@
 # -----------------------------------------------------------------------------
 print " StarField Dirty Little Script"
 
-W = 640
-H = 320
-maxW = W / 2
-minW = maxW * -1
-maxH = H / 2
-minH = maxH * -1
+W = 640.0
+H = 320.0
+maxW = W / 2.0
+minW = maxW * -1.0
+maxH = H / 2.0
+minH = maxH * -1.0
 
 STAR_COUNT  = 4200
 START_DIV   = 0.03125
