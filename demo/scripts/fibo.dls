@@ -1,4 +1,5 @@
 # recurive example with global variables and function without parameters.
+# crazy stuff ..
 
 stack[0] = 0
 sp = 0
@@ -13,27 +14,18 @@ fib = function
         fib_res = fib_n
         return
     end
-
-    stack[sp] = fib_n
+    stack[sp] = fib_n;
     sp++
-
     fib_n--
-
     fib
-
     sp--
     local_n = stack[sp]
-
     stack[sp] = fib_res
     sp++
-
     fib_n = local_n - 2
-
     fib
-
     sp--
     res_ast1 = stack[sp]
-
     fib_res = res_ast1 + fib_res
 end
 

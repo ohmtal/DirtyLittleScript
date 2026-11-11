@@ -10,6 +10,7 @@ caption = "DLS Baseflux"
 
 SDL_EVENT_KEY_DOWN = 0x300
 SDL_EVENT_MOUSE_BUTTON_DOWN = 1025
+SDL_EVENT_MOUSE_WHEEL = 1027
 SDLK_ESCAPE     = 0x0000001b
 SDLK_PAGEDOWN   = 0x4000004e
 SDLK_RIGHT      = 0x4000004f
@@ -95,5 +96,7 @@ end
 OnMouse = function
     if event::type == SDL_EVENT_MOUSE_BUTTON_DOWN
         print "button" event::button "down"
+    elif event::type == SDL_EVENT_MOUSE_WHEEL
+        print "wheel" event::wheelx event::wheely
     end
 end

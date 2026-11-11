@@ -42,6 +42,7 @@ namespace DLSFlux {
     extern void OnKey(SDL_Keycode key, DLS::U32 EventType, SDL_Keymod mod);
     extern void OnMouse( DLS::U8 button,  DLS::U32 EventType);
     extern void OnMouseMotion(const SDL_MouseMotionEvent& mmev);
+    void OnMouseWheel(const SDL_MouseWheelEvent& mWheelEvent);
     extern const std::string& getScriptFile();
 }
 
@@ -202,6 +203,11 @@ bool initApp() {
             case SDL_EVENT_MOUSE_BUTTON_UP:
             {
                 DLSFlux::OnMouse(event.button.button, event.type);
+            }
+            break;
+            case SDL_EVENT_MOUSE_WHEEL:
+            {
+                DLSFlux::OnMouseWheel(event.wheel);
             }
             break;
 

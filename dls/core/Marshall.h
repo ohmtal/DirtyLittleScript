@@ -65,15 +65,15 @@ namespace DLS::Marshall {
 
                 if constexpr (std::is_same_v<MemberType, double>) {
                     *m_ptr = src.getDouble();
-                } else if constexpr (std::is_same_v<MemberType, int64_t>) {
-                    *m_ptr = src.getLong();
                 } else if constexpr (std::is_same_v<MemberType, float>) {
                     *m_ptr = src.getFloat();
-                } else if constexpr (std::is_same_v<MemberType, int>) {
+                } else if constexpr (std::is_same_v<MemberType, S64>) {
+                    *m_ptr = src.getLong();
+                } else if constexpr (std::is_same_v<MemberType, S32>) {
                     *m_ptr = src.getInt();
-                } else if constexpr (std::is_same_v<MemberType, uint32_t>) {
+                } else if constexpr (std::is_same_v<MemberType, U32>) {
                     *m_ptr = src.getUInt();
-                } else if constexpr (std::is_same_v<MemberType, uint8_t>) {
+                } else if constexpr (std::is_same_v<MemberType, U8>) {
                     *m_ptr = src.getU8();
                 } else if constexpr (std::is_same_v<MemberType, bool>) {
                     *m_ptr = src.getBool();
@@ -85,15 +85,15 @@ namespace DLS::Marshall {
 
                 if constexpr (std::is_same_v<MemberType, double>) {
                     dest = Value(*m_ptr);
-                } else if constexpr (std::is_same_v<MemberType, int64_t>) {
-                    dest = Value(*m_ptr);
                 } else if constexpr (std::is_same_v<MemberType, float>) {
                     dest = Value(*m_ptr);
-                } else if constexpr (std::is_same_v<MemberType, uint32_t>) {
+                } else if constexpr (std::is_same_v<MemberType, S64>) {
                     dest = Value(*m_ptr);
-                } else if constexpr (std::is_same_v<MemberType, uint8_t>) {
+                } else if constexpr (std::is_same_v<MemberType, U32>) {
                     dest = Value(*m_ptr);
-                } else if constexpr (std::is_same_v<MemberType, int>) {
+                } else if constexpr (std::is_same_v<MemberType, U8>) {
+                    dest = Value(*m_ptr);
+                } else if constexpr (std::is_same_v<MemberType, S32>) {
                     dest = Value(*m_ptr);
                 } else if constexpr (std::is_same_v<MemberType, bool>) {
                     dest = Value(*m_ptr);

@@ -213,10 +213,19 @@ put this in a extra function ,,,, should work with peek forward
 - [X] ignore linebreak with '\' 
     
 - <<< intern 0.61 -------
-- [ ] optimize Marshall lookup 
+- [X] optimize Marshall lookup 
         - test_var (without ++/--): 2.7 sec, test_struct: about 6 sec 
-        - changed to lookup and save/load by register 7sec
-        - inline cache using `BIT 31` => 4.2sec
+        - changed to lookup and save/load by register => 7 sec without cache
+        - inline cache using `BIT 31` on symid  => 4.2sec 
+        
+- Benchmarks (Release O3 / output redirected / best of 3):
+    - test_var: 2.002u 0.002s 0:02.01 99.5%
+    - test_struct: 3.824u 0.001s 0:03.83 99.7
+    - fibo: 0.820u 0.003s 0:00.82 100.0%
+    - DreiZehn/counter: 4.926u 0.001s 0:04.93 99.7%
+    - (sdl) Starfield bench: 5.834u 0.222s 0:06.29 96.1%
+
+        
         
     
 ## maybe:

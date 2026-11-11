@@ -66,57 +66,57 @@ namespace DLS {
         inline bool isArray() const{ return type == ValueType::Array; }
         // ------------------
         inline F64 getFastDouble() { return d;}
-        inline F64 getDouble() const {
-            if (type == ValueType::Double) [[likely]] return d;
-            else if (type == ValueType::Long || type == ValueType::Array) return static_cast<F64>(l);
-            else if (type == ValueType::Pointer) return (p != nullptr) ? 1.0 : 0.0;
-            else return 0.0;
+        // inline F64 getDouble() const {
+        //     if (type == ValueType::Double) [[likely]] return d;
+        //     else if (type == ValueType::Long || type == ValueType::Array) return static_cast<F64>(l);
+        //     else if (type == ValueType::Pointer) return (p != nullptr) ? 1.0 : 0.0;
+        //     else return 0.0;
+        // }
+        FORCE_NOINLINE F64 getDoubleSlowPath(ValueType type, S64 payload) const {
+            if (type == ValueType::Array)
+                return static_cast<F64>(payload);
+            if (type == ValueType::Pointer && payload != 0)
+                return 1.0;
+            return 0.0;
         }
-        // FORCE_NOINLINE F64 getDoubleSlowPath(ValueType type, S64 payload) const {
-        //     if (type == ValueType::Array)
-        //         return static_cast<F64>(payload);
-        //     if (type == ValueType::Pointer && payload != 0)
-        //         return 1.0;
-        //     return 0.0;
-        // }
-        //
-        // FORCE_INLINE F64 getDouble() const {
-        //         if (type == ValueType::Double) [[likely]] return d;
-        //         else if (type == ValueType::Long) return static_cast<F64>(l);
-        //         else return getDoubleSlowPath(type, l);
-        //     // return (type == ValueType::Double) ? d : getDoubleSlowPath(type, l);
-        // }
+
+        FORCE_INLINE F64 getDouble() const {
+                if (type == ValueType::Double) [[likely]] return d;
+                else if (type == ValueType::Long) return static_cast<F64>(l);
+                else return getDoubleSlowPath(type, l);
+            // return (type == ValueType::Double) ? d : getDoubleSlowPath(type, l);
+        }
 
         // ------------------
        inline S64 getFastLong() const { return l; }
 
-       // FORCE_NOINLINE S64 getLongSlowPath(ValueType type, S64 payload_l, F64 payload_d) const {
-       //     if (type == ValueType::Double) {
-       //         return static_cast<S64>(payload_d);
-       //     }
-       //     if (type == ValueType::Array) {
-       //         return static_cast<S64>(payload_l);
-       //     }
-       //     if (type == ValueType::Pointer) {
-       //         return (payload_l != 0) ? 1 : 0; // p != nullptr
-       //     }
-       //     return 0;
-       // }
-       //
-       // FORCE_INLINE S64 getLong() const {
-       //     if (type == ValueType::Long) [[likely]] {
-       //         return l;
-       //     }
-       //     return getLongSlowPath(type, l, d);
-       // }
+       FORCE_NOINLINE S64 getLongSlowPath(ValueType type, S64 payload_l, F64 payload_d) const {
+           if (type == ValueType::Double) {
+               return static_cast<S64>(payload_d);
+           }
+           if (type == ValueType::Array) {
+               return static_cast<S64>(payload_l);
+           }
+           if (type == ValueType::Pointer) {
+               return (payload_l != 0) ? 1 : 0; // p != nullptr
+           }
+           return 0;
+       }
 
-       inline S64 getLong() const {
-            if (type == ValueType::Long) [[likely]] return l;
-            else if (type == ValueType::Double)  return static_cast<S64>(d);
-            else if (type == ValueType::Array)  return l;
-            else if (type == ValueType::Pointer) return (p != nullptr) ? 1 : 0;
-            else return 0;
-        }
+       FORCE_INLINE S64 getLong() const {
+           if (type == ValueType::Long) [[likely]] {
+               return l;
+           }
+           return getLongSlowPath(type, l, d);
+       }
+
+       // inline S64 getLong() const {
+       //      if (type == ValueType::Long) [[likely]] return l;
+       //      else if (type == ValueType::Double)  return static_cast<S64>(d);
+       //      else if (type == ValueType::Array)  return l;
+       //      else if (type == ValueType::Pointer) return (p != nullptr) ? 1 : 0;
+       //      else return 0;
+       //  }
         // ------------------
         inline F32 getFloat() const { return static_cast<F32>( getDouble()); }
         inline U8 getU8()     const { return static_cast<U8>( getLong()); }

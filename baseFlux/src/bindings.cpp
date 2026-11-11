@@ -36,7 +36,8 @@ namespace DLSFlux {
     DLS::S64 renderEventVarRegister = -1;
     DLS::S64 shutDownEventVarRegister = -1;
     DLS::S64 keyEventVarRegister = -1;
-    DLS::S64 var_mouseX, var_mouseY, var_eventType,var_mod, var_key, var_button, var_frametime, var_wheel;
+    DLS::S64 var_mouseX, var_mouseY, var_eventType,var_mod, var_key, var_button, var_frametime
+        , var_mouseWheelX, var_mouseWheelY;
 
     DLS::S64 mouseEventVarRegister = -1;
 
@@ -128,7 +129,8 @@ namespace DLSFlux {
         var_key         = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "event::key" ));
         var_mod         = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "event::mod" ));
         var_button      = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "event::button" ));
-        var_wheel       = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "event::wheel" ));
+        var_mouseWheelX = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "event::wheelx" ));
+        var_mouseWheelY = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "event::wheely" ));
 
         var_frametime   = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "flux::ft" ));
 
@@ -220,6 +222,16 @@ namespace DLSFlux {
     void OnMouseMotion(const SDL_MouseMotionEvent& mmev) {
         vm.Variables.saveGlobal(var_mouseX, DLS::Value(mmev.x));
         vm.Variables.saveGlobal(var_mouseY, DLS::Value(mmev.y));
+    }
+
+    void OnMouseWheel(const SDL_MouseWheelEvent& mWheelEvent) {
+        vm.Variables.saveGlobal(var_mouseWheelX, DLS::Value(mWheelEvent.x));
+        vm.Variables.saveGlobal(var_mouseWheelY, DLS::Value(mWheelEvent.y));
+        vm.Variables.saveGlobal(var_eventType, DLS::Value((DLS::U32)SDL_EVENT_MOUSE_WHEEL));
+        if (mouseEventVarRegister < 0) return;
+        DLS::Value& funcVar = vm.Variables.getGlobal(mouseEventVarRegister);
+        if (!vm.PlaceTapeAtScriptFunction(funcVar)) return;
+        vm.run();
     }
 
     void OnMouse(DLS::U8 button,  DLS::U32 EventType) {
