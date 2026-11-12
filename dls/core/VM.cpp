@@ -25,9 +25,6 @@
 
 namespace DLS {
 
-    #define DISPATCH() goto *dispatch_table[tape[pc++]]
-    #define DISPATCH_OPCODE(op) goto *dispatch_table[op]
-
 
     void PrintRuntimeError(const std::string& message
     , const std::string& p1,const std::string& p2,const std::string& p3) {
@@ -35,8 +32,15 @@ namespace DLS {
     }
 
     // -----------------------------------------------------------------------------
+    #define DISPATCH() goto *dispatch_table[tape[pc++]]
+    #define DISPATCH_OPCODE(op) goto *dispatch_table[op]
+
+
+    // -----------------------------------------------------------------------------
     void VM::run()  {
         STK = 0;
+
+        std::vector<Value>& globalsRegister = Variables.mGlobalsRegister;
 
         #define X(name, args, comment) &&handle_##name,
         constexpr void* dispatch_table[] = {
