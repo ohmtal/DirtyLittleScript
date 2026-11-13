@@ -230,6 +230,12 @@ put this in a extra function ,,,, should work with peek forward
     - the iter variable should be also on stack - much faster than 
     - break/continue need to pop the stack !! 
         
+- [X] STACK underflow when: `foo = function;; print foo` because nothing is pushed!
+while `foo = function; return 1;; print foo` works fine. 
+    - I need to check we got a return value and if not return 0.
+    - i added    `if (STACK_SIZE() == 0 ) { PUSH_STACK(Value(0)); }` on op_return
+    - not sure if it cause a stack problem, but it fix the underflow
+    - but i guess this cause a slowdown :/
         
     
 ## maybe:

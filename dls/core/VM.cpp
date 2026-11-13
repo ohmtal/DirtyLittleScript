@@ -790,6 +790,12 @@ namespace DLS {
             }
             pc = Variables.mReturnStack.back();
             Variables.mReturnStack.pop_back();
+
+            // 0.62 make sure something is on the stack
+            if (STACK_SIZE() == 0 ) {
+                PUSH_STACK(Value(0));
+            }
+
             DISPATCH();
         }
         // ------------------------------------------

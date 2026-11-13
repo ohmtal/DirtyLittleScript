@@ -747,7 +747,6 @@ bool Parser::parseStatements() {
             advance();
             if (isContinueToken(peek())) getArg("Return");
             vm->emitCode(op_return);
-
         }
         break;
 

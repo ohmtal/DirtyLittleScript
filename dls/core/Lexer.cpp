@@ -53,6 +53,11 @@ namespace DLS {
                 advance();
                 tokens.push_back({TokenType::NotEqual, "!="});
             }
+            // a bit pascal / sql style ;)
+            if (peek() == '<' && peekNext() == '>') { advance();advance(); tokens.push_back({TokenType::NotEqual, "<>"}); continue; }
+            // NOT! i cant supply '=' as equal if (peek() == ':' && peekNext() == '=') { advance();advance(); tokens.push_back({TokenType::Assign, ":="}); continue; }
+
+            // -----
             if (peek() == '+' && peekNext() == '+') { advance();advance(); tokens.push_back({TokenType::PlusPlus, "++"}); continue; }
             if (peek() == '-' && peekNext() == '-') { advance();advance(); tokens.push_back({TokenType::MinusMinus, "--"}); continue; }
 
