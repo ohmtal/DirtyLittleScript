@@ -66,19 +66,23 @@
 | `help::fn`     | print the available Function | 
 | `help::const`  | print the registered Constants | 
 | `help::glob`   | print all registered Global Variables | 
+| Example Scripts | |
+| [Hello World](https://github.com/ohmtal/DirtyLittleScript/blob/main/demo/scripts/helloworld.dls)||
+| [FizzBuzz](https://github.com/ohmtal/DirtyLittleScript/blob/main/demo/scripts/fizzbuzz.dls)||
+| [99 Bottles](https://github.com/ohmtal/DirtyLittleScript/blob/main/demo/scripts/99Bottles.dls)||
+| [Starfield](https://github.com/ohmtal/DirtyLittleScript/blob/main/sdldemo/scripts/StarField.dls)||
 
 
+<small>(*1) only in DLS and not in DreiZehnScript available</small>
 
-(*1) only in DLS and not in DreiZehnScript available
+<small>(*2) DreiZehnScript handle arrays with objects so it's different. 
+I set a max elements limit to 65536. Which can be changed with compile flag: DLS_MAX_ARRAY_ELEMENTS</small>
 
-(*2) DreiZehnScript handle arrays with objects so it's different. 
-I set a max elements limit to 65536. Which can be changed with compile flag: DLS_MAX_ARRAY_ELEMENTS
+<small>(*3) DreiZehnScript use a system to modify values directly by Pointer which is faster but disable Marshalling. So this Pointer to Struct System is only in DLS.</small>
 
-(*3) DreiZehnScript use a system to modify values directly by Pointer which is faster but disable Marshalling. So this Pointer to Struct System is only in DLS.
+<small>(*4) Using this is slower than using multile single dimension arrays</small>
 
-(*4) Using this is slower than using multile single dimension arrays
-
-(*5) Different to DreiZehn: the code behind `\` is not ignored in DreiZehnScript.
+<small>(*5) Different to DreiZehn: the code behind `\` is not ignored in DreiZehnScript.</small>
 
 ## Bind your C-Functions
 
