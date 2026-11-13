@@ -34,6 +34,7 @@ set(DLS_SRC
     ${CMAKE_CURRENT_LIST_DIR}/core/Token.h
     ${CMAKE_CURRENT_LIST_DIR}/core/Token.cpp
     ${CMAKE_CURRENT_LIST_DIR}/core/Value.h
+    ${CMAKE_CURRENT_LIST_DIR}/core/Value.cpp
     ${CMAKE_CURRENT_LIST_DIR}/core/VM.h
     ${CMAKE_CURRENT_LIST_DIR}/core/VM.cpp
 

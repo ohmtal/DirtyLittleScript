@@ -9,11 +9,14 @@
 //-----------------------------------------------------------------------------
 // String Functions and Object
 //-----------------------------------------------------------------------------
-#include <string.h>
 #include <span>
 #include <algorithm>
 #include "core/Value.h"
 #include "core/FunctionMap.h"
+
+#ifndef IMPLEMENT_DLS
+#include "StringFunctions.h"
+#endif
 
 namespace DLS {
 

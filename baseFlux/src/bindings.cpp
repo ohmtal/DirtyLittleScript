@@ -615,7 +615,7 @@ namespace DLSFlux {
         RegisterGlobals();
 
 
-        DLS::FunctionMap::RegisterFunction("test", [](DLS::ValueSpan args, DLS::Value& ret) -> bool {
+        DLS::FunctionMap::RegisterFunction("testm", [](DLS::ValueSpan args, DLS::Value& ret) -> bool {
             // float foo = 47.11;
             // DLS::Marshall::ValueTranslator testTrans(&foo);
             // DLS::Tools::printf("%s", testTrans.getValue().toString().c_str());
@@ -630,8 +630,10 @@ namespace DLSFlux {
             std::string str;
             DLS::Marshall::ValueTranslator testTrans3(&str);
             testTrans3.saveValue(DLS::Value(815));
-            DLS::Tools::printf("str is: %s", str.c_str());
 
+            DLS::Value foo;
+            testTrans3.loadValue(foo);
+            DLS::Tools::printf("str is: %s foo is: %s", str.c_str(), foo.getString().c_str());
 
             return true;
         }, "test marshall");

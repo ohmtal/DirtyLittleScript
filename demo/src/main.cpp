@@ -33,14 +33,14 @@ void RegisterTest() {
     Cleanup.Add(testPointTranslator);
     testPointTranslator->registerField("x", &TestPoint::x);
     testPointTranslator->registerField("y", &TestPoint::y);
-    TestPointTranslatorID = RegisterMarshall(testPointTranslator);
+    TestPointTranslatorID = RegisterStructTranslator(testPointTranslator);
     FunctionMap::RegisterFunction("Point::new", [](std::span<Value> args, Value& ret) -> bool {
         TestPoint* p = new TestPoint();
         DLS::GarbageList.Add(p);
         ret = Value(p);
         ret.marshallId = TestPointTranslatorID;
         if (args.size() > 0 && args[0].isArray()) {
-            DLS::Marshall::Translator* tl = DLS::Marshall::getTranslator(ret);
+            DLS::Marshall::IStructTranslator* tl = DLS::Marshall::getStructTranslator(ret);
             if (tl) tl->saveArrayValue(ret,Globals::CurrentVM->Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
         }
         return true;

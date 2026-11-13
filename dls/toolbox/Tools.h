@@ -10,11 +10,12 @@
 #include <stdarg.h>
 #include <stdint.h>
 
+#include <ctime>
+
 // FIXME too much here !
 // #include <chrono>
 // #include <sstream>
 // #include <iomanip>
-// #include <ctime>
 //
 // #if defined(_WIN32)
 // #include <windows.h>
