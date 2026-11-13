@@ -26,7 +26,7 @@ namespace DLS {
     // -------------------------------------------------------------------------
     std::string Run(const std::string& code) {
         Lexer lex(code);
-        std::vector<Token> token = lex.tokenize();
+        TokenVector token = lex.tokenize();
         if (DEBUG_TOKEN) {
             for (auto& tok: token) {
                 std::cout << tokenTypeToString(tok.mType) << "  ::  " << tok.mValue << "\n";
@@ -102,7 +102,7 @@ namespace DLS {
         RegisterConstants("type::string",   (int32_t)ValueType::String);
         RegisterConstants("type::function", (int32_t)ValueType::Function);
 
-        RegisterFunction("getType", [](std::span<Value> args, Value& ret ) -> bool {
+        RegisterFunction("getType", [](ValueSpan args, Value& ret ) -> bool {
             if (args.size() != 1) {
                 Tools::errorf("Usage: getType value. return the type id of the expression. (Example: Type::float)");
                 ret =  Value(-1);
@@ -117,7 +117,7 @@ namespace DLS {
         // ---------------------------------------------------------------------
         // -------- print --------------
         // ---------------------------------------------------------------------
-        RegisterFunction("print", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("print", [](ValueSpan args, Value& ret) -> bool {
             std::string line = "";
             for ( auto& value : args) {
                 line = line + value.toString() + " ";
@@ -126,7 +126,7 @@ namespace DLS {
             return true;
         }, "Print a line to console. @param value value value ...");
 
-        RegisterFunction("printraw", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("printraw", [](ValueSpan args, Value& ret) -> bool {
             std::string line = "";
             for ( auto& value : args) {
                 line = line + value.toString();
@@ -135,7 +135,7 @@ namespace DLS {
             return true;
         }, "Print a line without linefeed to console. @param value value value ...");
 
-        RegisterFunction("error", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("error", [](ValueSpan args, Value& ret) -> bool {
             std::string line = "";
             for ( auto& value : args) {
                 line = line + value.toString() + " ";
@@ -146,7 +146,7 @@ namespace DLS {
         // ---------------------------------------------------------------------
         // int
         // ---------------------------------------------------------------------
-        RegisterFunction("int::cast", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("int::cast", [](ValueSpan args, Value& ret) -> bool {
             if (args.size() != 1) {
                 Tools::errorf("Usage: int::cast value\n");
                 return false;
@@ -166,7 +166,7 @@ namespace DLS {
         // ---------------------------------------------------------------------
         // float
         // ---------------------------------------------------------------------
-        RegisterFunction("float::cast", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("float::cast", [](ValueSpan args, Value& ret) -> bool {
             if (args.size() != 1) {
                 Tools::errorf("Usage: float::cast value\n");
                 return false;
@@ -184,15 +184,22 @@ namespace DLS {
         // ---------------------------------------------------------------------
         // Array
         // ---------------------------------------------------------------------
-        RegisterFunction("array::count", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("array::count", [](ValueSpan args, Value& ret) -> bool {
             if (args.size() != 1 || args[0].type != ValueType::Array) {
                 Tools::errorf("Usage: array::count value\n");
                 return false;
             }
             if (!Globals::CurrentVM) {
                 Tools::errorf("Sorry no VM running.\n");
+                return false;
             }
-            auto arr = Globals::CurrentVM->Variables.getArrayByMasterIndex((size_t)args[0].getLong());
+
+            ValueVector arr;
+            if (!Globals::CurrentVM->Variables.getArrayByMasterIndexSafe((size_t)args[0].getLong(), arr)) {
+                Tools::errorf("Array Index out of bounds.\n");
+                return false;
+            }
+
             ret = Value((S64)arr.size());
             return true;
         }, "cast any type to float");
@@ -200,7 +207,7 @@ namespace DLS {
         // ---------------------------------------------------------------------
         // Argv
         // ---------------------------------------------------------------------
-        RegisterFunction("sys::argv", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("sys::argv", [](ValueSpan args, Value& ret) -> bool {
             if (args.size() != 1) {
                 Tools::errorf("Usage: sys::argv index\n");
                 return false;

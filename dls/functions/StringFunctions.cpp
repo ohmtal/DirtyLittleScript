@@ -243,7 +243,7 @@ namespace DLS {
 
     //-----------------------------------------------------------------------------
 
-    bool ArgsCheckString( const char* command,std::span<Value> args, uint32_t count) {
+    bool ArgsCheckString( const char* command,ValueSpan args, uint32_t count) {
         if (args.size() < count ) {
             Tools::errorf("Usage: %s  [string value] %d times",command, count);
             return false;
@@ -261,7 +261,7 @@ namespace DLS {
     // =============================================================================
     // --- formatString ---
     // =============================================================================
-    std::string formatString(std::span<Value> args) {
+    std::string formatString(ValueSpan args) {
 
         if (args.size() < 1) return "";
 
@@ -437,7 +437,7 @@ namespace DLS {
 
         // ---------------------------------------------------------------------
         // StringObject::RegisterSymbols();
-        // RegisterFunction("String::new", [](std::span<Value> args, Value& ret) -> bool {
+        // RegisterFunction("String::new", [](ValueSpan args, Value& ret) -> bool {
         //     if (args.size() != 1 || !args[0].isString()) {
         //         Tools::errorf("Usage: String::new string\n");
         //         return false;
@@ -448,7 +448,7 @@ namespace DLS {
         // });
         // ---------------------------------------------------------------------
         // ---------------------------------------------------------------------
-        RegisterFunction("str::concat", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("str::concat", [](ValueSpan args, Value& ret) -> bool {
             std::string resultStr = "";
 
             for ( auto& val : args) {
@@ -460,7 +460,7 @@ namespace DLS {
         }, "Retrun a concat string of values. The values can be string, int or float.");
 
         // ---------------------------------------------------------------------
-        RegisterFunction("str::format", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("str::format", [](ValueSpan args, Value& ret) -> bool {
             if (args.size() < 1) {
                 ret = EmptyStringValue;
                 return true;
@@ -470,7 +470,7 @@ namespace DLS {
         }, "Return a formated string. Works like sprintf. first parameter is the format next are the values.");
 
         // ---------------------------------------------------------------------
-        RegisterFunction("str::cast", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("str::cast", [](ValueSpan args, Value& ret) -> bool {
 
             if (args.size() < 1 || args[0].isPointer()) {
                 ret = EmptyStringValue;
@@ -485,7 +485,7 @@ namespace DLS {
 
         // ---------------------------------------------------------------------
         // ---------------------------------------------------------------------
-        RegisterFunction("str::toNumber", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("str::toNumber", [](ValueSpan args, Value& ret) -> bool {
             if (!ArgsCheckString("str::toNumber", args, 1)) return true;
             char* endptr = nullptr;
             std::string s = args[0].getString();
@@ -498,13 +498,13 @@ namespace DLS {
             return true;
         }, "return the number representation of a string.");
         // ---------------------------------------------------------------------
-        RegisterFunction("str::strlen", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("str::strlen", [](ValueSpan args, Value& ret) -> bool {
             if (!ArgsCheckString("str::len", args, 1)) return true;
             ret = Value((int32_t)args[0].getString().length());
             return true;
         } , "return the len of the given string.");
         // ---------------------------------------------------------------------
-        RegisterFunction("str::strpos", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("str::strpos", [](ValueSpan args, Value& ret) -> bool {
             if (!ArgsCheckString("str::strpos", args, 2)) return true;
             const char* str = args[0].getString().c_str();
             const char* pos = strstr(str, args[1].getString().c_str());
@@ -516,7 +516,7 @@ namespace DLS {
             return true;
         }, "return the position of the string value2 inside value1. Returns -1 if not found.");
         // ---------------------------------------------------------------------
-        RegisterFunction("str::ltrim", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("str::ltrim", [](ValueSpan args, Value& ret) -> bool {
             if (!ArgsCheckString("str::ltrim", args, 1)) return true;
             std::string str = args[0].getString();
             StrTools::ltrim(str);
@@ -524,7 +524,7 @@ namespace DLS {
             return true;
         }, "return left side trimmed string");
         // ---------------------------------------------------------------------
-        RegisterFunction("str::rtrim", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("str::rtrim", [](ValueSpan args, Value& ret) -> bool {
             if (!ArgsCheckString("str::ltrim", args, 1)) return true;
             std::string str = args[0].getString();
             StrTools::rtrim(str);
@@ -532,7 +532,7 @@ namespace DLS {
             return true;
         }, "return right side trimmed string");
         // ---------------------------------------------------------------------
-        RegisterFunction("str::trim", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("str::trim", [](ValueSpan args, Value& ret) -> bool {
             if (!ArgsCheckString("str::ltrim", args, 1)) return true;
             std::string str = args[0].getString();
             StrTools::trim(str);
@@ -540,19 +540,19 @@ namespace DLS {
             return true;
         }, "return both sides trimmed string");
         // ---------------------------------------------------------------------
-        RegisterFunction("str::toLower", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("str::toLower", [](ValueSpan args, Value& ret) -> bool {
             if (!ArgsCheckString("str::toLower", args, 1)) return true;
             ret = Value(StrTools::toLower(args[0].getString()));
             return true;
         }, "return converted to lower string");
         // ---------------------------------------------------------------------
-        RegisterFunction("str::toUpper", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("str::toUpper", [](ValueSpan args, Value& ret) -> bool {
             if (!ArgsCheckString("str::toUpper", args, 1)) return true;
             ret = Value(StrTools::toUpper(args[0].getString()));
             return true;
         }, "return converted to upper string");
         // ---------------------------------------------------------------------
-        RegisterFunction("str::ord", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("str::ord", [](ValueSpan args, Value& ret) -> bool {
             if (args.size() < 1 || !args[0].isString()) {
                 Tools::errorf("Usage: str::ord string [index]\n");
                 return true;
@@ -566,7 +566,7 @@ namespace DLS {
             return true;
         }, "return the oridinal value of a character given by string if not index is added it use 0");
         // ---------------------------------------------------------------------
-        RegisterFunction("str::chr", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("str::chr", [](ValueSpan args, Value& ret) -> bool {
             if (args.size() != 1) {
                 Tools::errorf("Usage: str::chr ascii (0..255)\n");
                 return true;
@@ -585,7 +585,7 @@ namespace DLS {
             return true;
         }, "Return the characted of the given a ascii number.");
         // ---------------------------------------------------------------------
-        RegisterFunction("str::substr", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("str::substr", [](ValueSpan args, Value& ret) -> bool {
             if (args.size() < 2 || !args[0].isString()) {
                 Tools::errorf("Usage: str::substr string start [count]\n");
                 return true;
@@ -623,7 +623,7 @@ namespace DLS {
             return true;
         }, "return a substring from start. Len is optional.");
         // ---------------------------------------------------------------------
-        RegisterFunction("str::replace", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("str::replace", [](ValueSpan args, Value& ret) -> bool {
             if (args.size() < 3 || !args[0].isString() || !args[1].isString()
                 || !args[2].isString()
             ) {
@@ -652,7 +652,7 @@ namespace DLS {
         }, "Replace a part of a string");
         // ---------------------------------------------------------------------
         // ---------------------------------------------------------------------
-        RegisterFunction("str::wordcount", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("str::wordcount", [](ValueSpan args, Value& ret) -> bool {
              if (args.size() < 1 || !args[0].isString()) {
 
                 Tools::errorf("Usage: str::wordcount str [separator]\n");
@@ -674,7 +674,7 @@ namespace DLS {
             return true;
         }, "Get the count of Words - optional separator char");
         // ---------------------------------------------------------------------
-        RegisterFunction("str::word", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("str::word", [](ValueSpan args, Value& ret) -> bool {
              if (args.size() < 2 || !args[0].isString()) {
 
                 Tools::errorf("Usage: str::word str index [separator]\n");
@@ -698,7 +698,7 @@ namespace DLS {
             return true;
         }, "Get a word at index - optional separator char");
         // ---------------------------------------------------------------------
-        RegisterFunction("str::setword", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("str::setword", [](ValueSpan args, Value& ret) -> bool {
              if (args.size() < 3 || !args[0].isString()) {
 
                 Tools::errorf("Usage: str::setword str index newword [separator]\n");
@@ -723,7 +723,7 @@ namespace DLS {
             return true;
         }, "Set a words at index - optional separator char");
         // ---------------------------------------------------------------------
-        RegisterFunction("str::removeword", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("str::removeword", [](ValueSpan args, Value& ret) -> bool {
              if (args.size() < 2 || !args[0].isString()) {
 
                 Tools::errorf("Usage: str::removeword str index [separator]\n");

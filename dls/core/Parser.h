@@ -20,7 +20,7 @@ namespace DLS{
 
 class Parser {
 private:
-    std::vector<Token> mTokens;
+    TokenVector mTokens;
     VM* vm;
     size_t mPos = 0;
     S64 requestParam = 0;
@@ -54,7 +54,7 @@ private:
     void PrintParseInfo(const std::string& message
     , const std::string& p1 = "",const std::string& p2 = "",const std::string& p3 = "");
 public:
-    Parser(std::vector<Token> t, VM* vm) : mTokens(std::move(t)), vm(vm) { }
+    Parser(TokenVector t, VM* vm) : mTokens(std::move(t)), vm(vm) { }
     bool parse();
 
 };

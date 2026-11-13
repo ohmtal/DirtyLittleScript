@@ -13,7 +13,7 @@
 
 ## Usage in your Project
 
-### header only :: faster implementation to you project:
+### header only :: faster implementation to your project:
 - Download and add `DirtyLittleScript/dls` to your include path 
 - `#define IMPLEMENT_DLS` *only once* and include the header `DirtyLittleScript.h` 
 - call `DLS::Init();`

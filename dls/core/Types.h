@@ -7,6 +7,8 @@
 #pragma once
 
 #include <cstdint>
+#include <vector>
+#include <span>
 
 #if defined(_MSC_VER)
 // Microsoft Visual Studio
@@ -34,5 +36,12 @@ namespace DLS {
     typedef float    F32;
     typedef int64_t  S64;
     typedef double   F64;
+
+    struct Value;
+    using ValueVector = std::vector<Value>;
+    using ValueSpan   = std::span<Value>;
+
+    struct Token;
+    using TokenVector = std::vector<Token>;
 
 } //namespace

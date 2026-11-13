@@ -19,7 +19,7 @@
 namespace DLS {
 
     void RegisterStringFunctions( );
-    std::string formatString(std::span<Value> args);
+    std::string formatString(ValueSpan args);
 
 
     namespace StrTools {

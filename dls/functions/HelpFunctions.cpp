@@ -27,7 +27,7 @@ namespace DLS {
         // ---------------------------------------------------------------------
         // Help
         // ---------------------------------------------------------------------
-        RegisterFunction("help", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("help", [](ValueSpan args, Value& ret) -> bool {
             Tools::printf("---------------- DLS Help ------------------\n");
             Tools::printf(
                 "help::syntax    => print syntax informations.\n"
@@ -37,7 +37,7 @@ namespace DLS {
             );
             return true;
         }, "print the help overview");
-        RegisterFunction("help::syntax", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("help::syntax", [](ValueSpan args, Value& ret) -> bool {
             Tools::printf(
                 "Basics\n"
                 "- parameters for functions can be simple written word by word.\n"
@@ -73,7 +73,7 @@ namespace DLS {
 
 
         // ---------------------------------------------------------------------
-        RegisterFunction("help::fn", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("help::fn", [](ValueSpan args, Value& ret) -> bool {
             bool doFilter = false;
             std::string filter;
             if (!args.empty() && args[0].isString()) {
@@ -128,7 +128,7 @@ namespace DLS {
         }, "list the registered functions. you can call it with a filter like `help::fn \"str\"`");
 
         // ---------------------------------------------------------------------
-        RegisterFunction("help::const", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("help::const", [](ValueSpan args, Value& ret) -> bool {
             bool doFilter = false;
             std::string filter;
             if (!args.empty() && args[0].isString()) {
@@ -162,7 +162,7 @@ namespace DLS {
         }, "list all registerd constants can be called with a filter.");
 
         // ---------------------------------------------------------------------
-        RegisterFunction("help::glob", [](std::span<Value> args, Value& ret) -> bool {
+        RegisterFunction("help::glob", [](ValueSpan args, Value& ret) -> bool {
             Tools::printf("---------------- Globals ------------------\n");
             for (auto & globs: Globals::CurrentVM->Variables.mGlobalsLookUp) {
                 Value& val = Globals::CurrentVM->Variables.getGlobal(globs.second);

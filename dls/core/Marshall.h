@@ -24,8 +24,8 @@ namespace DLS::Marshall {
         virtual bool saveValueByRegister(const Value& pointerValue, size_t fieldRegisterId, const Value& src) = 0;
         virtual bool loadValueByRegister(const Value& pointerValue, size_t fieldRegisterId, Value& dest) = 0;
 
-        virtual bool saveArrayValue(const Value& pointerValue, const std::vector<Value>& arr) = 0;
-        virtual bool loadArrayValue(const Value& pointerValue, std::vector<Value>& outArr) const = 0;
+        virtual bool saveArrayValue(const Value& pointerValue, const ValueVector& arr) = 0;
+        virtual bool loadArrayValue(const Value& pointerValue, ValueVector& outArr) const = 0;
 
         virtual bool saveInstance(const Value& pointerValue, const void* srcInstance) = 0;
         virtual bool loadInstance(const Value& srcValue, void* destInstance) const = 0;
@@ -167,7 +167,7 @@ namespace DLS::Marshall {
         }
         // ---------------------------------------------------------------------
 
-        bool saveArrayValue(const Value& pointerValue, const std::vector<Value>& arr) {
+        bool saveArrayValue(const Value& pointerValue, const ValueVector& arr) {
             if (arr.size() < mFieldStack.size()) return false;
             StructType* instance = reinterpret_cast<StructType*>(pointerValue.getPointer());
             if (!instance) return false;
@@ -180,7 +180,7 @@ namespace DLS::Marshall {
             return true;
         }
         // ---------------------------------------------------------------------
-        bool loadArrayValue(const Value& pointerValue, std::vector<Value>& outArr) const {
+        bool loadArrayValue(const Value& pointerValue, ValueVector& outArr) const {
             const StructType* instance = reinterpret_cast<const StructType*>(pointerValue.getPointer());
             if (!instance) return false;
             outArr.resize(mFieldStack.size());
@@ -212,7 +212,7 @@ namespace DLS::Marshall {
             }
 
             // if (srcValue.isArray()) {
-            //     const std::vector<Value>& arr = arrayResolver(srcValue);
+            //     const ValueVector& arr = arrayResolver(srcValue);
             //     if (arr.size() < mFieldsByIndex.size()) return false;
             //     StructType* instance = static_cast<StructType*>(destInstance);
             //     for (size_t i = 0; i < mFieldsByIndex.size(); ++i) {

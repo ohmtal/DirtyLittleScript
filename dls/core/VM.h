@@ -26,8 +26,10 @@ namespace DLS {
     void PrintRuntimeError(const std::string& message
     , const std::string& p1 = "",const std::string& p2 = "",const std::string& p3 = "");
 
+
+
     struct ArrayEntry {
-        std::vector<Value> Elements;
+        ValueVector Elements;
         void setAssigned(bool isAssigned) {
             if (isAssigned) mAssingCount++;
             else {
@@ -44,10 +46,12 @@ namespace DLS {
     // ------------------------------------------
     // Variables
     // ------------------------------------------
+
+
     struct VariableStorage {
 
         std::unordered_map<U32,size_t> mGlobalsLookUp;
-        std::vector<Value> mGlobalsRegister;
+        ValueVector mGlobalsRegister;
 
         std::vector<ArrayEntry> mArrays;
         std::vector<size_t> mArrayTempAssigned;
@@ -126,7 +130,7 @@ namespace DLS {
             mArrayTempAssigned.clear();
         }
         // --------------------------------------------------------------------
-        Value createArray(const std::vector<Value>& values, bool assignTemp = false) {
+        Value createArray(const ValueVector& values, bool assignTemp = false) {
             S64 masterIndex = (S64)reserveArray();
 
             // i need the temp assigned, when it's added as a func param
@@ -141,8 +145,9 @@ namespace DLS {
             return result;
         }
 
+        bool getArrayByMasterIndexSafe(size_t masterIndex, ValueVector& result);
 
-         std::vector<Value>& getArrayByMasterIndex(size_t masterIndex) {
+         ValueVector& getArrayByMasterIndex(size_t masterIndex) {
             #ifdef DLS_DEBUG
             assert(masterIndex < mArrays.size() && "Master index array out of range");
             #endif
@@ -264,7 +269,7 @@ namespace DLS {
         U32 pc = 0;
         std::vector<U32> tape;
         U32 STK = 0;
-        std::vector<Value> stack;
+        ValueVector stack;
 
         std::vector<LoopContext> mLoopStack;
         VariableStorage Variables;

@@ -33,7 +33,7 @@ private:
 
 public:
     Lexer(std::string source) : mSrc(std::move(source)) {}
-    std::vector<Token> tokenize();
+    TokenVector tokenize();
 
 
 };

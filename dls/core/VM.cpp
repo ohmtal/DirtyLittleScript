@@ -40,7 +40,7 @@ namespace DLS {
     void VM::run()  {
         STK = 0;
 
-        std::vector<Value>& globalsRegister = Variables.mGlobalsRegister;
+        ValueVector& globalsRegister = Variables.mGlobalsRegister;
 
         #define X(name, args, comment) &&handle_##name,
         constexpr void* dispatch_table[] = {
@@ -127,7 +127,7 @@ namespace DLS {
                         DROP_STACK(dimension + 1);
                         DISPATCH();
                     }
-                    std::vector<Value>& curArr = Variables.getArrayByMasterIndex(var.getFastLong());
+                    ValueVector& curArr = Variables.getArrayByMasterIndex(var.getFastLong());
                     if (idx < 0 || idx >= static_cast<S64>(curArr.size())) [[unlikely]] {
                         PrintRuntimeError("Array Index out of bounds: ", std::to_string(idx));
                         DISPATCH();
@@ -176,7 +176,7 @@ namespace DLS {
             //             Variables.saveArray(var, indexStack[i], assignValue);
             //             DISPATCH();
             //         }
-            //         /*const*/ std::vector<Value>& curArr = Variables.getArrayByMasterIndex(var.getFastLong());
+            //         /*const*/ ValueVector& curArr = Variables.getArrayByMasterIndex(var.getFastLong());
             //         if (indexStack[i] >= curArr.size() ) [[unlikely]]{
             //             PrintRuntimeError("Array Index out of bounds!");
             //             DISPATCH();
@@ -231,7 +231,7 @@ namespace DLS {
                     }
 
                     S64 idx = arrayIndexValue.getLong();
-                    const std::vector<Value>& curArr = Variables.getArrayByMasterIndex(var.getFastLong());
+                    const ValueVector& curArr = Variables.getArrayByMasterIndex(var.getFastLong());
 
                     if (idx < 0 || idx >= static_cast<S64>(curArr.size())) [[unlikely]] {
                         PrintRuntimeError("Array Index out of bounds: ", std::to_string(idx));
@@ -278,7 +278,7 @@ namespace DLS {
             //             PUSH_STACK(Value());
             //             DISPATCH();
             //         }
-            //         const std::vector<Value>& curArr = Variables.getArrayByMasterIndex(var.getFastLong());
+            //         const ValueVector& curArr = Variables.getArrayByMasterIndex(var.getFastLong());
             //         if (indexStack[i] >= curArr.size() ) [[unlikely]]{
             //             PrintRuntimeError("Array Index out of bounds!");
             //             PUSH_STACK(Value());
@@ -309,7 +309,7 @@ namespace DLS {
             U32 assignTemp = advanceSlot();
 
             {
-                std::vector<Value> arr(count);
+                ValueVector arr(count);
                 for (S32 i = 0; i < (S32)count; i++) {
                     arr[count - 1 - i] = POP_STACK();
                 }
@@ -322,7 +322,7 @@ namespace DLS {
         // handle_op_constuct_array: {
         //     U32 count = advanceSlot();
         //     U32 assignTemp = advanceSlot();
-        //     static std::vector<Value> arr;
+        //     static ValueVector arr;
         //     arr.clear();
         //     for (S32 i = 0; i < (S32)count; i++) {
         //         arr.push_back(POP_STACK());
@@ -567,7 +567,7 @@ namespace DLS {
                     evaluatedArgsStack[i - 1] = POP_STACK();
                 }
                 Value returnValue = Value(0);
-                bool success = (*cb)(std::span<Value>(evaluatedArgsStack, numArgs), returnValue);
+                bool success = (*cb)(ValueSpan(evaluatedArgsStack, numArgs), returnValue);
 
                 if (!success) [[unlikely]] {
                     Tools::errorf("Runtime Error in function: %s\n", SymbolTable::getName(symid).c_str());
@@ -581,7 +581,7 @@ namespace DLS {
                 Value returnValue = Value(0);
                 {
 
-                    std::vector<Value> evaluatedArgs;
+                    ValueVector evaluatedArgs;
                     evaluatedArgs.clear();
                     evaluatedArgs.resize(numArgs);
                     for (S64 i = numArgs ; i > 0  ; i--) {
@@ -794,5 +794,16 @@ namespace DLS {
         }
         // ------------------------------------------
     } //run
+
+    // =========================================================================
+    // Variable Storage
+    // =========================================================================
+    bool VariableStorage::getArrayByMasterIndexSafe(size_t masterIndex, ValueVector& result) {
+        if (masterIndex >= mArrays.size() ) return false;
+        result  = mArrays[masterIndex].Elements;
+        return true;
+    }
+
+
 } //namespace
 

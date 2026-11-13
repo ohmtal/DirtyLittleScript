@@ -15,7 +15,7 @@
 #include "toolbox/Tools.h"
 
 namespace DLS::FunctionMap {
-    using CallBack =  std::function< bool ( std::span<Value>, Value& )>;
+    using CallBack =  std::function< bool ( ValueSpan, Value& )>;
     using FuncLookupMap = std::unordered_map<uint32_t, CallBack>;
 
     // symbolId, stringId

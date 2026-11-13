@@ -21,8 +21,8 @@ namespace DLS {
         Tools::errorf("[Lexer-ERROR] %s %s %s %s\n", message.c_str(), p1.c_str(), p2.c_str(), p3.c_str());
     }
 
-    std::vector<Token> Lexer::tokenize() {
-        std::vector<Token> tokens;
+    TokenVector Lexer::tokenize() {
+        TokenVector tokens;
         while (peek() != '\0') {
             // // ----------------------------------------------------------------
             if (peek() == '\\') {
