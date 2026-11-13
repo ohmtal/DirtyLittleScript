@@ -67,10 +67,10 @@
 | `help::const`  | print the registered Constants | 
 | `help::glob`   | print all registered Global Variables | 
 | Example Scripts | |
-| [Hello World](https://github.com/ohmtal/DirtyLittleScript/blob/main/demo/scripts/helloworld.dls)||
-| [FizzBuzz](https://github.com/ohmtal/DirtyLittleScript/blob/main/demo/scripts/fizzbuzz.dls)||
-| [99 Bottles](https://github.com/ohmtal/DirtyLittleScript/blob/main/demo/scripts/99Bottles.dls)||
-| [Starfield](https://github.com/ohmtal/DirtyLittleScript/blob/main/sdldemo/scripts/StarField.dls)||
+| [Hello World](https://github.com/ohmtal/DirtyLittleScript/blob/main/demo/scripts/helloworld.dls)| |
+| [FizzBuzz](https://github.com/ohmtal/DirtyLittleScript/blob/main/demo/scripts/fizzbuzz.dls)| |
+| [99 Bottles](https://github.com/ohmtal/DirtyLittleScript/blob/main/demo/scripts/99Bottles.dls)| |
+| [Starfield](https://github.com/ohmtal/DirtyLittleScript/blob/main/sdldemo/scripts/StarField.dls)| |
 
 
 <small>(*1) only in DLS and not in DreiZehnScript available</small>

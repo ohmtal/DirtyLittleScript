@@ -336,7 +336,9 @@ namespace DLS {
         // Literal
         // ------------------------------------------
         handle_op_literal: {
-            PUSH_STACK(advance_value());
+            U32 idx = advanceSlot();
+            PUSH_STACK(mLiterals[idx]);
+            // PUSH_STACK(advance_value());
             DISPATCH();
         }
         // ------------------------------------------
