@@ -36,7 +36,7 @@ namespace DLSFlux {
     DLS::S64 shutDownEventVarRegister = -1;
     DLS::S64 keyEventVarRegister = -1;
     DLS::S64 var_mouseX, var_mouseY, var_eventType,var_mod, var_key, var_button, var_frametime
-        , var_mouseWheelX, var_mouseWheelY;
+        , var_mouseWheelX, var_mouseWheelY, var_updatedeltatime;
 
     DLS::S64 mouseEventVarRegister = -1;
 
@@ -132,6 +132,7 @@ namespace DLSFlux {
         var_mouseWheelY = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "event::wheely" ));
 
         var_frametime   = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "flux::ft" ));
+        var_updatedeltatime   = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "flux::dt" ));
 
 
 
@@ -176,7 +177,9 @@ namespace DLSFlux {
         if (!vm.PlaceTapeAtScriptFunction(funcVar)) return;
         vm.run();
     }
-    void OnUpdate() {
+    void OnUpdate(float dt) {
+        vm.Variables.saveGlobal(var_updatedeltatime, DLS::Value(dt));
+
         DLS::Value& funcVar = vm.Variables.getGlobal(updateEventVarRegister);
         if (!vm.PlaceTapeAtScriptFunction(funcVar)) return;
         vm.run();

@@ -35,7 +35,7 @@ namespace DLSFlux {
     extern size_t getGarbageCount();
     extern void OnSetup();
     extern void OnInit();
-    extern void OnUpdate();
+    extern void OnUpdate(float dt);
     extern void OnShutdown();
     extern void OnRender();
     extern bool RunFile(const std::string& fileName, bool ResetTape );
@@ -163,7 +163,8 @@ bool initApp() {
     };
 
     app.OnUpdate = [](const float deltaTime) {
-        DLSFlux::OnUpdate();
+
+        DLSFlux::OnUpdate(deltaTime);
     };
 
     app.OnEvent = [](const SDL_Event& event) {

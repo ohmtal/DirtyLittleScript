@@ -25,7 +25,7 @@ minW = maxW * -1
 maxH = HEIGTH / 2
 minH = maxH * -1
 
-STAR_COUNT  = 4200
+STAR_COUNT  = 420
 START_DIV   = 0.03125
 SPEED       = 0.001
 

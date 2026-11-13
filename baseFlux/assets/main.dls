@@ -64,12 +64,12 @@ OnUpdate = function
     forRange i COUNT
         r = Rects[i]; v = Vec[i];
 
-        r.x = r.x + v.x
+        r.x = r.x + v.x * flux::dt * 50.0
         if r.x + r.w >= WIDTH || r.x <= 0.0
             v.x =  v.x * -1.0
         end
 
-        r.y = r.y + v.y
+        r.y = r.y + v.y * flux::dt * 50.0
         if r.y + r.h >= HEIGTH || r.y <= 0.0
             v.y =  v.y * -1.0
         end
