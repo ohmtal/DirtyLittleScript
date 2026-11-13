@@ -13,11 +13,71 @@
 
 namespace DLS::Marshall {
 
+    template <typename MemberType>
+    constexpr auto doSave = [](void* fieldPtr, const Value& src) {
+        MemberType* m_ptr = reinterpret_cast<MemberType*>(fieldPtr);
+
+        if constexpr (std::is_same_v<MemberType, double>) {
+            *m_ptr = src.getDouble();
+        } else if constexpr (std::is_same_v<MemberType, float>) {
+            *m_ptr = src.getFloat();
+        } else if constexpr (std::is_same_v<MemberType, S64>) {
+            *m_ptr = src.getLong();
+        } else if constexpr (std::is_same_v<MemberType, S32>) {
+            *m_ptr = src.getInt();
+        } else if constexpr (std::is_same_v<MemberType, U32>) {
+            *m_ptr = src.getUInt();
+        } else if constexpr (std::is_same_v<MemberType, U8>) {
+            *m_ptr = src.getU8();
+        } else if constexpr (std::is_same_v<MemberType, bool>) {
+            *m_ptr = src.getBool();
+        } else if constexpr (std::is_same_v<MemberType, const char *>) {
+            if (src.isString()) [[likely]] {
+                *m_ptr = src.getString().c_str();
+            } else {
+                *m_ptr = StringTable::get(StringTable::insert(src.toString())).c_str();
+            }
+        } else if constexpr (std::is_same_v<MemberType, std::string>) {
+            if (src.isString()) [[likely]] {
+                *m_ptr = src.getString();
+            } else {
+                *m_ptr = StringTable::get(StringTable::insert(src.toString()));
+            }
+        }
+    };
+
+    template <typename MemberType>
+    constexpr auto doLoad = [](const void* fieldPtr, Value& dest) {
+        const MemberType* m_ptr = reinterpret_cast<const MemberType*>(fieldPtr);
+        if constexpr (std::is_same_v<MemberType, double>) {
+            dest = Value(*m_ptr);
+        } else if constexpr (std::is_same_v<MemberType, float>) {
+            dest = Value(*m_ptr);
+        } else if constexpr (std::is_same_v<MemberType, S64>) {
+            dest = Value(*m_ptr);
+        } else if constexpr (std::is_same_v<MemberType, U32>) {
+            dest = Value(*m_ptr);
+        } else if constexpr (std::is_same_v<MemberType, U8>) {
+            dest = Value(*m_ptr);
+        } else if constexpr (std::is_same_v<MemberType, S32>) {
+            dest = Value(*m_ptr);
+        } else if constexpr (std::is_same_v<MemberType, bool>) {
+            dest = Value(*m_ptr);
+        } else if constexpr (std::is_same_v<MemberType, const char *>) {
+            dest = Value(std::string(*m_ptr));
+        } else if constexpr (std::is_same_v<MemberType, std::string>) {
+            dest = Value(*m_ptr);
+        }
+    };
+
+
+
+    // --------------------------------------------------------------------------------------------
     // Translator Interface
-    class Translator {
+    class IStructTranslator {
     public:
         U16 mMashallId = 0;
-        virtual ~Translator() = default;
+        virtual ~IStructTranslator() = default;
 
         virtual bool getFieldRegister(U32 fieldSymbolId, size_t& target) = 0;
 
@@ -31,10 +91,10 @@ namespace DLS::Marshall {
         virtual bool loadInstance(const Value& srcValue, void* destInstance) const = 0;
     };
     // --------------------------------------------------------------------------------------------
-    inline std::vector<Translator*> TranslatorMap;
+    inline std::vector<IStructTranslator*> StructTranslatorMap;
     // --------------------------------------------------------------------------------------------
     template <typename StructType>
-    class GenericStructTranslator : public Translator {
+    class GenericStructTranslator : public IStructTranslator {
     private:
         struct FieldInfo {
             size_t offset;
@@ -45,9 +105,6 @@ namespace DLS::Marshall {
 
         std::unordered_map<U32, size_t> mFieldLookup;
         std::vector<FieldInfo> mFieldStack;
-
-        // std::unordered_map<U32, FieldInfo> mFields;
-        // std::vector<FieldInfo> mFieldsByIndex;
 
 
     public:
@@ -60,45 +117,8 @@ namespace DLS::Marshall {
             info.offset = offset;
             info.arrayIndex =  mFieldStack.size();
 
-            info.saveFn = [](void* fieldPtr, const Value& src) {
-                MemberType* m_ptr = reinterpret_cast<MemberType*>(fieldPtr);
-
-                if constexpr (std::is_same_v<MemberType, double>) {
-                    *m_ptr = src.getDouble();
-                } else if constexpr (std::is_same_v<MemberType, float>) {
-                    *m_ptr = src.getFloat();
-                } else if constexpr (std::is_same_v<MemberType, S64>) {
-                    *m_ptr = src.getLong();
-                } else if constexpr (std::is_same_v<MemberType, S32>) {
-                    *m_ptr = src.getInt();
-                } else if constexpr (std::is_same_v<MemberType, U32>) {
-                    *m_ptr = src.getUInt();
-                } else if constexpr (std::is_same_v<MemberType, U8>) {
-                    *m_ptr = src.getU8();
-                } else if constexpr (std::is_same_v<MemberType, bool>) {
-                    *m_ptr = src.getBool();
-                }
-            };
-
-            info.loadFn = [](const void* fieldPtr, Value& dest) {
-                const MemberType* m_ptr = reinterpret_cast<const MemberType*>(fieldPtr);
-
-                if constexpr (std::is_same_v<MemberType, double>) {
-                    dest = Value(*m_ptr);
-                } else if constexpr (std::is_same_v<MemberType, float>) {
-                    dest = Value(*m_ptr);
-                } else if constexpr (std::is_same_v<MemberType, S64>) {
-                    dest = Value(*m_ptr);
-                } else if constexpr (std::is_same_v<MemberType, U32>) {
-                    dest = Value(*m_ptr);
-                } else if constexpr (std::is_same_v<MemberType, U8>) {
-                    dest = Value(*m_ptr);
-                } else if constexpr (std::is_same_v<MemberType, S32>) {
-                    dest = Value(*m_ptr);
-                } else if constexpr (std::is_same_v<MemberType, bool>) {
-                    dest = Value(*m_ptr);
-                }
-            };
+            info.saveFn = doSave<MemberType>;
+            info.loadFn = doLoad<MemberType>;
 
             mFieldLookup[symbolId] = info.arrayIndex;
             mFieldStack.push_back(info);
@@ -115,7 +135,7 @@ namespace DLS::Marshall {
         //     info.arrayIndex = mFieldsByIndex.size();
         //
         //     info.saveFn = [nestedMarshallId](void* fieldPtr, const Value& src) {
-        //         Translator* subTranslator = TranslatorMap[nestedMarshallId];
+        //         Translator* subTranslator = StructTranslatorMap[nestedMarshallId];
         //         if (!subTranslator) return;
         //
         //         Value nestedPointerValue;
@@ -227,19 +247,77 @@ namespace DLS::Marshall {
         }
     };
 // ----------------------------------------------------------------------------
-inline U16 RegisterMarshall(Translator* trans) {
-    if (TranslatorMap.size() == 0) TranslatorMap.push_back(nullptr); //dont want a 0
-    U16 result = (U16)TranslatorMap.size();
+inline U16 RegisterStructTranslator(IStructTranslator* trans) {
+    if (StructTranslatorMap.size() == 0) StructTranslatorMap.push_back(nullptr); //dont want a 0
+    U16 result = (U16)StructTranslatorMap.size();
     trans->mMashallId = result;
-    TranslatorMap.push_back(trans);
+    StructTranslatorMap.push_back(trans);
     return result;
 }
-/*FORCE_INLINE*/ inline Translator* getTranslator(const Value& pointerValue) {
+inline IStructTranslator* getStructTranslator(const Value& pointerValue) {
     if ( !pointerValue.isPointer()
         || pointerValue.marshallId == 0
-        || pointerValue.marshallId >= TranslatorMap.size()) [[unlikely]]
+        || pointerValue.marshallId >= StructTranslatorMap.size()) [[unlikely]]
         return nullptr;
-    return TranslatorMap[pointerValue.marshallId];
+    return StructTranslatorMap[pointerValue.marshallId];
 }
+
+// ----------------------------------------------------------------------------
+// For single Variables:
+// ----------------------------------------------------------------------------
+
+struct IValueTranslator {
+protected:
+    std::function<void(void* fieldPtr, const Value& src)> saveFn;
+    std::function<void(const void* fieldPtr, Value& dest)> loadFn;
+public:
+    virtual ~IValueTranslator() = default;
+    virtual Value getValue() = 0;
+    virtual void loadValue(Value& dest)      = 0;
+    virtual void saveValue(const Value& src) = 0;
+};
+
+// --------------------------------------------------------------------------------------------
+template <typename MemberType>
+class ValueTranslator : public IValueTranslator {
+    MemberType* m_ptr;
+public:
+    explicit ValueTranslator(MemberType* ptr) : m_ptr(ptr) {
+        saveFn = doSave<MemberType>;
+        loadFn = doLoad<MemberType>;
+    }
+
+    Value getValue()  /*override*/ {
+        Value dest;
+        loadFn(m_ptr, dest);
+        return(dest);
+    }
+
+    void loadValue(Value& dest)  override {
+        loadFn(m_ptr, dest);
+    }
+    void saveValue(const Value& src)   override {
+        saveFn(m_ptr, src);
+    }
+};
+// --------------------------------------------------------------------------------------------
+// inline std::vector<IValueTranslator*> ValueTranslatorMap;
+//
+// inline U16 RegisterValueTranslator(IValueTranslator* trans) {
+//     if (ValueTranslatorMap.size() == 0) ValueTranslatorMap.push_back(nullptr); //dont want a 0
+//     U16 result = (U16)ValueTranslatorMap.size();
+//     trans->mMashallId = result;
+//     ValueTranslatorMap.push_back(trans);
+//     return result;
+// }
+// inline IValueTranslator* getValueTranslator(const Value& pointerValue) {
+//     if ( !pointerValue.isPointer()
+//         || pointerValue.marshallId == 0
+//         || pointerValue.marshallId >= ValueTranslatorMap.size()) [[unlikely]]
+//         return nullptr;
+//     return ValueTranslatorMap[pointerValue.marshallId];
+// }
+
+
 
 } //namespace

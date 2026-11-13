@@ -268,7 +268,7 @@ namespace DLSFlux {
     void RegisterFluxFunctions() {
         using namespace DLS;
 
-        FunctionMap::RegisterFunction("flux::var", [](std::span<Value> args, Value& ret) -> bool {
+        FunctionMap::RegisterFunction("flux::var", [](ValueSpan args, Value& ret) -> bool {
             if (args.size() < 1) return false;
             printVar(args[0].getString());
             return true;
@@ -276,7 +276,7 @@ namespace DLSFlux {
 
 
         // ---------------------------------------------------------------------
-        FunctionMap::RegisterFunction("flux::size", [](std::span<Value> args, Value& ret) -> bool {
+        FunctionMap::RegisterFunction("flux::size", [](ValueSpan args, Value& ret) -> bool {
             int logiX = 0;
             int logiY = 0;
 
@@ -314,7 +314,7 @@ namespace DLSFlux {
             return true;
         }, "set / get the screen size and logical size");
         // // ---------------------------------
-        FunctionMap::RegisterFunction("flux::maxfps", [](std::span<Value> args, Value& ret) -> bool {
+        FunctionMap::RegisterFunction("flux::maxfps", [](ValueSpan args, Value& ret) -> bool {
             double& l = app.getSettings().FpsLimit;
             if (args.size() == 1) {
                 l = args[0].getDouble();
@@ -323,7 +323,7 @@ namespace DLSFlux {
             return true;
         }, "set / get the max fps");
         // // ---------------------------------
-        FunctionMap::RegisterFunction("flux::Close", [](std::span<Value> args, Value& ret) -> bool {
+        FunctionMap::RegisterFunction("flux::Close", [](ValueSpan args, Value& ret) -> bool {
             app.TerminateApplication(); return true;
         }, "Close the Application");
         // // ---------------------------------
@@ -332,7 +332,7 @@ namespace DLSFlux {
         // //                         float scale = 1.f, const SDL_Color& color = {100,100,100,255},
         // //                         bool doShadow = false, const SDL_Color& shadowColor = { 60,60,60,255});
         // //
-        FunctionMap::RegisterFunction("flux::Text", [](std::span<Value> args, Value& ret) -> bool {
+        FunctionMap::RegisterFunction("flux::Text", [](ValueSpan args, Value& ret) -> bool {
             if (args.size() < 3 || !args[2].isString()) {
                 Tools::errorf("flux::Text: Missing Parameter");
                 return false;
@@ -365,7 +365,7 @@ namespace DLSFlux {
         //
         //
         // // ---------------------------------
-        FunctionMap::RegisterFunction("flux::DrawRect", [](std::span<Value> args, Value& ret) -> bool {
+        FunctionMap::RegisterFunction("flux::DrawRect", [](ValueSpan args, Value& ret) -> bool {
             if (args.size() < 1 /*|| !args[0].isArray() || !args[1].isArray()*/) {
                 Tools::errorf("flux::DrawRect: Missing Parameter");
                 return false;
@@ -383,7 +383,7 @@ namespace DLSFlux {
             return true;
         }, "Draw Rectangle Vector 4 floats, Vector 4 int, bool fill");
         // ---------------------------------
-        FunctionMap::RegisterFunction("flux::fillRect", [](std::span<Value> args, Value& ret) -> bool {
+        FunctionMap::RegisterFunction("flux::fillRect", [](ValueSpan args, Value& ret) -> bool {
             if (args.size() != 1 || !args[0].isPointerMarshall(SDL_FRectID)) {
                 Tools::errorf("usage: SDL_RenderFillRect(Rect)\n");
                 return false;
@@ -397,7 +397,7 @@ namespace DLSFlux {
         }, "Draw field Rectangle Rect rect");
         // ---------------------------------
         // void DrawLine(SDL_Renderer *renderer, const SDL_FPoint& p1,const SDL_FPoint& p2 , const SDL_Color& color) {
-        FunctionMap::RegisterFunction("flux::DrawLine", [](std::span<Value> args, Value& ret) -> bool {
+        FunctionMap::RegisterFunction("flux::DrawLine", [](ValueSpan args, Value& ret) -> bool {
             if (args.size() < 2 || !args[0].isArray() || !args[1].isArray()) {
                 Tools::errorf("flux::DrawLine: Missing Parameter");
                 return false;
@@ -413,7 +413,7 @@ namespace DLSFlux {
 
 
         // ---------------------------------
-        FunctionMap::RegisterFunction("flux::DrawFPS", [](std::span<Value> args, Value& ret) -> bool {
+        FunctionMap::RegisterFunction("flux::DrawFPS", [](ValueSpan args, Value& ret) -> bool {
             if (args.size() < 2) return false;
 
             float x = args[0].getFloat();
@@ -444,7 +444,7 @@ namespace DLSFlux {
 
 
         // ---------------------------------------------------------------------
-        FunctionMap::RegisterFunction("flux::BatchRect", [](std::span<Value> args, Value& ret) -> bool {
+        FunctionMap::RegisterFunction("flux::BatchRect", [](ValueSpan args, Value& ret) -> bool {
             if (args.size() < 3) return false;
             if (args[0].type != DLS::ValueType::Array) return false;
             if (args[1].type != DLS::ValueType::Array) return false;
@@ -481,7 +481,7 @@ namespace DLSFlux {
         }, "Draw Rects params ArrayOfRects ArrayOfColors ArrayofBoolFilled ");
         // ---------------------------------------------------------------------
         // ---------------------------------------------------------------------
-        FunctionMap::RegisterFunction("debug::arraycount", [](std::span<Value> args, Value& ret) -> bool {
+        FunctionMap::RegisterFunction("debug::arraycount", [](ValueSpan args, Value& ret) -> bool {
             size_t assigned = 0;
             for (auto& arr: vm.Variables.mArrays) {
                 if (arr.isAssigned()) assigned++;
@@ -490,7 +490,7 @@ namespace DLSFlux {
             ret = Value(assigned);
             return true;
         }, "debug return assigned array count");
-        FunctionMap::RegisterFunction("debug::gc", [](std::span<Value> args, Value& ret) -> bool {
+        FunctionMap::RegisterFunction("debug::gc", [](ValueSpan args, Value& ret) -> bool {
             vm.Variables.ArrayFreeTemp();
             size_t assigned = 0;
             for (auto& arr: vm.Variables.mArrays) {
@@ -507,21 +507,21 @@ namespace DLSFlux {
         frectTranslator->registerField("y", &SDL_FRect::y);
         frectTranslator->registerField("w", &SDL_FRect::w);
         frectTranslator->registerField("h", &SDL_FRect::h);
-        SDL_FRectID = RegisterMarshall(frectTranslator);
+        SDL_FRectID = RegisterStructTranslator(frectTranslator);
 
-        FunctionMap::RegisterFunction("Rect::new", [](std::span<Value> args, Value& ret) -> bool {
+        FunctionMap::RegisterFunction("Rect::new", [](ValueSpan args, Value& ret) -> bool {
             SDL_FRect* p = new SDL_FRect();
             DLS::GarbageList.Add(p);
             ret = Value(p);
             ret.marshallId = SDL_FRectID;
             if (args.size() > 0 && args[0].isArray()) {
-                DLS::Marshall::Translator* tl = DLS::Marshall::getTranslator(ret);
+                DLS::Marshall::IStructTranslator* tl = DLS::Marshall::getStructTranslator(ret);
                 if (tl) tl->saveArrayValue(ret,vm.Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
             }
             return true;
         }, "Create a Rect with marhalling.");
 
-        // FunctionMap::RegisterFunction("Rect::destroy", [](std::span<Value> args, Value& ret) -> bool {
+        // FunctionMap::RegisterFunction("Rect::destroy", [](ValueSpan args, Value& ret) -> bool {
         //     if (args.size() < 1 || !args[0].isPointerMarshall(SDL_FRectID)) return false;
         //     free(args[0].getPointer());
         //     ret = Value(0);
@@ -536,16 +536,16 @@ namespace DLSFlux {
         marshallArena.Add(fpointTranslator);
         fpointTranslator->registerField("x", &SDL_FPoint::x);
         fpointTranslator->registerField("y", &SDL_FPoint::y);
-        SDL_FPointID = RegisterMarshall(fpointTranslator);
+        SDL_FPointID = RegisterStructTranslator(fpointTranslator);
 
-        FunctionMap::RegisterFunction("Point::new", [](std::span<Value> args, Value& ret) -> bool {
+        FunctionMap::RegisterFunction("Point::new", [](ValueSpan args, Value& ret) -> bool {
             SDL_FPoint* p = new SDL_FPoint();
             DLS::GarbageList.Add(p);
             ret = Value(p);
             ret.marshallId = SDL_FPointID;
             if (args.size() > 0 && args[0].isArray()) {
                 // MapArrayFPoint(args[0], *p);
-                DLS::Marshall::Translator* tl = DLS::Marshall::getTranslator(ret);
+                DLS::Marshall::IStructTranslator* tl = DLS::Marshall::getStructTranslator(ret);
                 if (tl) tl->saveArrayValue(ret,vm.Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
             }
             return true;
@@ -558,15 +558,15 @@ namespace DLSFlux {
         fpoint3Translator->registerField("x", &SDL_FPoint3::x);
         fpoint3Translator->registerField("y", &SDL_FPoint3::y);
         fpoint3Translator->registerField("z", &SDL_FPoint3::z);
-        SDL_FPoint3ID = RegisterMarshall(fpoint3Translator);
+        SDL_FPoint3ID = RegisterStructTranslator(fpoint3Translator);
 
-        FunctionMap::RegisterFunction("Point3::new", [](std::span<Value> args, Value& ret) -> bool {
+        FunctionMap::RegisterFunction("Point3::new", [](ValueSpan args, Value& ret) -> bool {
             SDL_FPoint3* p = new SDL_FPoint3();
             DLS::GarbageList.Add(p);
             ret = Value(p);
             ret.marshallId = SDL_FPoint3ID;
             if (args.size() > 0 && args[0].isArray()) {
-                DLS::Marshall::Translator* tl = DLS::Marshall::getTranslator(ret);
+                DLS::Marshall::IStructTranslator* tl = DLS::Marshall::getStructTranslator(ret);
                 if (tl) tl->saveArrayValue(ret,vm.Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
             }
             return true;
@@ -580,15 +580,15 @@ namespace DLSFlux {
         colorTranslator->registerField("g", &SDL_Color::g);
         colorTranslator->registerField("b", &SDL_Color::b);
         colorTranslator->registerField("a", &SDL_Color::a);
-        SDL_ColorID = RegisterMarshall(colorTranslator);
+        SDL_ColorID = RegisterStructTranslator(colorTranslator);
 
-        FunctionMap::RegisterFunction("Color::new", [](std::span<Value> args, Value& ret) -> bool {
+        FunctionMap::RegisterFunction("Color::new", [](ValueSpan args, Value& ret) -> bool {
             SDL_Color* p = new SDL_Color();
             DLS::GarbageList.Add(p);
             ret = Value(p);
             ret.marshallId = SDL_ColorID;
             if (args.size() > 0 && args[0].isArray()) {
-                DLS::Marshall::Translator* tl = DLS::Marshall::getTranslator(ret);
+                DLS::Marshall::IStructTranslator* tl = DLS::Marshall::getStructTranslator(ret);
                 if (tl) tl->saveArrayValue(ret,vm.Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
             }
             return true;
@@ -613,6 +613,30 @@ namespace DLSFlux {
 
         RegisterFluxFunctions();
         RegisterGlobals();
+
+
+        DLS::FunctionMap::RegisterFunction("test", [](DLS::ValueSpan args, DLS::Value& ret) -> bool {
+            // float foo = 47.11;
+            // DLS::Marshall::ValueTranslator testTrans(&foo);
+            // DLS::Tools::printf("%s", testTrans.getValue().toString().c_str());
+            // testTrans.saveValue(DLS::Value(815.1));
+            // DLS::Tools::printf("foo is: %f", foo);
+            // ....
+            const char* cstr;
+            DLS::Marshall::ValueTranslator testTrans2(&cstr);
+            testTrans2.saveValue(DLS::Value(47.11));
+            DLS::Tools::printf("cstr is: %s", cstr);
+
+            std::string str;
+            DLS::Marshall::ValueTranslator testTrans3(&str);
+            testTrans3.saveValue(DLS::Value(815));
+            DLS::Tools::printf("str is: %s", str.c_str());
+
+
+            return true;
+        }, "test marshall");
+
+
     }
 
 

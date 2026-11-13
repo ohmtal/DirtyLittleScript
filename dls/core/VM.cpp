@@ -643,7 +643,7 @@ namespace DLS {
 
             Value& var = Variables.getGlobal(varIndex);
 
-            Marshall::Translator* tl = Marshall::getTranslator(var);
+            Marshall::IStructTranslator* tl = Marshall::getStructTranslator(var);
             if (!tl) [[unlikely]] {
                 PrintRuntimeError("Failed to get Translator for variable");
                 PUSH_STACK(result);
@@ -677,7 +677,7 @@ namespace DLS {
             Value& src = POP_STACK();
             Value& var = Variables.getGlobal(varIndex);
 
-            Marshall::Translator* tl = Marshall::getTranslator(var);
+            Marshall::IStructTranslator* tl = Marshall::getStructTranslator(var);
             if (!tl) [[unlikely]] {
                 PrintRuntimeError("Failed to get Translator for variable");
                 DISPATCH();
