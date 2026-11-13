@@ -71,7 +71,8 @@
 
 (*1) only in DLS and not in DreiZehnScript available
 
-(*2) DreiZehnScript handle arrays with objects so it's different
+(*2) DreiZehnScript handle arrays with objects so it's different. 
+I set a max elements limit to 65536. Which can be changed with compile flag: DLS_MAX_ARRAY_ELEMENTS
 
 (*3) DreiZehnScript use a system to modify values directly by Pointer which is faster but disable Marshalling. So this Pointer to Struct System is only in DLS.
 

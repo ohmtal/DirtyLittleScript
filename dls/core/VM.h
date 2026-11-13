@@ -20,6 +20,9 @@
 #include "FunctionMap.h"
 #include "Globals.h"
 
+#ifndef DLS_MAX_ARRAY_ELEMENTS
+#define DLS_MAX_ARRAY_ELEMENTS 65536
+#endif
 
 namespace DLS {
 
@@ -190,6 +193,11 @@ namespace DLS {
         }
 
         void saveArray(Value& arrValue , U32 index, const Value& value) {
+
+            if (index >= DLS_MAX_ARRAY_ELEMENTS) [[unlikely]]{
+                PrintRuntimeError("Array index overflow max array elements!");
+                return;
+            }
 
             Value finaleValue = (value.type == ValueType::Array) ? copyArray((size_t)value.getFastLong()) : value;
 

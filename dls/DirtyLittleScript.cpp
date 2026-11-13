@@ -202,7 +202,7 @@ namespace DLS {
 
             ret = Value((S64)arr.size());
             return true;
-        }, "cast any type to float");
+        }, "return the element count of an array variable");
 
         // ---------------------------------------------------------------------
         // Argv
