@@ -80,8 +80,8 @@ bool Parser::parsePrimary() {
                 else evaluatedValue =  Value((S64)resDouble);
             }
             vm->emitCode(op_literal );
-            vm->emitTapeChunk(vm->addLiteral(evaluatedValue));
-            // // vm->emitValue( evaluatedValue );
+            // vm->emitTapeChunk(vm->addLiteral(evaluatedValue));
+            vm->emitValue( evaluatedValue );
 
         }
         break;
@@ -90,8 +90,8 @@ bool Parser::parsePrimary() {
         case TokenType::StringLiteral: {
             Token t = advance();
             vm->emitCode(op_literal );
-            vm->emitTapeChunk(vm->addLiteral(Value(t.mValue)));
-            // // vm->emitValue( Value(t.mValue) );
+            // vm->emitTapeChunk(vm->addLiteral(Value(t.mValue)));
+            vm->emitValue( Value(t.mValue) );
         }
         break;
         // ~~~~ LParen/RParen () ~~~~
@@ -126,7 +126,6 @@ bool Parser::parsePrimary() {
                 vm->emitCode( op_cfunc );
                 vm->emitTapeChunk((U32)symId);
                 vm->emitTapeChunk((U32)argCount);
-                //not faster! vm->emitValue(Value(nullptr));
 
                 if (ArrayConstructed) vm->emitCode(op_clear_temp_arrays);
                 ArrayAssign = false;
@@ -212,8 +211,8 @@ bool Parser::parsePrimary() {
             } else
             if (Value* constansPointer = FunctionMap::getConstants(symId);constansPointer) {
                 vm->emitCode(op_literal );
-                vm->emitTapeChunk(vm->addLiteral(*constansPointer));
-                // vm->emitValue(*constansPointer);
+                // vm->emitTapeChunk(vm->addLiteral(*constansPointer));
+                vm->emitValue(*constansPointer);
             } else
             {
                 PrintParseError("Unhandled Identifier:", t.mValue);
@@ -482,8 +481,8 @@ bool Parser::parseForRange() {
 
     // ----1. emit loop variable and set to -1
     vm->emitCode(op_literal);
-    vm->emitTapeChunk(vm->addLiteral(Value(-1)));
-    // vm->emitValue(Value(-1));
+    // vm->emitTapeChunk(vm->addLiteral(Value(-1)));
+    vm->emitValue(Value(-1));
     U32 symId = SymbolTable::insert(variable);
     size_t varidx = vm->Variables.reserveGlobal(symId);
     vm->emitCode(op_save_global);

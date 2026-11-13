@@ -282,7 +282,7 @@ namespace DLS {
         std::vector<LoopContext> mLoopStack;
         VariableStorage Variables;
 
-        ValueVector mLiterals;
+        // ValueVector mLiterals;
 
 
         void run() ;
@@ -306,35 +306,35 @@ namespace DLS {
         // ------------------------------------------
         void emitCode(const U32 opcode ) { tape.push_back(opcode); }
 
-        U32 addLiteral(const Value& val) {
-            size_t curIdx = 0;
-            // TODO operator "==" in Value so i can check doubles here
-            // this save some bytes
-            // for (auto lit: mLiterals) {
-            //   if lit == val ....
-            // }
-            curIdx = mLiterals.size();
-            mLiterals.push_back(val);
-            return static_cast<U32>(curIdx);
-        }
-
-        // // U32 emitValue(Value val) {
-        // //     #ifdef DLS_DEBUG
-        // //     assert(sizeof(Value) <= 4 * sizeof(U32) && "Value size missmatch! Only 16 byte Values allowed.");
-        // //     #endif
-        // //     U32 startIp = (U32)tape.size();
-        // //     tape.resize(startIp + 4);
-        // //
-        // //     if (sizeof(Value) < 16) {
-        // //         tape[startIp] = 0;
-        // //         tape[startIp + 1] = 0;
-        // //         tape[startIp + 2] = 0;
-        // //         tape[startIp + 3] = 0;
-        // //     }
-        // //
-        // //     std::memcpy(&tape[startIp], &val, sizeof(Value));
-        // //     return startIp;
+        // // U32 addLiteral(const Value& val) {
+        // //     size_t curIdx = 0;
+        // //     // TODO operator "==" in Value so i can check doubles here
+        // //     // this save some bytes
+        // //     // for (auto lit: mLiterals) {
+        // //     //   if lit == val ....
+        // //     // }
+        // //     curIdx = mLiterals.size();
+        // //     mLiterals.push_back(val);
+        // //     return static_cast<U32>(curIdx);
         // // }
+
+        U32 emitValue(Value val) {
+            #ifdef DLS_DEBUG
+            assert(sizeof(Value) <= 4 * sizeof(U32) && "Value size missmatch! Only 16 byte Values allowed.");
+            #endif
+            U32 startIp = (U32)tape.size();
+            tape.resize(startIp + 4);
+
+            if (sizeof(Value) < 16) {
+                tape[startIp] = 0;
+                tape[startIp + 1] = 0;
+                tape[startIp + 2] = 0;
+                tape[startIp + 3] = 0;
+            }
+
+            std::memcpy(&tape[startIp], &val, sizeof(Value));
+            return startIp;
+        }
 
         void emitTapeChunk(const U32 tapeChunk)   { tape.push_back( tapeChunk); }
 
@@ -360,12 +360,12 @@ namespace DLS {
             return tape[pc++];
         }
 
-        // // inline Value advance_value() {
-        // //     Value val;
-        // //     std::memcpy(&val, &tape[pc], sizeof(Value));
-        // //     pc += 4; // 16 bytes
-        // //     return val;
-        // // }
+        inline Value advance_value() {
+            Value val;
+            std::memcpy(&val, &tape[pc], sizeof(Value));
+            pc += 4; // 16 bytes
+            return val;
+        }
 
         // ------------------------------------------
         // Stack functions
