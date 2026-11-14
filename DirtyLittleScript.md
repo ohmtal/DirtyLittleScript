@@ -236,7 +236,7 @@ while `foo = function; return 1;; print foo` works fine.
     - i added    `if (STACK_SIZE() == 0 ) { PUSH_STACK(Value(0)); }` on op_return
     - not sure if it cause a stack problem, but it fix the underflow
         
-- [ ] Wrapper for Variables.
+- [X] Wrapper for Variables.
     - at the moment i do:
         - `var_frametime   = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "flux::ft" ));`
         - `vm.Variables.saveGlobal(var_frametime, DLS::Value(BaseFlux::getFrameTime() * 100.0));`
@@ -251,7 +251,20 @@ while `foo = function; return 1;; print foo` works fine.
         - `std::vector vars = {{"x", &x}, {"y", &y}};`
         - `VM vm; CompileExpression(vm,vars, "x = math::randomf; return x+y;");`
         - `printf("Result is: %f", RunExpression(vm, vars).getFloat())`
-        
+    
+    - finally it's => dls/extras/Expressions.h and expressionDemo/src/main.cpp
+    
+- Benchmarks (Release O3 / output redirected / best of 3):
+    - test_var: 1.997u 0.004s 0:02.00 99.5%
+    - test_struct: 3.916u 0.002s 0:03.92 99.7% 
+    - fibo: 0.801u 0.003s 0:00.80 100.0%
+    - DreiZehn/counter: 4.892u 0.001s 0:04.90 99.7%
+    - (sdl) Starfield bench: 5.918u 0.198s 0:06.31 96.6%
+    - All passed :)
+    
+- <<< intern 0.62 -------
+    
+    
 ## maybe:
 - add a callframe too to enable real functions 
 - Save a Tape:

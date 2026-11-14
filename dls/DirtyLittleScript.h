@@ -15,9 +15,15 @@
 #include "toolbox/Tools.h"
 
 #ifndef DLS_NO_EXTRA_FUNCTIONS
-#include "functions/MathFunctions.h"
-#include "functions/StringFunctions.h"
-#include "functions/HelpFunctions.h"
+    #ifndef DLS_NO_MATH
+        #include "functions/MathFunctions.h"
+    #endif
+    #ifndef DLS_NO_STRINGS
+        #include "functions/StringFunctions.h"
+    #endif
+    #ifndef DLS_NO_HELP
+        #include "functions/HelpFunctions.h"
+    #endif
 #endif
 
 #include <fstream>
@@ -41,7 +47,7 @@ namespace DLS {
     // compile the code
     bool Compile(VM& vm, const std::string& code);
     // run with vm and return Value
-    const Value Run(VM& vm, bool doRewind = true);
+    const Value Run(VM& vm, bool doRewind );
 } // namespace DLS
 
 #ifdef IMPLEMENT_DLS
