@@ -5,7 +5,7 @@
 //using lib!  #define IMPLEMENT_DLS
 #include "DirtyLittleScript.h"
 #include "core/Marshall.h" //NOTE: DLS: Object Test
-#include "core/ArenaAllocator.h" //NOTE: DLS: Object Test
+#include "toolbox/ArenaAllocator.h" //NOTE: DLS: Object Test
 
 
 

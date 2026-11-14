@@ -26,7 +26,7 @@
 //     }
 //-----------------------------------------------------------------------------
 #include "core/Marshall.h"
-#include "core/ArenaAllocator.h"
+#include "toolbox/ArenaAllocator.h"
 
 namespace DLS {
     using namespace Marshall;
