@@ -288,11 +288,11 @@ namespace DLS {
         void run();
 
         VM() {
-            Globals::CurrentVM = this;
+            // // Globals::CurrentVM = this;
             stack.resize(1024);
         }
         ~VM() {
-            Globals::CurrentVM = nullptr;
+            // // Globals::CurrentVM = nullptr;
         }
 
         inline void rewind() { pc = 0;}

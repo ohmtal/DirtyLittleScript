@@ -33,7 +33,7 @@ namespace DLS {
                 "help::syntax    => print syntax informations.\n"
                 "help::fn        => print the available Function\n"
                 "help::const     => print the registered Constants\n"
-                "help::glob      => print all registered Global Variables\n"
+                // "help::glob      => print all registered Global Variables\n"
             );
             return true;
         }, "print the help overview");
@@ -162,18 +162,19 @@ namespace DLS {
         }, "list all registerd constants can be called with a filter.");
 
         // ---------------------------------------------------------------------
-        RegisterFunction("help::glob", [](ValueSpan args, Value& ret) -> bool {
-            Tools::printf("---------------- Globals ------------------\n");
-            for (auto & globs: Globals::CurrentVM->Variables.mGlobalsLookUp) {
-                Value& val = Globals::CurrentVM->Variables.getGlobal(globs.second);
-                Tools::printf("%s = %s\n "
-                ,  SymbolTable::getName(globs.first).c_str()
-                , val.toString().c_str()
-                );
-            }
-            Tools::printf("------------------------------------------------------\n");
-            return true;
-        }, "Print all global variables.");
+        // FIXME CurrentVM
+        // // RegisterFunction("help::glob", [](ValueSpan args, Value& ret) -> bool {
+        // //     Tools::printf("---------------- Globals ------------------\n");
+        // //     for (auto & globs: Globals::CurrentVM->Variables.mGlobalsLookUp) {
+        // //         Value& val = Globals::CurrentVM->Variables.getGlobal(globs.second);
+        // //         Tools::printf("%s = %s\n "
+        // //         ,  SymbolTable::getName(globs.first).c_str()
+        // //         , val.toString().c_str()
+        // //         );
+        // //     }
+        // //     Tools::printf("------------------------------------------------------\n");
+        // //     return true;
+        // // }, "Print all global variables.");
         // ---------------------------------------------------------------------
     } //RegisterCoreFunctions
 

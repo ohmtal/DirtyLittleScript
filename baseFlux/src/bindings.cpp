@@ -305,17 +305,18 @@ namespace DLSFlux {
             SDL_GetRenderLogicalPresentation(app.getRenderer(),&logiX, &logiY, &mode);
 
 
-            std::vector<Value> arr;
-            arr.push_back(Value(app.getSettings().ScreenSize.x));
-            arr.push_back(Value(app.getSettings().ScreenSize.y));
-            arr.push_back(Value(logiX));
-            arr.push_back(Value(logiY));
+              //FIXME Globals::CurrentVM
+            // // std::vector<Value> arr;
+            // // arr.push_back(Value(app.getSettings().ScreenSize.x));
+            // // arr.push_back(Value(app.getSettings().ScreenSize.y));
+            // // arr.push_back(Value(logiX));
+            // // arr.push_back(Value(logiY));
 
-            ret = Globals::CurrentVM->Variables.createArray(arr, false);
+            // // ret = Globals::CurrentVM->Variables.createArray(arr, false);
 
 
             return true;
-        }, "set / get the screen size and logical size");
+        }, "set the screen size and logical size");
         // // ---------------------------------
         FunctionMap::RegisterFunction("flux::maxfps", [](ValueSpan args, Value& ret) -> bool {
             double& l = app.getSettings().FpsLimit;

@@ -266,7 +266,17 @@ while `foo = function; return 1;; print foo` works fine.
 
 - [X] also changed the Run(string) to return a Value
     
-    
+- [ ] baseFlux: check why it randomly crash:
+    - do some Expressions tests 
+    - switch and on starfield there is a good chance..
+    - i guess it's something i put out of VM 
+    - it's the **CurrentVM** ,,,, need to change this!!! ... also used in some Lambda calls
+      was a bad quick hack !! 
+    - [X] removed all CurrentVM links and marked with  
+    - [ ] FIXME CurrentVM 
+        - [ ] baseFlux: flux::size
+        - [ ] array::count
+        - [ ] help::glob
     
     
 ## maybe:

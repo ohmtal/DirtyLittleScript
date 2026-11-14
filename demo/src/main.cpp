@@ -29,22 +29,23 @@ U16 TestPointTranslatorID = 0;
 void RegisterTest() {
     using namespace FunctionMap;
     // setup Marshall
-    auto* testPointTranslator = new Marshall::GenericStructTranslator<TestPoint>();
-    Cleanup.Add(testPointTranslator);
-    testPointTranslator->registerField("x", &TestPoint::x);
-    testPointTranslator->registerField("y", &TestPoint::y);
-    TestPointTranslatorID = RegisterStructTranslator(testPointTranslator);
-    FunctionMap::RegisterFunction("Point::new", [](std::span<Value> args, Value& ret) -> bool {
-        TestPoint* p = new TestPoint();
-        DLS::GarbageList.Add(p);
-        ret = Value(p);
-        ret.marshallId = TestPointTranslatorID;
-        if (args.size() > 0 && args[0].isArray()) {
-            DLS::Marshall::IStructTranslator* tl = DLS::Marshall::getStructTranslator(ret);
-            if (tl) tl->saveArrayValue(ret,Globals::CurrentVM->Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
-        }
-        return true;
-    }, "Create a Point");
+    // // FIXME CurrentVM
+    // // auto* testPointTranslator = new Marshall::GenericStructTranslator<TestPoint>();
+    // // Cleanup.Add(testPointTranslator);
+    // // testPointTranslator->registerField("x", &TestPoint::x);
+    // // testPointTranslator->registerField("y", &TestPoint::y);
+    // // TestPointTranslatorID = RegisterStructTranslator(testPointTranslator);
+    // // FunctionMap::RegisterFunction("Point::new", [](std::span<Value> args, Value& ret) -> bool {
+    // //     TestPoint* p = new TestPoint();
+    // //     DLS::GarbageList.Add(p);
+    // //     ret = Value(p);
+    // //     ret.marshallId = TestPointTranslatorID;
+    // //     if (args.size() > 0 && args[0].isArray()) {
+    // //         DLS::Marshall::IStructTranslator* tl = DLS::Marshall::getStructTranslator(ret);
+    // //         if (tl) tl->saveArrayValue(ret,Globals::CurrentVM->Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
+    // //     }
+    // //     return true;
+    // // }, "Create a Point");
 
 }
 

@@ -208,25 +208,26 @@ namespace DLS {
         // ---------------------------------------------------------------------
         // Array
         // ---------------------------------------------------------------------
-        RegisterFunction("array::count", [](ValueSpan args, Value& ret) -> bool {
-            if (args.size() != 1 || args[0].type != ValueType::Array) {
-                Tools::errorf("Usage: array::count value\n");
-                return false;
-            }
-            if (!Globals::CurrentVM) {
-                Tools::errorf("Sorry no VM running.\n");
-                return false;
-            }
-
-            ValueVector arr;
-            if (!Globals::CurrentVM->Variables.getArrayByMasterIndexSafe((size_t)args[0].getLong(), arr)) {
-                Tools::errorf("Array Index out of bounds.\n");
-                return false;
-            }
-
-            ret = Value((S64)arr.size());
-            return true;
-        }, "return the element count of an array variable");
+        // FIXME CurrentVM
+        // RegisterFunction("array::count", [](ValueSpan args, Value& ret) -> bool {
+        //     if (args.size() != 1 || args[0].type != ValueType::Array) {
+        //         Tools::errorf("Usage: array::count value\n");
+        //         return false;
+        //     }
+        //     if (!Globals::CurrentVM) {
+        //         Tools::errorf("Sorry no VM running.\n");
+        //         return false;
+        //     }
+        //
+        //     ValueVector arr;
+        //     if (!Globals::CurrentVM->Variables.getArrayByMasterIndexSafe((size_t)args[0].getLong(), arr)) {
+        //         Tools::errorf("Array Index out of bounds.\n");
+        //         return false;
+        //     }
+        //
+        //     ret = Value((S64)arr.size());
+        //     return true;
+        // }, "return the element count of an array variable");
 
     } //<< Init
     // -------------------------------------------------------------------------

@@ -7,10 +7,7 @@
 #pragma once
 
 namespace DLS {
-    struct VM;
-
 namespace Globals {
-   inline  VM* CurrentVM = nullptr;
 
 } //Globals
 } //DLS
