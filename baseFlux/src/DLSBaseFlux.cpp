@@ -113,7 +113,7 @@ namespace DLS::Flux {
         fluxVM.run();
     }
     // -----------------------------------------------------------------------------
-    void OnUpdate(float dt) {
+    void OnUpdate(const float dt) {
         fluxVM.Variables.saveGlobal(var_updatedeltatime, DLS::Value(dt));
 
         DLS::Value& funcVar = fluxVM.Variables.getGlobal(updateEventVarRegister);

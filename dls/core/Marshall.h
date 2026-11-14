@@ -200,7 +200,6 @@ namespace DLS::Marshall {
             return true;
         }
         // ---------------------------------------------------------------------
-
         bool saveArrayValue(const Value& pointerValue, const ValueVector& arr) {
             if (arr.size() < mFieldStack.size()) return false;
             StructType* instance = reinterpret_cast<StructType*>(pointerValue.getPointer());
@@ -307,17 +306,21 @@ public:
         doSave<MemberType>(m_ptr, src);
     }
 };
-// --------------------------------------------------------------------------------------------
-using TranslatorFactory = std::function<Marshall::IValueTranslator*()>;
-using VariableLinks = std::unordered_map<std::string, TranslatorFactory>;
-
-template <typename T>
-TranslatorFactory makeLink(T* ptr) {
-    return [ptr]() {
-        return new Marshall::ValueTranslator<T>(ptr);
-    };
-}
-
 } //namespace Marshall
+
+namespace DLS {
+    // --------------------------------------------------------------------------------------------
+    // Used in Expressions:
+    // --------------------------------------------------------------------------------------------
+    using TranslatorFactory = std::function<Marshall::IValueTranslator*()>;
+    using VariableLinks = std::unordered_map<std::string, TranslatorFactory>;
+
+    template <typename T>
+    TranslatorFactory makeLink(T* ptr) {
+        return [ptr]() {
+            return new Marshall::ValueTranslator<T>(ptr);
+        };
+    }
+} // namespace DLS
 
 

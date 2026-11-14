@@ -25,6 +25,9 @@
 //         printf("Result is: %f, new x is: %f", res, x);
 //     }
 //-----------------------------------------------------------------------------
+#include "DirtyLittleScript.h"
+#include "core/VM.h"
+#include "core/Value.h"
 #include "core/Marshall.h"
 #include "toolbox/ArenaAllocator.h"
 

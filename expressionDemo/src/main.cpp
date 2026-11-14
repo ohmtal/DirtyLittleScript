@@ -2,13 +2,10 @@
 // DLS Expression Demo
 //-----------------------------------------------------------------------------
 // when used as header only: #define IMPLEMENT_DLS
-#include "DirtyLittleScript.h"
-// must be included because it's not part of the core
 #include "extras/Expressions.h"
 
 // we need this namespaces:
 using namespace DLS;
-using namespace DLS::Marshall;
 
 void TestExpression() {
     // setup some variables

@@ -124,29 +124,28 @@ cmake --build build
 |  |  |
 
 ## Using as Expression compiler
-
+s
 ```
 //-----------------------------------------------------------------------------
 // DLS Expression Demo
 //-----------------------------------------------------------------------------
 // when used as header only: #define IMPLEMENT_DLS
-#include "DirtyLittleScript.h"
-// must be included because it's not part of the core
 #include "extras/Expressions.h"
 
 void TestExpression() {
     using namespace DLS;
-    using namespace DLS::Marshall;
 
-
+    // the linked variables
     float x = 0.f;
     float y = 100.f;
 
+    // define the links:
     VariableLinks vars = {
         {"x", makeLink(&x)},
         {"y", makeLink(&y)}
     };
 
+    // compile the expression 
     CompiledExpression expr = CompileExpression(vars, "x = math::random 0 y; return x");
 
     if (!expr.isValid) {
@@ -154,6 +153,7 @@ void TestExpression() {
         return;
     }
 
+    // run - the CompiledExpression created the code so we can use it here:
     y = 1.f;
     float res = 0.f;
 
@@ -166,7 +166,7 @@ void TestExpression() {
 
 
 int main(int argc, char* argv[]) {
-    DLS::Init();
+    DLS::Init(); // call init once to load functions and more
     TestExpression();
 }
 

@@ -20,36 +20,12 @@
 #include "DirtyLittleScript.h"
 #include "functions/StringFunctions.h"
 
-namespace fs = std::filesystem;
+#include "DLSBaseFlux.h"
 
+namespace fs = std::filesystem;
 BaseFlux::Main app;
 ImConsole gConsole;
-
-
 std::vector<fs::path> dlsFiles;
-namespace DLS::Flux {
-    extern void Init (int argc, char* argv[]);
-    extern bool Run(const std::string& command);
-    extern size_t getTapePos();
-    extern size_t getArrayCount();
-    extern size_t getGlobalCount();
-    extern size_t getStackCount();
-    extern size_t getGarbageCount();
-    extern void OnSetup();
-    extern void OnInit();
-    extern void OnUpdate(float dt);
-    extern void OnShutdown();
-    extern void OnRender();
-    extern bool RunFile(const std::string& fileName, bool ResetTape );
-    extern void OnKey(SDL_Keycode key, DLS::U32 EventType, SDL_Keymod mod);
-    extern void OnMouse( DLS::U8 button,  DLS::U32 EventType);
-    extern void OnMouseMotion(const SDL_MouseMotionEvent& mmev);
-    void OnMouseWheel(const SDL_MouseWheelEvent& mWheelEvent);
-    extern const std::string& getScriptFile();
-}
-
-#define Log(...) SDL_Log(__VA_ARGS__)
-
 //-----------------------------------------------------------------------------
 // console redirect ....
 void SDLCALL ConsoleLogFunction(void *userdata, int category, SDL_LogPriority priority, const char *message)
@@ -69,18 +45,14 @@ void SDLCALL ConsoleLogFunction(void *userdata, int category, SDL_LogPriority pr
     }
 }
 //-----------------------------------------------------------------------------
-
-//-----------------------------------------------------------------------------
 void initConsole() {
     SDL_SetLogOutputFunction(ConsoleLogFunction, nullptr);
 
     gConsole.OnCommand = [](ImConsole* console, const char* command_line) {
         DLS::Flux::Run(command_line);
     };
-
 }
 //-----------------------------------------------------------------------------
-
 bool fetchDLSFiles() {
     std::string path = BaseFlux::Tools::getBasePath() + "assets/";
 
@@ -97,9 +69,6 @@ bool fetchDLSFiles() {
         SDL_Log("[error]%s",e.what());
         return false;
     }
-
-
-
     return true;
 }
 
@@ -253,22 +222,14 @@ void shutDown() {
 //-----------------------------------------------------------------------------
 bool initApp() {
 
-
-
     if ( !app.InitSDL() ) return false;
     app.initImGui();
-
-
 
     app.OnRender = [](SDL_Renderer* renderer) {
         onDraw(renderer);
         DLS::Flux::OnRender();
     };
-
-    app.OnUpdate = [](const float deltaTime) {
-
-        DLS::Flux::OnUpdate(deltaTime);
-    };
+    app.OnUpdate = DLS::Flux::OnUpdate;
 
     app.OnEvent = [](const SDL_Event& event) {
         if (app.getImGuiIO())  {
@@ -290,8 +251,6 @@ bool initApp() {
             }
         }
 
-        // FIXME
-        // ElfSDL3::onEvent(event);
         switch (event.type) {
             case SDL_EVENT_MOUSE_MOTION:
                 DLS::Flux::OnMouseMotion(event.motion);
@@ -319,22 +278,19 @@ bool initApp() {
 
     };
 
-    app.OnShutDown = [&]() {
-        DLS::Flux::OnShutdown();
-    };
+    app.OnShutDown = DLS::Flux::OnShutdown;
 
     return true;
 }
 //-----------------------------------------------------------------------------
 int main(int argc, char* argv[]) {
-
     app.getSettings() = {
         .ScreenSize = { 800, 450},
         .FpsLimit = 60,
         .EnableVSync = false,
         .Company = "BaseFlux",
         .Caption = "DLS::Flux",
-        .Version = "0.261105.01",
+        .Version = "0.261114.01",
         .SoundPathAppend = "sound/",
         .TexturePathAppend = "texture/"
     };
