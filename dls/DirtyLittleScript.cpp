@@ -60,17 +60,24 @@ namespace DLS {
     // -------------------------------------------------------------------------
     // Run a Script, and shutdown if you need to keep it up vm must be defined
     //               in your source so you can work with it.
+    //  This does compile and run so it's for console or lazy usage;
     // -------------------------------------------------------------------------
-    std::string Run(const std::string& code) {
+    const Value Run(const std::string& code) {
+        Value result = Value("");
         VM vm;
-        if (!Compile(vm, code)) return "";
+        if (!Compile(vm, code)) return result;
         vm.run();
-        std::string result = "";
-        for (size_t iter = 0; iter < vm.STACK_SIZE(); iter++)
-        {
-            if (iter > 0) result = result  + ", ";
-            result = result + vm.stack[iter].toString();
+
+        U32 stackSize =  vm.STACK_SIZE();
+        if ( stackSize > 0) {
+            result = vm.stack[stackSize - 1];
         }
+        // i now ignore if there are more results.
+        // for (size_t iter = 0; iter < vm.STACK_SIZE(); iter++)
+        // {
+        //     if (iter > 0) result = result  + ", ";
+        //     result = result + vm.stack[iter].toString();
+        // }
         return result;
     }
     // -------------------------------------------------------------------------

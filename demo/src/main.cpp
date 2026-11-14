@@ -73,46 +73,46 @@ int main(int argc, char* argv[]) {
 
     std::cout << "=============  TAPE TEST ===============\n";
     std::cout << "------------ String  ---------------\n";
-    mySrc = R"( "Hello World!" )"; std::cout << mySrc << "  =  " << Run(mySrc) << "\n";
+    mySrc = R"( "Hello World!" )"; std::cout << mySrc << "  =  " << Run(mySrc).toString() << "\n";
 
     std::cout << "------------ BASIC MATH ---------------\n";
     mySrc = R"( (4.f + 5) * 20 )";
-    std::cout << mySrc << "  =  " << Run(mySrc) << "\n";
+    std::cout << mySrc << "  =  " << Run(mySrc).toString() << "\n";
     mySrc = R"( 3 * 4 + 1 )";
-    std::cout << mySrc << " =  " << Run(mySrc) << "\n";
+    std::cout << mySrc << " =  " << Run(mySrc).toString() << "\n";
     mySrc = R"( 3 * (4 + 1) )";
-    std::cout << mySrc << " = " << Run(mySrc) << "\n";
+    std::cout << mySrc << " = " << Run(mySrc).toString() << "\n";
     std::cout << "------------ (multi result) ---------------\n";
     mySrc = R"( 3 * (4 + 1); 5 + 5 )";
-    std::cout << mySrc << " = " << Run(mySrc) << "\n";
+    std::cout << mySrc << " = " << Run(mySrc).toString() << "\n";
 
     std::cout << "------------ C-Function Call ---------------\n";
-    mySrc = R"( return math::randomf )"; std::cout << mySrc << " = " << Run(mySrc) << "\n";
-    mySrc = R"( math::random 10 20 )"; std::cout << mySrc << " = " << Run(mySrc) << "\n";
+    mySrc = R"( return math::randomf )"; std::cout << mySrc << " = " << Run(mySrc).toString() << "\n";
+    mySrc = R"( math::random 10 20 )"; std::cout << mySrc << " = " << Run(mySrc).toString() << "\n";
 
     // x = fun not supported !
-    mySrc = R"( fun = function; print "INSIDE";; fun; print "OUTSIDE" )"; std::cout << mySrc << " = " << Run(mySrc) << "\n";
+    mySrc = R"( fun = function; print "INSIDE";; fun; print "OUTSIDE" )"; std::cout << mySrc << " = " << Run(mySrc).toString() << "\n";
 
 
 
     std::cout << "------------ Comparison ---------------\n";
-    mySrc = R"( (4.f + 5) > 20 )"; std::cout << mySrc << "  =  " << Run(mySrc) << "\n";
-    mySrc = R"( (4.f + 5) < 20 )"; std::cout << mySrc << "  =  " << Run(mySrc) << "\n";
-    mySrc = R"( (4.f + 5) == 20 )"; std::cout << mySrc << "  =  " << Run(mySrc) << "\n";
-    mySrc = R"( (4.f + 5) != 20 )"; std::cout << mySrc << "  =  " << Run(mySrc) << "\n";
-    mySrc = R"( (4.f + 5) <= 20 )"; std::cout << mySrc << "  =  " << Run(mySrc) << "\n";
-    mySrc = R"( (4.f + 5) >= 20 )"; std::cout << mySrc << "  =  " << Run(mySrc) << "\n";
+    mySrc = R"( (4.f + 5) > 20 )"; std::cout << mySrc << "  =  " << Run(mySrc).toString() << "\n";
+    mySrc = R"( (4.f + 5) < 20 )"; std::cout << mySrc << "  =  " << Run(mySrc).toString() << "\n";
+    mySrc = R"( (4.f + 5) == 20 )"; std::cout << mySrc << "  =  " << Run(mySrc).toString() << "\n";
+    mySrc = R"( (4.f + 5) != 20 )"; std::cout << mySrc << "  =  " << Run(mySrc).toString() << "\n";
+    mySrc = R"( (4.f + 5) <= 20 )"; std::cout << mySrc << "  =  " << Run(mySrc).toString() << "\n";
+    mySrc = R"( (4.f + 5) >= 20 )"; std::cout << mySrc << "  =  " << Run(mySrc).toString() << "\n";
 
     std::cout << "------------ If ---------------\n";
-    mySrc = R"( if 1 > 2; 40; end; )"; std::cout << mySrc << "  =  " << Run(mySrc) << "\n";
-    mySrc = R"( if 1 > 2; 40; else 20; end; )"; std::cout << mySrc << "  =  " << Run(mySrc) << "\n";
-    mySrc = R"( if 1 > 2; 40; elif 2 > 1; 100; else; 20; end; )"; std::cout << mySrc << "  =  " << Run(mySrc) << "\n";
-    mySrc = R"( if 1 < 2; 40; end; )"; std::cout << mySrc << "  =  " << Run(mySrc) << "\n";
+    mySrc = R"( if 1 > 2; 40; end; )"; std::cout << mySrc << "  =  " << Run(mySrc).toString() << "\n";
+    mySrc = R"( if 1 > 2; 40; else 20; end; )"; std::cout << mySrc << "  =  " << Run(mySrc).toString() << "\n";
+    mySrc = R"( if 1 > 2; 40; elif 2 > 1; 100; else; 20; end; )"; std::cout << mySrc << "  =  " << Run(mySrc).toString() << "\n";
+    mySrc = R"( if 1 < 2; 40; end; )"; std::cout << mySrc << "  =  " << Run(mySrc).toString() << "\n";
     //FIXME not causing assert .. i mixed something up in parser. should be parse error!
     // mySrc = R"( if; 1 < 2; 40; end; )"; std::cout << mySrc << "  =  " << Run(mySrc) << "\n";
     std::cout << "------------ Semicolon test  ---------------\n";
     // skip empty:
-    mySrc = R"( ;v = 50; )"; std::cout << mySrc << "  =  " << Run(mySrc) << "\n";
+    mySrc = R"( ;v = 50; )"; std::cout << mySrc << "  =  " << Run(mySrc).toString() << "\n";
     // semi + linebreak
     mySrc = R"(
         if 1 > 2;
@@ -123,7 +123,7 @@ int main(int argc, char* argv[]) {
             150;
         ;;
     )";
-    std::cout << mySrc << "  =  " << Run(mySrc) << "\n";
+    std::cout << mySrc << "  =  " << Run(mySrc).toString() << "\n";
     // only linebreak
     mySrc = R"(
         if 1 > 2
@@ -134,16 +134,16 @@ int main(int argc, char* argv[]) {
             150
         ;;
     )";
-    std::cout << mySrc << "  =  " << Run(mySrc) << "\n";
+    std::cout << mySrc << "  =  " << Run(mySrc).toString() << "\n";
 
     std::cout << "---- nested func call and reverse POP_STACK and request params ----\n";
     // mySrc = R"( print (math::randomf) (math::rand);)"; Run(mySrc);
     mySrc = R"( print "Hello" "World" 47.11 815 )";
-    Tools::printf("%s :: RESULT=%s\n", mySrc.c_str(),Run(mySrc).c_str());
+    Tools::printf("%s :: RESULT=%s\n", mySrc.c_str(),Run(mySrc).toString().c_str());
     mySrc = R"( print math::randomf, math::rand;)";
-    Tools::printf("%s :: RESULT=%s\n", mySrc.c_str(),Run(mySrc).c_str());
+    Tools::printf("%s :: RESULT=%s\n", mySrc.c_str(),Run(mySrc).toString().c_str());
     mySrc = R"( print "1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12" "13" )";
-    Tools::printf("%s :: RESULT=%s\n", mySrc.c_str(),Run(mySrc).c_str());
+    Tools::printf("%s :: RESULT=%s\n", mySrc.c_str(),Run(mySrc).toString().c_str());
 
     std::cout << "---- Global Variables ----\n";
     mySrc = R"( a = 12.0; print a; )"; Run(mySrc);

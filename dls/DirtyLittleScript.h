@@ -36,7 +36,7 @@ namespace DLS {
     inline bool _init_done_ = false;
     inline bool isInitialized () { return _init_done_;}
 
-    std::string Run(const std::string& code);
+    const Value Run(const std::string& code);
     std::string loadScript(const std::string& scriptPath);
 
     // init with arguments and loghandler

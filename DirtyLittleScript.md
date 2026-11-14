@@ -263,6 +263,10 @@ while `foo = function; return 1;; print foo` works fine.
     - All passed :)
     
 - <<< intern 0.62 -------
+
+- [X] also changed the Run(string) to return a Value
+    
+    
     
     
 ## maybe:
@@ -272,4 +276,3 @@ while `foo = function; return 1;; print foo` works fine.
     - StringTable
     - Variables 
     - tape
-    - mLiterals

@@ -52,7 +52,7 @@ namespace DLS {
         void syncFromVM() {
             for (auto& b : bindings) {
                 Value& var = vm.Variables.getGlobal(b.registerIndex);
-                b.translator->saveValue(var); // Falls deine Translator-Klasse das unterstützt
+                b.translator->saveValue(var);
             }
         }
     };
