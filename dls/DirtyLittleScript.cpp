@@ -20,11 +20,11 @@
 #endif
 
 namespace DLS {
+
     // -------------------------------------------------------------------------
-    // Run a Script, and shutdown if you need to keep it up vm must be defined
-    //               in your source so you can work with it.
+    // Compile a Script
     // -------------------------------------------------------------------------
-    std::string Run(const std::string& code) {
+    bool Compile(VM& vm, const std::string& code) {
         Lexer lex(code);
         TokenVector token = lex.tokenize();
         if (DEBUG_TOKEN) {
@@ -33,13 +33,37 @@ namespace DLS {
             }
         }
 
-
-        VM vm;
         Parser parser(token,&vm);
         if (!parser.parse() ) {
-            return "ERROR!";
+            return false;
         }
-        if (vm.tape.size() == 0) return "";
+        if (vm.tape.size() == 0) return false;
+        return true;
+    }
+    // -------------------------------------------------------------------------
+    // Run the tape return a copy of the last stack value
+    // -------------------------------------------------------------------------
+    const Value Run( VM& vm, bool doRewind ) {
+        Value result = Value("");
+        if (vm.tape.size() == 0) {
+            return result;
+        }
+        if (doRewind) vm.rewind();
+        vm.run();
+        U32 stackSize =  vm.STACK_SIZE();
+        if ( stackSize > 0) {
+            result = vm.stack[stackSize - 1];
+        }
+        return result;
+    }
+
+    // -------------------------------------------------------------------------
+    // Run a Script, and shutdown if you need to keep it up vm must be defined
+    //               in your source so you can work with it.
+    // -------------------------------------------------------------------------
+    std::string Run(const std::string& code) {
+        VM vm;
+        if (!Compile(vm, code)) return "";
         vm.run();
         std::string result = "";
         for (size_t iter = 0; iter < vm.STACK_SIZE(); iter++)
@@ -64,30 +88,23 @@ namespace DLS {
     // -------------------------------------------------------------------------
     // Init the base functions and constants
     // -------------------------------------------------------------------------
-    std::vector<std::string> CmdlineArgs;
 
-    void Init(int argc , char* argv[], Tools::LogCallback customLogHandler ) {
-        static bool registered = false; if (registered) return; registered = true;
+    void Init() {
+        if (_init_done_) return ; _init_done_ = true;
+
         using namespace FunctionMap;
 
-        if (customLogHandler) Tools::LogHandler = customLogHandler;
-
-        // see also sys::argv function
-        if (argv) {
-            RegisterConstants("sys::argc",Value(argc));
-            for (int i = 0; i < argc; i++) {
-                CmdlineArgs.push_back(std::string(argv[i]));
-            }
-        }
-
-        #ifndef DLS_NO_EXTRA_FUNCTIONS
+#ifndef DLS_NO_EXTRA_FUNCTIONS
+        #ifndef DLS_NO_MATH
             RegisterMathFunctions();
+        #endif
+        #ifndef DLS_NO_STRINGS
             RegisterStringFunctions();
+        #endif
+        #ifndef DLS_NO_HELP
             RegisterHelpFunctions();
         #endif
-
-
-
+#endif
         // ---------------------------------------------------------------------
         // also push some CORE Constants here:
         RegisterConstants("true", Value(1));
@@ -204,6 +221,28 @@ namespace DLS {
             return true;
         }, "return the element count of an array variable");
 
+    } //<< Init
+    // -------------------------------------------------------------------------
+    // Full init
+    // -------------------------------------------------------------------------
+
+    std::vector<std::string> CmdlineArgs;
+
+    void Init(int argc , char* argv[], Tools::LogCallback customLogHandler ) {
+        static bool registered = false; if (registered) return; registered = true;
+        using namespace FunctionMap;
+
+        if (customLogHandler) Tools::LogHandler = customLogHandler;
+
+        // see also sys::argv function
+        if (argv) {
+            RegisterConstants("sys::argc",Value(argc));
+            for (int i = 0; i < argc; i++) {
+                CmdlineArgs.push_back(std::string(argv[i]));
+            }
+        }
+
+        Init(); // init the VM
         // ---------------------------------------------------------------------
         // Argv
         // ---------------------------------------------------------------------
@@ -217,6 +256,7 @@ namespace DLS {
             ret = Value(CmdlineArgs[index]);
             return true;
         }, "get a command line argument by index. see also const sys::argc (count)");
-    } //<< Init
+
+    }
 
 } // namespace DLS

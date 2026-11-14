@@ -285,13 +285,7 @@ namespace DLS {
         // ValueVector mLiterals;
 
 
-        void run() ;
-        // void run() {
-        //     STK = 0;
-        //     while (pc < tape.size()) {
-        //         tape[pc++].code(*this);
-        //     }
-        // }
+        void run();
 
         VM() {
             Globals::CurrentVM = this;
@@ -300,6 +294,8 @@ namespace DLS {
         ~VM() {
             Globals::CurrentVM = nullptr;
         }
+
+        inline void rewind() { pc = 0;}
 
         // ------------------------------------------
         // Tape functions

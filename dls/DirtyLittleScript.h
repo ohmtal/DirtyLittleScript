@@ -27,10 +27,21 @@
 
 namespace DLS {
     static bool DEBUG_TOKEN = false;
+    inline bool _init_done_ = false;
+    inline bool isInitialized () { return _init_done_;}
+
     std::string Run(const std::string& code);
     std::string loadScript(const std::string& scriptPath);
-    // void Init( );
-    void Init(int argc = 0, char* argv[] = nullptr, Tools::LogCallback customLogHandler = nullptr);
+
+    // init with arguments and loghandler
+    void Init(int argc, char* argv[], Tools::LogCallback customLogHandler = nullptr);
+    // plain init
+    void Init( );
+
+    // compile the code
+    bool Compile(VM& vm, const std::string& code);
+    // run with vm and return Value
+    const Value Run(VM& vm, bool doRewind = true);
 } // namespace DLS
 
 #ifdef IMPLEMENT_DLS

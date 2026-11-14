@@ -647,14 +647,7 @@ namespace DLSFlux {
 
     bool Run (const std::string& command) {
         using namespace DLS;
-        // DLS::Run(command); // NOTE this also works ;) but i want control the VM
-        Lexer lex(command);
-        std::vector<Token> token = lex.tokenize();
-        Parser parser(token,&vm);
-        if (!parser.parse() ) {
-            return false;
-        }
-        if (vm.tape.size() == 0) return false;
+        if (!Compile(vm,command)) return false;
         vm.run();
         TapePos = vm.tape.size();
 

@@ -14,6 +14,19 @@
 
 namespace DLS::Marshall {
 
+    // // using VarPointer = std::variant<
+    // //     double*,
+    // //     float*,
+    // //     S64*,
+    // //     S32*,
+    // //     U8*,
+    // //     bool*,
+    // //     const char*,
+    // //     std::string*
+    // //     >;
+    // // using VariableLinks = std::unordered_map<std::string, VarPointer>;
+
+
     template <typename MemberType>
     constexpr auto doSave = [](void* fieldPtr, const Value& src) {
         MemberType* m_ptr = reinterpret_cast<MemberType*>(fieldPtr);
@@ -268,12 +281,8 @@ inline IStructTranslator* getStructTranslator(const Value& pointerValue) {
 // ----------------------------------------------------------------------------
 
 struct IValueTranslator {
-protected:
-    std::function<void(void* fieldPtr, const Value& src)> saveFn;
-    std::function<void(const void* fieldPtr, Value& dest)> loadFn;
-public:
     virtual ~IValueTranslator() = default;
-    virtual Value getValue() = 0;
+    virtual Value getValue() = 0; //get a copy
     virtual void loadValue(Value& dest)      = 0;
     virtual void saveValue(const Value& src) = 0;
 };
@@ -283,41 +292,31 @@ template <typename MemberType>
 class ValueTranslator : public IValueTranslator {
     MemberType* m_ptr;
 public:
-    explicit ValueTranslator(MemberType* ptr) : m_ptr(ptr) {
-        saveFn = doSave<MemberType>;
-        loadFn = doLoad<MemberType>;
-    }
+    explicit ValueTranslator(MemberType* ptr) : m_ptr(ptr) { }
 
-    Value getValue()  /*override*/ {
+    Value getValue()  override {
         Value dest;
-        loadFn(m_ptr, dest);
+        doLoad<MemberType>(m_ptr,dest);
         return(dest);
     }
 
     void loadValue(Value& dest)  override {
-        loadFn(m_ptr, dest);
+        doLoad<MemberType>(m_ptr,dest);
     }
     void saveValue(const Value& src)   override {
-        saveFn(m_ptr, src);
+        doSave<MemberType>(m_ptr, src);
     }
 };
 // --------------------------------------------------------------------------------------------
-// inline std::vector<IValueTranslator*> ValueTranslatorMap;
-//
-// inline U16 RegisterValueTranslator(IValueTranslator* trans) {
-//     if (ValueTranslatorMap.size() == 0) ValueTranslatorMap.push_back(nullptr); //dont want a 0
-//     U16 result = (U16)ValueTranslatorMap.size();
-//     trans->mMashallId = result;
-//     ValueTranslatorMap.push_back(trans);
-//     return result;
-// }
-// inline IValueTranslator* getValueTranslator(const Value& pointerValue) {
-//     if ( !pointerValue.isPointer()
-//         || pointerValue.marshallId == 0
-//         || pointerValue.marshallId >= ValueTranslatorMap.size()) [[unlikely]]
-//         return nullptr;
-//     return ValueTranslatorMap[pointerValue.marshallId];
-// }
+using TranslatorFactory = std::function<Marshall::IValueTranslator*()>;
+using VariableLinks = std::unordered_map<std::string, TranslatorFactory>;
+
+template <typename T>
+TranslatorFactory makeLink(T* ptr) {
+    return [ptr]() {
+        return new Marshall::ValueTranslator<T>(ptr);
+    };
+}
 
 
 

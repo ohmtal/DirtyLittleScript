@@ -39,9 +39,13 @@ namespace DLS {
 
     // -----------------------------------------------------------------------------
     void VM::run()  {
+        if (tape.size() == 0 || pc + 1 >= tape.size()) [[unlikely]]{
+            return;
+        }
+
         STK = 0;
 
-        ValueVector& globalsRegister = Variables.mGlobalsRegister;
+        // ValueVector& globalsRegister = Variables.mGlobalsRegister;
 
         #define X(name, args, comment) &&handle_##name,
         constexpr void* dispatch_table[] = {

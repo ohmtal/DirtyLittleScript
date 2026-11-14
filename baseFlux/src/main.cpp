@@ -101,13 +101,139 @@ bool fetchDLSFiles() {
     return true;
 }
 
+// //-----------------------------------------------------------------------------
+// // Expressions
+// //-----------------------------------------------------------------------------
+// #include "core/Marshall.h"
+// #include "core/ArenaAllocator.h"
+//
+// namespace DLS {
+//     using namespace Marshall;
+//
+//     struct BoundVariable {
+//         size_t registerIndex;
+//         IValueTranslator* translator;
+//     };
+//
+//     struct CompiledExpression {
+//         VM vm;
+//         ArenaAllocator arena;
+//         std::vector<BoundVariable> bindings;
+//         bool isValid = false;
+//
+//         void syncToVM() {
+//             for (auto& b : bindings) {
+//                 Value& var = vm.Variables.getGlobal(b.registerIndex);
+//                 b.translator->loadValue(var);
+//             }
+//         }
+//
+//         void syncFromVM() {
+//             for (auto& b : bindings) {
+//                 Value& var = vm.Variables.getGlobal(b.registerIndex);
+//                 b.translator->saveValue(var); // Falls deine Translator-Klasse das unterstützt
+//             }
+//         }
+//     };
+//
+//     CompiledExpression CompileExpression(const VariableLinks& vars, const std::string& expr) {
+//         CompiledExpression result;
+//
+//         for (const auto& [name, createTranslator] : vars) {
+//             auto translator = createTranslator();
+//             result.arena.Add(translator);
+//
+//             size_t reg = result.vm.Variables.reserveGlobal(SymbolTable::insert(name));
+//             result.bindings.push_back({reg, translator});
+//         }
+//
+//         result.syncToVM();
+//         result.isValid = Compile(result.vm, expr);
+//         return result;
+//     }
+//
+//     Value RunExpression(CompiledExpression& compiled) {
+//         if (!compiled.isValid) return Value();
+//
+//         compiled.syncToVM();
+//         Value res = Run(compiled.vm);
+//         compiled.syncFromVM();
+//         return res;
+//     }
+//
+// } // namespace DLS
+
+#include "extras/Expressions.h"
+
+void TestExpression() {
+    using namespace DLS;
+    using namespace DLS::Marshall;
+
+    float x = 0.f;
+    float y = 100.f;
+
+    VariableLinks vars = {
+        {"x", makeLink(&x)},
+        {"y", makeLink(&y)}
+    };
+
+    auto expr = CompileExpression(vars, "x = math::randomf; return x+y;");
+
+    y = 200.f;
+    float res = RunExpression(expr).getFloat();
+    SDL_Log("Result is: %f, new x is: %f", res, x);
+}
+
+// // void TestExpression_pre() {
+// //
+// //     using namespace DLS;
+// //     using namespace DLS::Marshall;
+// //     float x = 0.f;float y = 100.f;
+// //     std::string expr = R"(
+// //       print "x:" x "y:" y
+// //       x = math::randomf
+// //       return x+y
+// //     )";
+// //
+// //     VariableLinks vars = {
+// //         {"x", makeLink(&x)},
+// //         {"y", makeLink(&y)}
+// //     };
+// //
+// //     VM vm;
+// //     //..... this must be wrapped and need a struct for that!
+// //     ArenaAllocator arena; //lazy using local arena
+// //     std::vector<Marshall::IValueTranslator*> translators;
+// //
+// //     for (const auto& [name, createTranslator] : vars) {
+// //         auto translator = createTranslator();
+// //         translators.push_back( translator );
+// //         arena.Add(translator);
+// //
+// //         // 2. reserve and set variable:
+// //         size_t varRegister = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( name ));
+// //         Value& var = vm.Variables.getGlobal(varRegister);
+// //         translator->loadValue(var);
+// //         SDL_Log("[info] VAR %s IS:%s", name.c_str(),var.toString().c_str());
+// //     }
+// //
+// //     // <<<<
+// //     if (!Compile(vm,expr)) return;
+// //     SDL_Log("Result is: %f", Run(vm).getFloat());
+// //
+// //     // final goal:
+// //     // CompileExpression(vm,vars, "x = math::randomf; return x+y;");
+// //     // SDL_Log("Result is: %f", RunExpression(vm, vars).getFloat());
+// // }
 //-----------------------------------------------------------------------------
 void onDraw(SDL_Renderer* renderer) {
 
     static bool showConsole = true;
     if (ImGui::BeginMainMenuBar()) {
-        if (ImGui::BeginMenu("Window")) {
+        if (ImGui::BeginMenu("Main")) {
             ImGui::MenuItem("Console", "GraveAccent", &showConsole);
+            ImGui::MenuItem("---");
+            if (ImGui::MenuItem("TestExpression")) TestExpression();
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Scripts")) {
@@ -239,8 +365,6 @@ int main(int argc, char* argv[]) {
     DLSFlux::Init(argc, argv);
     DLSFlux::RunFile("assets/main.dls", false);
     DLSFlux::OnSetup();
-
-
 
 
     if (!initApp()) return 1;

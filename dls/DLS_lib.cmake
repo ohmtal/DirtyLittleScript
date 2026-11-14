@@ -13,6 +13,16 @@ if(NOT MSVC AND BUILD_WITH_FORCEO2)
     set(CMAKE_C_FLAGS_RELEASE "-O2 -DNDEBUG")
 endif()
 
+set (NO_MATH OFF)
+set(DLS_NO_MATH ${NO_MATH} CACHE BOOL "Disable Math Functions")
+
+set (NO_STRINGS OFF)
+set(DLS_NO_STRINGS ${NO_STRINGS} CACHE BOOL "Disable String Functions")
+
+set (NO_HELP OFF)
+set(DLS_NO_HELP ${NO_HELP} CACHE BOOL "Disable Help Functions")
+
+
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_compile_definitions(DLS_DEBUG)
 endif()
@@ -38,18 +48,46 @@ set(DLS_SRC
     ${CMAKE_CURRENT_LIST_DIR}/core/VM.h
     ${CMAKE_CURRENT_LIST_DIR}/core/VM.cpp
 
-    # Functions and objects
-    ${CMAKE_CURRENT_LIST_DIR}/functions/HelpFunctions.h
-    ${CMAKE_CURRENT_LIST_DIR}/functions/HelpFunctions.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/functions/MathFunctions.h
-    ${CMAKE_CURRENT_LIST_DIR}/functions/MathFunctions.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/functions/StringFunctions.h
-    ${CMAKE_CURRENT_LIST_DIR}/functions/StringFunctions.cpp
 
     # ToolBox
     ${CMAKE_CURRENT_LIST_DIR}/toolbox/SymbolTable.h
     ${CMAKE_CURRENT_LIST_DIR}/toolbox/Tools.h
+
+    # Extras
+    ${CMAKE_CURRENT_LIST_DIR}/extras/Expressions.h
+    ${CMAKE_CURRENT_LIST_DIR}/extras/Expressions.cpp
 )
+
+
+# Functions
+if (DLS_NO_MATH)
+    add_compile_definitions(DLS_NO_MATH)
+else()
+    list (APPEND DLS_SRC
+        ${CMAKE_CURRENT_LIST_DIR}/functions/MathFunctions.h
+        ${CMAKE_CURRENT_LIST_DIR}/functions/MathFunctions.cpp
+    )
+endif()
+
+if (DLS_NO_STRINGS)
+    add_compile_definitions(DLS_NO_STRINGS)
+else()
+    list (APPEND DLS_SRC
+        ${CMAKE_CURRENT_LIST_DIR}/functions/StringFunctions.h
+        ${CMAKE_CURRENT_LIST_DIR}/functions/StringFunctions.cpp
+    )
+endif()
+
+if (DLS_NO_HELP)
+    add_compile_definitions(DLS_NO_HELP)
+else()
+    list (APPEND DLS_SRC
+        ${CMAKE_CURRENT_LIST_DIR}/functions/HelpFunctions.h
+        ${CMAKE_CURRENT_LIST_DIR}/functions/HelpFunctions.cpp
+    )
+endif()
+
+
 
 add_library(DirtyLittleScript
     ${DLS_SRC}

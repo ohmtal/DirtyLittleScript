@@ -236,7 +236,22 @@ while `foo = function; return 1;; print foo` works fine.
     - i added    `if (STACK_SIZE() == 0 ) { PUSH_STACK(Value(0)); }` on op_return
     - not sure if it cause a stack problem, but it fix the underflow
         
-    
+- [ ] Wrapper for Variables.
+    - at the moment i do:
+        - `var_frametime   = vm.Variables.reserveGlobal(DLS::SymbolTable::insert( "flux::ft" ));`
+        - `vm.Variables.saveGlobal(var_frametime, DLS::Value(BaseFlux::getFrameTime() * 100.0));`
+        - and could also use `getGlobal` 
+    - and Marshall is:
+        - `float foo = 47.11;`
+        - `DLS::Marshall::ValueTranslator testTrans(&foo);`
+        - `testTrans.saveValue(DLS::Value(815.1));`
+        - `Value vFoo; testTrans.loadValue(vFoo)`
+    - goal is:
+        - `float x = 0.f;float y = 100.f`
+        - `std::vector vars = {{"x", &x}, {"y", &y}};`
+        - `VM vm; CompileExpression(vm,vars, "x = math::randomf; return x+y;");`
+        - `printf("Result is: %f", RunExpression(vm, vars).getFloat())`
+        
 ## maybe:
 - add a callframe too to enable real functions 
 - Save a Tape:

@@ -5,6 +5,7 @@
 
 ## Keynotes 
 
+- can be used as a Expression compiler / runner
 - only global variables
 - no objects (fields/methods) like in DreiZehn but basic structs support 
 - only lambda style functions without parameters
@@ -109,3 +110,64 @@ cmake --build build
 - VM: ByteCode Tape with 32bit slots. ~~threaded flatten tape - a bit like bytecode~~
 - Functionmap - C-function system from DreiZehn 
 - Marshalling for basic structs with field access. 
+
+
+## Compile Flags
+
+| Flag (#define) | Comment |
+| --- | --- | 
+| IMPLEMENT_DLS | When used header only: This must be added once before `DirtyLittleScript.h`|
+| DLS_NO_EXTRA_FUNCTIONS | Disable all extra functions: math, strings, help,...|
+| DLS_NO_MATH | Disable math functions|
+| DLS_NO_STRINGS | Disable string functions|
+| DLS_NO_HELP | Disable help functions|
+|  |  |
+
+## Using as Expression compiler
+
+```
+//-----------------------------------------------------------------------------
+// DLS Expression Demo
+//-----------------------------------------------------------------------------
+// when used as header only: #define IMPLEMENT_DLS
+#include "DirtyLittleScript.h"
+// must be included because it's not part of the core
+#include "extras/Expressions.h"
+
+void TestExpression() {
+    using namespace DLS;
+    using namespace DLS::Marshall;
+
+
+    float x = 0.f;
+    float y = 100.f;
+
+    VariableLinks vars = {
+        {"x", makeLink(&x)},
+        {"y", makeLink(&y)}
+    };
+
+    CompiledExpression expr = CompileExpression(vars, "x = math::random 0 y; return x");
+
+    if (!expr.isValid) {
+        printf("\n[ERROR] Compile failed!\n");
+        return;
+    }
+
+    y = 1.f;
+    float res = 0.f;
+
+    for (int i = 0; i < 100; i++) {
+        y = 1.f +(float) (i * 10) ;
+        res = RunExpression(expr).getFloat();
+        printf("Result is: %f, x is: %f, y is: %f\n", res, x, y);
+    }
+}
+
+
+int main(int argc, char* argv[]) {
+    DLS::Init();
+    TestExpression();
+}
+
+```
