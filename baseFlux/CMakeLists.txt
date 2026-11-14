@@ -4,7 +4,13 @@ cmake_minimum_required(VERSION 3.24)
 project(dlsFlux)
 set(PROJECT_SRC
     src/main.cpp
-    src/bindings.cpp
+
+    src/DLSBaseFlux.h
+    src/DLSBaseFlux.cpp
+    src/FluxFunctions.cpp
+    src/SDLTypes.h
+    src/SDLTypes.cpp
+    src/Settings.cpp
 )
 # -----------------------------------------------------------------------------
 set(CMAKE_CXX_STANDARD 20)

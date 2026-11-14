@@ -33,7 +33,6 @@ set(DLS_SRC
     ${CMAKE_CURRENT_LIST_DIR}/DirtyLittleScript.cpp
 
     # core
-    ${CMAKE_CURRENT_LIST_DIR}/core/ArenaAllocator.h
     ${CMAKE_CURRENT_LIST_DIR}/core/FunctionMap.h
     ${CMAKE_CURRENT_LIST_DIR}/core/Globals.h
     ${CMAKE_CURRENT_LIST_DIR}/core/Lexer.h
@@ -52,6 +51,7 @@ set(DLS_SRC
     # ToolBox
     ${CMAKE_CURRENT_LIST_DIR}/toolbox/SymbolTable.h
     ${CMAKE_CURRENT_LIST_DIR}/toolbox/Tools.h
+    ${CMAKE_CURRENT_LIST_DIR}/toolbox/ArenaAllocator.h
 
     # Extras
     ${CMAKE_CURRENT_LIST_DIR}/extras/Expressions.h

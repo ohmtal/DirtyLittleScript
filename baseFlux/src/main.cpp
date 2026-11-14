@@ -27,7 +27,7 @@ ImConsole gConsole;
 
 
 std::vector<fs::path> dlsFiles;
-namespace DLSFlux {
+namespace DLS::Flux {
     extern void Init (int argc, char* argv[]);
     extern bool Run(const std::string& command);
     extern size_t getTapePos();
@@ -75,7 +75,7 @@ void initConsole() {
     SDL_SetLogOutputFunction(ConsoleLogFunction, nullptr);
 
     gConsole.OnCommand = [](ImConsole* console, const char* command_line) {
-        DLSFlux::Run(command_line);
+        DLS::Flux::Run(command_line);
     };
 
 }
@@ -214,16 +214,16 @@ void onDraw(SDL_Renderer* renderer) {
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Scripts")) {
-            if (ImGui::MenuItem(("Reload " + DLSFlux::getScriptFile()).c_str(),"CTRL-R")) {
-                DLSFlux::RunFile(DLSFlux::getScriptFile(), true);
+            if (ImGui::MenuItem(("Reload " + DLS::Flux::getScriptFile()).c_str(),"CTRL-R")) {
+                DLS::Flux::RunFile(DLS::Flux::getScriptFile(), true);
             }
 
             ImGui::SeparatorText("Files");
             bool selected = false;
             for (const auto& f : dlsFiles) {
-                selected = "assets/" + f.string() ==  DLSFlux::getScriptFile();
+                selected = "assets/" + f.string() ==  DLS::Flux::getScriptFile();
                 if (ImGui::MenuItem(f.string().c_str(), nullptr, selected)) {
-                    DLSFlux::RunFile("assets/" + f.string(), true);
+                    DLS::Flux::RunFile("assets/" + f.string(), true);
                 }
 
             }
@@ -231,16 +231,16 @@ void onDraw(SDL_Renderer* renderer) {
             ImGui::EndMenu();
         }
 
-        ImGui::Text("[TAPE: %06zu]", DLSFlux::getTapePos());
-        ImGui::Text("[ARR: %06zu]", DLSFlux::getArrayCount());
-        ImGui::Text("[GLOB: %04zu]", DLSFlux::getGlobalCount());
-        ImGui::Text("[STK: %03zu]", DLSFlux::getStackCount());
-        ImGui::Text("[GARB: %03zu]", DLSFlux::getGarbageCount());
+        ImGui::Text("[TAPE: %06zu]", DLS::Flux::getTapePos());
+        ImGui::Text("[ARR: %06zu]", DLS::Flux::getArrayCount());
+        ImGui::Text("[GLOB: %04zu]", DLS::Flux::getGlobalCount());
+        ImGui::Text("[STK: %03zu]", DLS::Flux::getStackCount());
+        ImGui::Text("[GARB: %03zu]", DLS::Flux::getGarbageCount());
         ImGui::EndMainMenuBar();
     }
     if (ImGui::IsKeyPressed(ImGuiKey_GraveAccent)) showConsole = !showConsole;
     if (app.getImGuiIO()->KeyCtrl) {
-        if (ImGui::IsKeyPressed(ImGuiKey_R))  DLSFlux::RunFile(DLSFlux::getScriptFile(), true);
+        if (ImGui::IsKeyPressed(ImGuiKey_R))  DLS::Flux::RunFile(DLS::Flux::getScriptFile(), true);
     }
 
 
@@ -262,12 +262,12 @@ bool initApp() {
 
     app.OnRender = [](SDL_Renderer* renderer) {
         onDraw(renderer);
-        DLSFlux::OnRender();
+        DLS::Flux::OnRender();
     };
 
     app.OnUpdate = [](const float deltaTime) {
 
-        DLSFlux::OnUpdate(deltaTime);
+        DLS::Flux::OnUpdate(deltaTime);
     };
 
     app.OnEvent = [](const SDL_Event& event) {
@@ -294,24 +294,24 @@ bool initApp() {
         // ElfSDL3::onEvent(event);
         switch (event.type) {
             case SDL_EVENT_MOUSE_MOTION:
-                DLSFlux::OnMouseMotion(event.motion);
+                DLS::Flux::OnMouseMotion(event.motion);
                 break;
 
             case SDL_EVENT_KEY_UP:
             case SDL_EVENT_KEY_DOWN:
             {
-                DLSFlux::OnKey(event.key.key, event.type, event.key.mod);
+                DLS::Flux::OnKey(event.key.key, event.type, event.key.mod);
             }
             break;
             case SDL_EVENT_MOUSE_BUTTON_DOWN:
             case SDL_EVENT_MOUSE_BUTTON_UP:
             {
-                DLSFlux::OnMouse(event.button.button, event.type);
+                DLS::Flux::OnMouse(event.button.button, event.type);
             }
             break;
             case SDL_EVENT_MOUSE_WHEEL:
             {
-                DLSFlux::OnMouseWheel(event.wheel);
+                DLS::Flux::OnMouseWheel(event.wheel);
             }
             break;
 
@@ -320,7 +320,7 @@ bool initApp() {
     };
 
     app.OnShutDown = [&]() {
-        DLSFlux::OnShutdown();
+        DLS::Flux::OnShutdown();
     };
 
     return true;
@@ -333,20 +333,20 @@ int main(int argc, char* argv[]) {
         .FpsLimit = 60,
         .EnableVSync = false,
         .Company = "BaseFlux",
-        .Caption = "DLSFlux",
+        .Caption = "DLS::Flux",
         .Version = "0.261105.01",
         .SoundPathAppend = "sound/",
         .TexturePathAppend = "texture/"
     };
 
-    DLSFlux::Init(argc, argv);
-    DLSFlux::RunFile("assets/main.dls", false);
-    DLSFlux::OnSetup();
+    DLS::Flux::Init(argc, argv);
+    DLS::Flux::RunFile("assets/main.dls", false);
+    DLS::Flux::OnSetup();
 
 
     if (!initApp()) return 1;
 
-    DLSFlux::OnInit();
+    DLS::Flux::OnInit();
     fetchDLSFiles();
     initConsole();
     SDL_Log("[info] Welcome to BaseFlux DLS Console!");

@@ -6,8 +6,8 @@
 //-----------------------------------------------------------------------------
 #pragma once
 
-namespace DLS {
-namespace Globals {
+#include "toolbox/ArenaAllocator.h"
 
-} //Globals
+namespace DLS {
+    inline ArenaAllocator GarbageList;
 } //DLS

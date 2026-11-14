@@ -318,6 +318,6 @@ TranslatorFactory makeLink(T* ptr) {
     };
 }
 
+} //namespace Marshall
 
 
-} //namespace

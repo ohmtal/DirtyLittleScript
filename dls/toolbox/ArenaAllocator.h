@@ -39,6 +39,6 @@ struct ArenaAllocator {
         Clear();
     }
 };
-inline ArenaAllocator GarbageList;
+
 
 } //namespace
