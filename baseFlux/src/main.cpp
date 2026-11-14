@@ -101,68 +101,7 @@ bool fetchDLSFiles() {
     return true;
 }
 
-// //-----------------------------------------------------------------------------
-// // Expressions
-// //-----------------------------------------------------------------------------
-// #include "core/Marshall.h"
-// #include "core/ArenaAllocator.h"
-//
-// namespace DLS {
-//     using namespace Marshall;
-//
-//     struct BoundVariable {
-//         size_t registerIndex;
-//         IValueTranslator* translator;
-//     };
-//
-//     struct CompiledExpression {
-//         VM vm;
-//         ArenaAllocator arena;
-//         std::vector<BoundVariable> bindings;
-//         bool isValid = false;
-//
-//         void syncToVM() {
-//             for (auto& b : bindings) {
-//                 Value& var = vm.Variables.getGlobal(b.registerIndex);
-//                 b.translator->loadValue(var);
-//             }
-//         }
-//
-//         void syncFromVM() {
-//             for (auto& b : bindings) {
-//                 Value& var = vm.Variables.getGlobal(b.registerIndex);
-//                 b.translator->saveValue(var); // Falls deine Translator-Klasse das unterstützt
-//             }
-//         }
-//     };
-//
-//     CompiledExpression CompileExpression(const VariableLinks& vars, const std::string& expr) {
-//         CompiledExpression result;
-//
-//         for (const auto& [name, createTranslator] : vars) {
-//             auto translator = createTranslator();
-//             result.arena.Add(translator);
-//
-//             size_t reg = result.vm.Variables.reserveGlobal(SymbolTable::insert(name));
-//             result.bindings.push_back({reg, translator});
-//         }
-//
-//         result.syncToVM();
-//         result.isValid = Compile(result.vm, expr);
-//         return result;
-//     }
-//
-//     Value RunExpression(CompiledExpression& compiled) {
-//         if (!compiled.isValid) return Value();
-//
-//         compiled.syncToVM();
-//         Value res = Run(compiled.vm);
-//         compiled.syncFromVM();
-//         return res;
-//     }
-//
-// } // namespace DLS
-
+// =============================================================================
 #include "extras/Expressions.h"
 
 void TestExpression() {
