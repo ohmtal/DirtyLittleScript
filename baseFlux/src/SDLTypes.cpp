@@ -12,6 +12,8 @@
 #include "DLSBaseFlux.h"
 #include "SDLTypes.h"
 
+// #include "core/Objects.h"
+
 namespace DLS::Flux {
     // -----------------------------------------------------------------------------
     bool MapArrayFRect( DLS::Value& value, SDL_FRect& rect) {
@@ -71,7 +73,24 @@ namespace DLS::Flux {
         // ---------------------------------------------------------------------
         // SDL_FRect
         // ---------------------------------------------------------------------
-        auto* frectTranslator = new DLS::Marshall::GenericStructTranslator<SDL_FRect>();
+        // NOTE unfinished TEST:
+        // {
+        //     auto* ft = CREATE_TRANSLATOR(SDL_FRect);
+        //     ft->registerField("x", &SDL_FRect::x);
+        //     ft->registerField("y", &SDL_FRect::y);
+        //     ft->registerField("w", &SDL_FRect::w);
+        //     ft->registerField("h", &SDL_FRect::h);
+        //     auto obj = CREATE_OBJECT_MARSHALL(ft);
+        //     obj->registerMethod("print", [](VM&,ValueSpan,Value&) -> bool {
+        //         // Tools::printf("") - need to translate the values here... like in the VM but
+        //         return true;
+        //     }," Print the rectangle to console" );
+        //    //FIXME  SDL_FRectID = obj->getId();
+        // }
+
+
+        // new CREATE_TRANSLATOR macro for: `new DLS::Marshall::GenericStructTranslator<SDL_FRect>();`
+        auto* frectTranslator = CREATE_TRANSLATOR(SDL_FRect);
         marshallArena.Add(frectTranslator);
         frectTranslator->registerField("x", &SDL_FRect::x);
         frectTranslator->registerField("y", &SDL_FRect::y);

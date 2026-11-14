@@ -309,6 +309,7 @@ public:
 } //namespace Marshall
 
 namespace DLS {
+     #define CREATE_TRANSLATOR(type) (new DLS::Marshall::GenericStructTranslator<type>())
     // --------------------------------------------------------------------------------------------
     // Used in Expressions:
     // --------------------------------------------------------------------------------------------
