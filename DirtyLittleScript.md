@@ -283,6 +283,7 @@ while `foo = function; return 1;; print foo` works fine.
     - VM should be ok since Variables are all inside VM 
     - [X] check parser is not safe because of global variables for status. 
     - [X] SymbolTable and StringTable need mutexes 
+    - [ ] what else ...
     
     
 ## maybe:

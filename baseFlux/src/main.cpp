@@ -15,6 +15,8 @@
 #include <filesystem>
 #include <vector>
 
+#include <thread>
+
 #include "DirtyLittleScript.h"
 #include "functions/StringFunctions.h"
 
@@ -104,23 +106,59 @@ bool fetchDLSFiles() {
 // =============================================================================
 #include "extras/Expressions.h"
 
-void TestExpression() {
+
+
+void TestExpression(int tnum) {
+    SDL_Log("running %d....\n", tnum);
+
     using namespace DLS;
     using namespace DLS::Marshall;
 
     float x = 0.f;
-    float y = 100.f;
+    double y = 100.f;
 
     VariableLinks vars = {
+        {"tnum", makeLink(&tnum)},
         {"x", makeLink(&x)},
         {"y", makeLink(&y)}
     };
 
-    auto expr = CompileExpression(vars, "x = math::randomf; return x+y;");
+    auto expr = CompileExpression(vars, "x = math::randomf; y = y + x; return tnum");
 
-    y = 200.f;
-    float res = RunExpression(expr).getFloat();
-    SDL_Log("Result is: %f, new x is: %f", res, x);
+    y = 0.f;
+    int res = 0;
+    for (size_t i = 0; i < 1000000; i++) {
+        res = RunExpression(expr).getInt();
+        if (i % 1000 == 0) {
+            SDL_Delay(1);
+        }
+    }
+    SDL_Log("#%02d: x is: %f, y is: %f\n", res, x, y);
+}
+
+void testThread() {
+
+    const int numThreads = 16;
+    std::vector<std::thread> threads;
+    SDL_Log("------- starting %d threads -------\n", numThreads);
+
+    for (int i = 0; i < numThreads; i++) {
+        threads.emplace_back([i] {
+            TestExpression(i);
+        });
+    }
+
+    for (auto& t : threads) {
+        // t.join();
+        t.detach();
+    }
+
+    // SDL_Log("All VM threads completed.");
+
+    // std::thread t([] {
+    //    TestExpression();
+    // });
+    // t.detach();
 }
 
 // // void TestExpression_pre() {
@@ -172,7 +210,7 @@ void onDraw(SDL_Renderer* renderer) {
         if (ImGui::BeginMenu("Main")) {
             ImGui::MenuItem("Console", "GraveAccent", &showConsole);
             ImGui::MenuItem("---");
-            if (ImGui::MenuItem("TestExpression")) TestExpression();
+            if (ImGui::MenuItem("TestThread with Expression")) testThread();
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Scripts")) {
