@@ -22,13 +22,13 @@ namespace DLS {
         constexpr double PI = 3.14159265358979323846;
         RegisterConstants("math::pi", Value(PI));
         // ---------------------------------------------------------------------
-        RegisterFunction("math::randomf", [](ValueSpan args, Value& ret) -> bool {
+        RegisterFunction("math::randomf", [](VM&, ValueSpan args, Value& ret) -> bool {
             ret = Value(static_cast<double>(std::rand()) / static_cast<double>(RAND_MAX));
             return true;
         }, "return a random float value.");
 
         // ---------------------------------------------------------------------
-        RegisterFunction("math::random", [](ValueSpan args, Value& ret) -> bool {
+        RegisterFunction("math::random", [](VM&, ValueSpan args, Value& ret) -> bool {
             if (args.size() != 2) {
                 Tools::errorf("usage: math::random min max\n");
                 return false;
@@ -42,33 +42,33 @@ namespace DLS {
             return true;
         }, "integer random number between value1 and value2");
         // ---------------------------------------------------------------------
-        RegisterFunction("math::rand", [](ValueSpan args, Value& ret) -> bool {
+        RegisterFunction("math::rand", [](VM&, ValueSpan args, Value& ret) -> bool {
             ret = Value(std::rand());
             return true;
         }, "integer random number without a parameter like c std::rand");
         // ---------------------------------------------------------------------
-        RegisterFunction("math::sin", [](ValueSpan args, Value& ret) -> bool {
+        RegisterFunction("math::sin", [](VM&, ValueSpan args, Value& ret) -> bool {
             if (args.size() != 1) return false;
             ret = Value(std::sin(args[0].getDouble()));
             return true;
         }, "return sine of value using std::sin");
 
         // ---------------------------------------------------------------------
-        RegisterFunction("math::cos", [](ValueSpan args, Value& ret) -> bool {
+        RegisterFunction("math::cos", [](VM&, ValueSpan args, Value& ret) -> bool {
             if (args.size() != 1) return false;
             ret = Value(std::cos(args[0].getDouble()));
             return true;
         }, "return cosine of value using std::cos");
 
         // ---------------------------------------------------------------------
-        RegisterFunction("math::tan", [](ValueSpan args, Value& ret) -> bool {
+        RegisterFunction("math::tan", [](VM&, ValueSpan args, Value& ret) -> bool {
             if (args.size() != 1) return false;
             ret = Value(std::tan(args[0].getDouble()));
             return true;
         }, "return arc tangent of the radian value using std::tan");
 
         // ---------------------------------------------------------------------
-        RegisterFunction("math::rad", [](ValueSpan args, Value& ret) -> bool {
+        RegisterFunction("math::rad", [](VM&, ValueSpan args, Value& ret) -> bool {
             if (args.size() != 1) return false;
 
             ret = Value(args[0].getDouble() * (PI / 180.0));
@@ -76,7 +76,7 @@ namespace DLS {
         }, "return the radian of an angle");
 
         // ---------------------------------------------------------------------
-        RegisterFunction("math::deg", [](ValueSpan args, Value& ret) -> bool {
+        RegisterFunction("math::deg", [](VM&, ValueSpan args, Value& ret) -> bool {
             if (args.size() != 1) return false;
 
             ret = Value(args[0].getDouble() * (180.0 / PI));
@@ -84,7 +84,7 @@ namespace DLS {
         }, "return the angle of a radian value");
 
         // ---------------------------------------------------------------------
-        RegisterFunction("math::clamp", [](ValueSpan args, Value& ret) -> bool {
+        RegisterFunction("math::clamp", [](VM&, ValueSpan args, Value& ret) -> bool {
             if (args.size() != 3) {
                 Tools::errorf("usage: math::clamp val min max\n");
                 return false;
@@ -98,27 +98,27 @@ namespace DLS {
         },"Return the given value if in range of min and max. If it's lower than min, return min. Otherwise return max.");
 
         // ---------------------------------------------------------------------
-        RegisterFunction("math::abs", [](ValueSpan args, Value& ret) -> bool {
+        RegisterFunction("math::abs", [](VM&, ValueSpan args, Value& ret) -> bool {
             if (args.size() != 1) return false;
             ret = Value(std::abs(args[0].getDouble()));
             return true;
         }, "Return the absolute number of a value.");
 
         // ---------------------------------------------------------------------
-        RegisterFunction("math::floor", [](ValueSpan args, Value& ret) -> bool {
+        RegisterFunction("math::floor", [](VM&, ValueSpan args, Value& ret) -> bool {
             if (args.size() != 1) return false;
             ret = Value(std::floor(args[0].getDouble()));
             return true;
         }, "Return the next lowest full number.");
 
         // ---------------------------------------------------------------------
-        RegisterFunction("math::ceil", [](ValueSpan args, Value& ret) -> bool {
+        RegisterFunction("math::ceil", [](VM&, ValueSpan args, Value& ret) -> bool {
             if (args.size() != 1) return false;
             ret = Value(std::ceil(args[0].getDouble()));
             return true;
         }, "Return the next highest full number.");
         // ---------------------------------------------------------------------
-        RegisterFunction("math::sqrt", [](ValueSpan args, Value& ret) -> bool {
+        RegisterFunction("math::sqrt", [](VM&, ValueSpan args, Value& ret) -> bool {
             if (args.size() != 1) return false;
             double val = args[0].getDouble();
             if (val < 0) {
@@ -129,14 +129,14 @@ namespace DLS {
             return true;
         }, "Returns the square root of of value");
         // ---------------------------------------------------------------------
-        RegisterFunction("math::lerp", [](ValueSpan args, Value& ret) -> bool {
+        RegisterFunction("math::lerp", [](VM&, ValueSpan args, Value& ret) -> bool {
             if (args.size() != 3) return false;
             // a + t * (b - a);
             ret = Value(std::lerp(args[0].getDouble(),args[1].getDouble(),args[2].getDouble()));
             return true;
         }, "Return linear interpolation between two values based on a given fraction");
         // ---------------------------------------------------------------------
-        RegisterFunction("math::pow", [](ValueSpan args, Value& ret) -> bool {
+        RegisterFunction("math::pow", [](VM&, ValueSpan args, Value& ret) -> bool {
             if (args.size() != 2) return false;
             double i1 = args[0].getDouble();
             double i2 = args[1].getDouble();
@@ -149,21 +149,21 @@ namespace DLS {
             return true;
         }, "Return the value of a base raised to a specified exponent");
         // ---------------------------------------------------------------------
-        RegisterFunction("math::fmod", [](ValueSpan args, Value& ret) -> bool {
+        RegisterFunction("math::fmod", [](VM&, ValueSpan args, Value& ret) -> bool {
             if (args.size() != 2) return false;
 
             ret = Value(std::fmod(args[0].getDouble(),args[1].getDouble()));
             return true;
         }, "Return the float modulo of two values.");
         // ---------------------------------------------------------------------
-        RegisterFunction("math::min", [](ValueSpan args, Value& ret) -> bool {
+        RegisterFunction("math::min", [](VM&, ValueSpan args, Value& ret) -> bool {
             if (args.size() != 2) return false;
 
             ret = Value(std::min(args[0].getDouble(),args[1].getDouble()));
             return true;
         }, "Return the smaller of two values or the first element in case of equality.");
         // ---------------------------------------------------------------------
-        RegisterFunction("math::max", [](ValueSpan args, Value& ret) -> bool {
+        RegisterFunction("math::max", [](VM&, ValueSpan args, Value& ret) -> bool {
             if (args.size() != 2) return false;
 
             ret = Value(std::max(args[0].getDouble(),args[1].getDouble()));

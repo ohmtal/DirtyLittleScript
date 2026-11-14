@@ -14,8 +14,12 @@
 #include "toolbox/SymbolTable.h"
 #include "toolbox/Tools.h"
 
+namespace DLS {
+    struct VM; //fwd
+}
+
 namespace DLS::FunctionMap {
-    using CallBack =  std::function< bool ( ValueSpan, Value& )>;
+    using CallBack =  std::function< bool (VM&, ValueSpan, Value& )>;
     using FuncLookupMap = std::unordered_map<uint32_t, CallBack>;
 
     // symbolId, stringId

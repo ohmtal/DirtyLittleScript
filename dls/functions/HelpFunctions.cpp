@@ -27,17 +27,17 @@ namespace DLS {
         // ---------------------------------------------------------------------
         // Help
         // ---------------------------------------------------------------------
-        RegisterFunction("help", [](ValueSpan args, Value& ret) -> bool {
+        RegisterFunction("help", [](VM&, ValueSpan args, Value& ret) -> bool {
             Tools::printf("---------------- DLS Help ------------------\n");
             Tools::printf(
                 "help::syntax    => print syntax informations.\n"
                 "help::fn        => print the available Function\n"
                 "help::const     => print the registered Constants\n"
-                // "help::glob      => print all registered Global Variables\n"
+                "help::glob      => print all registered Global Variables\n"
             );
             return true;
         }, "print the help overview");
-        RegisterFunction("help::syntax", [](ValueSpan args, Value& ret) -> bool {
+        RegisterFunction("help::syntax", [](VM&, ValueSpan args, Value& ret) -> bool {
             Tools::printf(
                 "Basics\n"
                 "- parameters for functions can be simple written word by word.\n"
@@ -73,7 +73,7 @@ namespace DLS {
 
 
         // ---------------------------------------------------------------------
-        RegisterFunction("help::fn", [](ValueSpan args, Value& ret) -> bool {
+        RegisterFunction("help::fn", [](VM&, ValueSpan args, Value& ret) -> bool {
             bool doFilter = false;
             std::string filter;
             if (!args.empty() && args[0].isString()) {
@@ -128,7 +128,7 @@ namespace DLS {
         }, "list the registered functions. you can call it with a filter like `help::fn \"str\"`");
 
         // ---------------------------------------------------------------------
-        RegisterFunction("help::const", [](ValueSpan args, Value& ret) -> bool {
+        RegisterFunction("help::const", [](VM&, ValueSpan args, Value& ret) -> bool {
             bool doFilter = false;
             std::string filter;
             if (!args.empty() && args[0].isString()) {
@@ -162,19 +162,18 @@ namespace DLS {
         }, "list all registerd constants can be called with a filter.");
 
         // ---------------------------------------------------------------------
-        // FIXME CurrentVM
-        // // RegisterFunction("help::glob", [](ValueSpan args, Value& ret) -> bool {
-        // //     Tools::printf("---------------- Globals ------------------\n");
-        // //     for (auto & globs: Globals::CurrentVM->Variables.mGlobalsLookUp) {
-        // //         Value& val = Globals::CurrentVM->Variables.getGlobal(globs.second);
-        // //         Tools::printf("%s = %s\n "
-        // //         ,  SymbolTable::getName(globs.first).c_str()
-        // //         , val.toString().c_str()
-        // //         );
-        // //     }
-        // //     Tools::printf("------------------------------------------------------\n");
-        // //     return true;
-        // // }, "Print all global variables.");
+        RegisterFunction("help::glob", [](VM& vm, ValueSpan args, Value& ret) -> bool {
+            Tools::printf("---------------- Globals ------------------\n");
+            for (auto & globs: vm.Variables.mGlobalsLookUp) {
+                Value& val = vm.Variables.getGlobal(globs.second);
+                Tools::printf("%s = %s\n "
+                ,  SymbolTable::getName(globs.first).c_str()
+                , val.toString().c_str()
+                );
+            }
+            Tools::printf("------------------------------------------------------\n");
+            return true;
+        }, "Print all global variables.");
         // ---------------------------------------------------------------------
     } //RegisterCoreFunctions
 

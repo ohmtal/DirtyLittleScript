@@ -574,7 +574,7 @@ namespace DLS {
                     evaluatedArgsStack[i - 1] = POP_STACK();
                 }
                 Value returnValue = Value(0);
-                bool success = (*cb)(ValueSpan(evaluatedArgsStack, numArgs), returnValue);
+                bool success = (*cb)(*this, ValueSpan(evaluatedArgsStack, numArgs), returnValue);
 
                 if (!success) [[unlikely]] {
                     Tools::errorf("Runtime Error in function: %s\n", SymbolTable::getName(symid).c_str());
@@ -594,7 +594,7 @@ namespace DLS {
                     for (S64 i = numArgs ; i > 0  ; i--) {
                         evaluatedArgs[i - 1] = POP_STACK();
                     }
-                    success = (*cb)(evaluatedArgs, returnValue);
+                    success = (*cb)(*this, evaluatedArgs, returnValue);
                 }
 
 
