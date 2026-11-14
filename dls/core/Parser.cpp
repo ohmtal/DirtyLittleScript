@@ -21,8 +21,7 @@
 
 namespace DLS{
 
-static bool ArrayConstructed = false;
-static bool ArrayAssign = false;
+
 // -------------------------------------------------------------------------
 void Parser::PrintParseError(const std::string& message
 , const std::string& p1 ,const std::string& p2 ,const std::string& p3 ) {

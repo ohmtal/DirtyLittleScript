@@ -26,6 +26,9 @@ private:
     S64 requestParam = 0;
     U32 lineNumber = 0;
     // ------------------------------
+    bool ArrayConstructed = false;
+    bool ArrayAssign = false;
+    // ------------------------------
     Token peek() { return mTokens[mPos]; }
     size_t tell() { return mPos; }
     Token peekNext() { if (mPos + 1 < mTokens.size()) return mTokens[mPos+1]; else return Token(TokenType::EOFToken); }

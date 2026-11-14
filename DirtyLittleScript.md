@@ -277,6 +277,12 @@ while `foo = function; return 1;; print foo` works fine.
         - [X] baseFlux: flux::size
         - [X] array::count
         - [X] help::glob
+   
+   
+- [ ] Threadsafe parallel vm run
+    - VM should be ok since Variables are all inside VM 
+    - [X] check parser is not safe because of global variables for status. 
+    - [X] SymbolTable and StringTable need mutexes 
     
     
 ## maybe:
