@@ -492,16 +492,16 @@ bool Parser::parseForRange() {
     if (!getArg("ForRange count")) return false;
     vm->emitCode(op_cast_long);
 
-    U32 tapestart = vm->tell();
+    U32 tapestart = vm->tell(); // NOTE can be removed again only for fun
 
     // ---- save tape position
-    size_t loop_start_slot = vm->tell();
+    U32 loop_start_slot = vm->tell();
 
     // ---- increment compare and jump!
     vm->emitCode(op_for_range_jump);
     vm->emitTapeChunk((U32)varidx);
 
-    size_t false_jump_slot = vm->tell();
+    U32 false_jump_slot = vm->tell();
     vm->emitJumpOffset(0); // false placeholder
 
 
@@ -510,7 +510,7 @@ bool Parser::parseForRange() {
     context.continue_target = loop_start_slot;
     vm->mLoopStack.push_back(context);
 
-    U32 tapeBeforeStatements = vm->tell();
+    U32 tapeBeforeStatements = vm->tell(); // NOTE can be removed again only for fun
     // main loop:
     while (peek().mType != TokenType::EOFToken &&
         peek().mType != TokenType::End)
@@ -529,6 +529,7 @@ bool Parser::parseForRange() {
     }
     advance(); //end
 
+     // NOTE can be removed again only for fun
     // cheat alias optimize!! one billion benchmark :P
     // we have NO statement so we do not need to loop here
     // simply save the limit to the iter variable:
@@ -543,6 +544,7 @@ bool Parser::parseForRange() {
 
         return true;
     }
+    // <<<<< NOTE can be removed again only for fun
 
 
     vm->emitCode(op_jump);
