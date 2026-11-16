@@ -361,13 +361,22 @@ namespace DLS {
         handle_op_inc: {
             U32 varIndex = advanceSlot();
             Value& dstValue = Variables.getGlobal(varIndex);
-            dstValue = Value(dstValue.getDouble() + 1.0);
+
+            if (dstValue.isDouble()) [[likely]]
+                dstValue = Value(dstValue.getDouble() + 1.0);
+            else
+                dstValue = Value(dstValue.getLong() + 1);
+
             DISPATCH();
         }
         handle_op_dec: {
             U32 varIndex = advanceSlot();
             Value& dstValue = Variables.getGlobal(varIndex);
-            dstValue = Value(dstValue.getDouble() - 1.0);
+            if (dstValue.isDouble()) [[likely]]
+                dstValue = Value(dstValue.getDouble() - 1.0);
+            else
+                dstValue = Value(dstValue.getLong() - 1);
+
             DISPATCH();
         }
 
@@ -773,7 +782,7 @@ namespace DLS {
 
             Value& limitValue = PEEK_STACK(0);
             U32 target = advanceSlot();
-            if (dstValue.l >= limitValue.l) {
+            if (dstValue.l >= limitValue.l - 1) {
                 pc = target;
             }
             DISPATCH();

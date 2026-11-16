@@ -478,6 +478,7 @@ bool Parser::parseForRange() {
         advance();
     }
 
+
     // ----1. emit loop variable and set to -1
     vm->emitCode(op_literal);
     // vm->emitTapeChunk(vm->addLiteral(Value(-1)));
@@ -490,6 +491,8 @@ bool Parser::parseForRange() {
     // ----2. emit count
     if (!getArg("ForRange count")) return false;
     vm->emitCode(op_cast_long);
+
+    U32 tapestart = vm->tell();
 
     // ---- save tape position
     size_t loop_start_slot = vm->tell();
@@ -507,7 +510,7 @@ bool Parser::parseForRange() {
     context.continue_target = loop_start_slot;
     vm->mLoopStack.push_back(context);
 
-
+    U32 tapeBeforeStatements = vm->tell();
     // main loop:
     while (peek().mType != TokenType::EOFToken &&
         peek().mType != TokenType::End)
@@ -517,11 +520,30 @@ bool Parser::parseForRange() {
             return false;
         }
     }
+
+    //NOTE no more vm emits until tapeBeforeStatements
+
     if (peek().mType != TokenType::End) {
         PrintParseError("ForRange missing end!");
         return false;
     }
     advance(); //end
+
+    // cheat alias optimize!! one billion benchmark :P
+    // we have NO statement so we do not need to loop here
+    // simply save the limit to the iter variable:
+    if ( tapeBeforeStatements == vm->tell() ) {
+        vm->rewindTape(tapestart);
+
+        vm->emitCode(op_save_global);
+        vm->emitTapeChunk((U32)varidx);
+
+        vm->emitCode(op_dec);
+        vm->emitTapeChunk((U32)varidx);
+
+        return true;
+    }
+
 
     vm->emitCode(op_jump);
     vm->emitJumpOffset(loop_start_slot);
