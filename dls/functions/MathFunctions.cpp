@@ -9,12 +9,13 @@
 #include <algorithm>
 #include "core/FunctionMap.h"
 #include "toolbox/Tools.h"
+#include "toolbox/FastRgn.h"
 
 namespace DLS {
     void RegisterMathFunctions() {
          static bool registered = false; if (registered) return; registered = true;
 
-        std::srand(std::time(nullptr)); // setup random seed
+        // // std::srand(std::time(nullptr)); // setup random seed
 
         using namespace FunctionMap;
 
@@ -22,30 +23,56 @@ namespace DLS {
         constexpr double PI = 3.14159265358979323846;
         RegisterConstants("math::pi", Value(PI));
         // ---------------------------------------------------------------------
-        RegisterFunction("math::randomf", [](VM&, ValueSpan args, Value& ret) -> bool {
-            ret = Value(static_cast<double>(std::rand()) / static_cast<double>(RAND_MAX));
+        // ---------------------------------------------------------------------
+        RegisterFunction("math::randomf", [](VM&,ValueSpan args, Value& ret) -> bool {
+            ret = Value(rng.next_double());
             return true;
         }, "return a random float value.");
 
         // ---------------------------------------------------------------------
-        RegisterFunction("math::random", [](VM&, ValueSpan args, Value& ret) -> bool {
+        RegisterFunction("math::random", [](VM&,ValueSpan args, Value& ret) -> bool {
             if (args.size() != 2) {
                 Tools::errorf("usage: math::random min max\n");
                 return false;
             }
             int min = args[0].getInt();
             int max = args[1].getInt();
-            if (min > max) std::swap(min, max);
+            if (min > max) std::swap(min, max); // Compiles to branchless cmov
 
-            int range = max - min + 1;
-            ret = Value((min + (std::rand() % range)));
+            ret = Value(rng.next_int(min, max));
             return true;
         }, "integer random number between value1 and value2");
+
         // ---------------------------------------------------------------------
-        RegisterFunction("math::rand", [](VM&, ValueSpan args, Value& ret) -> bool {
-            ret = Value(std::rand());
+        RegisterFunction("math::rand", [](VM&,ValueSpan args, Value& ret) -> bool {
+            ret = Value(rng.next_rand());
             return true;
         }, "integer random number without a parameter like c std::rand");
+
+        // // RegisterFunction("math::randomf", [](VM&, ValueSpan args, Value& ret) -> bool {
+        // //     ret = Value(static_cast<double>(std::rand()) / static_cast<double>(RAND_MAX));
+        // //     return true;
+        // // }, "return a random float value.");
+        // //
+        // // // ---------------------------------------------------------------------
+        // // RegisterFunction("math::random", [](VM&, ValueSpan args, Value& ret) -> bool {
+        // //     if (args.size() != 2) {
+        // //         Tools::errorf("usage: math::random min max\n");
+        // //         return false;
+        // //     }
+        // //     int min = args[0].getInt();
+        // //     int max = args[1].getInt();
+        // //     if (min > max) std::swap(min, max);
+        // //
+        // //     int range = max - min + 1;
+        // //     ret = Value((min + (std::rand() % range)));
+        // //     return true;
+        // // }, "integer random number between value1 and value2");
+        // // // ---------------------------------------------------------------------
+        // // RegisterFunction("math::rand", [](VM&, ValueSpan args, Value& ret) -> bool {
+        // //     ret = Value(std::rand());
+        // //     return true;
+        // // }, "integer random number without a parameter like c std::rand");
         // ---------------------------------------------------------------------
         RegisterFunction("math::sin", [](VM&, ValueSpan args, Value& ret) -> bool {
             if (args.size() != 1) return false;
