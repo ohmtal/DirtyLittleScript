@@ -13,3 +13,13 @@ print "HUHU" \ everthing is ignored !!!
     "TOM"
 
 # parse error?!
+
+a = print \
+    0 0 0 0 0 0 0 0 \
+    0 0 0 0 0 0 0 0 \
+    0 0 0 0 0 0 0 0 \
+    0 0 0 0 0 0 0 0 \
+    0 0 0 0xffffff00 0 0 0 0 \
+    0 0 0xff00ffff 0 0xff00ffff 0 0 0 \
+    0 0xff00ff00 0 0 0 0xff00ff00 0 0 \
+    0xff00ff00 0 0 0 0 0 0xff00ff00 0

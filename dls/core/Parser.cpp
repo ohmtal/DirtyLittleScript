@@ -5,16 +5,6 @@
 // Parser: Pratt (top-down operator precedence parser /Precedence Climbing Parser)
 //-----------------------------------------------------------------------------
 
-// #include <string>
-// #include <vector>
-// #include <cctype>
-// #include <algorithm>
-//
-// #include "Token.h"
-// #include "Lexer.h"
-// #include "VM.h"
-// #include "FunctionMap.h"
-
 #ifndef IMPLEMENT_DLS
 #include "Parser.h"
 #endif
@@ -257,7 +247,7 @@ bool Parser::parseMath(int minPrecedence) {
 
     if (!parsePrimary()) return false;
 
-    while (isMathType(peek())) {
+    while (isMathType(peek()) || peek().mType == TokenType::BackSlash) {
         Token op = peek();
 
         if (op.mType ==  TokenType::BackSlash) {
@@ -384,88 +374,6 @@ bool Parser::parseWhile() {
 // -------------------------------------------------------------------------
 //  Statements sub: forRange [VAR] [COUNT]
 // -------------------------------------------------------------------------
-// bool Parser::parseForRange() {
-//     advance();
-//
-//     std::string variable = "";
-//     U32 count = 0;
-//     if (peek().mType != TokenType::Identifier) {
-//         PrintParseError("forRange need a variable");
-//         return false;
-//     } else {
-//         variable = peek().mValue;
-//         advance();
-//     }
-//
-//
-//     // ---- emit loop variable and set to -1
-//     vm->emitCode(op_literal);
-//     vm->emitValue(Value(-1.0));
-//     U32 symId = SymbolTable::insert(variable);
-//     size_t varidx = vm->Variables.reserveGlobal(symId);
-//     vm->emitCode(op_save_global);
-//     vm->emitTapeChunk((U32)varidx);
-//
-//     // ---- save tape position
-//     size_t loop_start_slot = vm->tell();
-//
-//     // ---- increment iter
-//
-//     vm->emitCode(op_inc);
-//     vm->emitTapeChunk((U32)varidx);
-//
-//
-//
-//     // ---- condition iter < count
-//     vm->emitCode(op_load_global);
-//     vm->emitTapeChunk((U32)varidx);
-//
-//     if (!getArg("ForRange count")) return false;
-//
-//     vm->emitCode(op_lower);
-//
-//     // --- now the same as While.....
-//     vm->emitCode(op_jump_if_false);
-//     size_t false_jump_slot = vm->tell();
-//     vm->emitJumpOffset(0); // false placeholder
-//
-//
-//     // break continue
-//     LoopContext context;
-//     context.continue_target = loop_start_slot;
-//     vm->mLoopStack.push_back(context);
-//
-//
-//     // main loop:
-//     while (peek().mType != TokenType::EOFToken &&
-//         peek().mType != TokenType::End)
-//     {
-//         if (!parseStatements()){
-//             PrintParseError("ForRange: failed to parse Statements");
-//             return false;
-//         }
-//     }
-//     if (peek().mType != TokenType::End) {
-//         PrintParseError("ForRange missing end!");
-//         return false;
-//     }
-//     advance(); //end
-//
-//     vm->emitCode(op_jump);
-//     vm->emitJumpOffset(loop_start_slot);
-//     vm->patchJumpOffset(false_jump_slot,vm->tell());
-//
-//
-//     size_t loop_end_slot = vm->tell();
-//
-//     // handle breaks
-//     for (size_t break_slot : vm->mLoopStack.back().break_slots) {
-//         vm->patchJumpOffset(break_slot, loop_end_slot);
-//     }
-//     vm->mLoopStack.pop_back();
-//
-//     return true;
-// }
 bool Parser::parseForRange() {
     advance();
 

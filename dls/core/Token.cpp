@@ -122,7 +122,7 @@ namespace DLS{
         || op.mType == TokenType::SHL
         || op.mType == TokenType::SHR
         || op.mType == TokenType::Modulo
-        || op.mType == TokenType::BackSlash
+        // NOT! || op.mType == TokenType::BackSlash
         || isInlineMathType(op.mType)
         || isMathAssignOperatorType(op.mType)
         ;

@@ -80,16 +80,6 @@ namespace DLS::FunctionMap {
     }
 
     inline void RegisterConstants(U32 symId, const Value& value) {
-
-        // FIXME if i add also objects in DLS, but not sure.
-        // Value* curConst = getConstants(symId);
-        // if (curConst && curConst->isPointer()) {
-        //     curConst->asPointerObject()->setAssigned(false);
-        // }
-        // if (value.isPointer()) {
-        //     value.asPointerObject()->setAssigned(true);
-        // }
-
         RegisteredConstants[symId] = value;
     }
 

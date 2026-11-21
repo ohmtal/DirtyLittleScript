@@ -9,24 +9,10 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdint.h>
-
 #include <ctime>
-
-// FIXME too much here !
-// #include <chrono>
-// #include <sstream>
-// #include <iomanip>
-//
-// #if defined(_WIN32)
-// #include <windows.h>
-// #else
-// #include <time.h>
-// #endif
-
-
+#include <chrono>
 
 namespace DLS::Tools{
-
     // ------------------------------------------------------------------
     enum class LogLevel {
         normal = 0
@@ -37,9 +23,6 @@ namespace DLS::Tools{
     };
 
     typedef void(*LogCallback)(LogLevel level, const char* message);
-
-
-
     // -------------------------------------------------------------------------
     static void DefaultLogger(LogLevel level, const char* message){
          switch (level) {
@@ -115,65 +98,16 @@ namespace DLS::Tools{
          #endif
      }
 
-    // inline double time(){
-    //      auto now = std::chrono::system_clock::now();
-    //      auto duration = now.time_since_epoch();
-    //      return std::chrono::duration<double>(duration).count();
-    //  }
-    //
-    // inline uint64_t time_seconds() {
-    //      auto now = std::chrono::system_clock::now();
-    //      auto duration = now.time_since_epoch();
-    //      return std::chrono::duration_cast<std::chrono::seconds>(duration).count();
-    //  }
-    //
-    // inline std::string date(std::string format, double timestamp = -1.0, bool is_utc = false) {
-    //      std::time_t time_raw;
-    //
-    //      if (timestamp < 0.0) {
-    //          time_raw = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    //      } else {
-    //          time_raw = static_cast<std::time_t>(timestamp);
-    //      }
-    //
-    //      std::tm tm_zone;
-    //      if (is_utc) {
-    //          #if defined(_MSC_VER)
-    //          gmtime_s(&tm_zone, &time_raw);
-    //          #else
-    //          gmtime_r(&time_raw, &tm_zone);
-    //          #endif
-    //      } else {
-    //          #if defined(_MSC_VER)
-    //          localtime_s(&tm_zone, &time_raw);
-    //          #else
-    //          localtime_r(&time_raw, &tm_zone);
-    //          #endif
-    //      }
-    //
-    //      std::string c_format = "";
-    //      for (size_t i = 0; i < format.length(); ++i) {
-    //          if (format[i] == '%' && i + 1 < format.length()) {
-    //              c_format += format[i];
-    //              c_format += format[i+1];
-    //              i++;
-    //              continue;
-    //          }
-    //
-    //          switch (format[i]) {
-    //              case 'Y': c_format += "%Y"; break; // Year 2026
-    //              case 'm': c_format += "%m"; break; // month (01-12)
-    //              case 'd': c_format += "%d"; break; // day (01-31)
-    //              case 'H': c_format += "%H"; break; // hour (00-23)
-    //              case 'i': c_format += "%M"; break; // minute (00-59)
-    //              case 's': c_format += "%S"; break; // second (00-59)
-    //              default:  c_format += format[i]; break; //others
-    //          }
-    //      }
-    //
-    //      std::ostringstream oss;
-    //      oss << std::put_time(&tm_zone, c_format.c_str());
-    //      return oss.str();
-    //  }
+    inline double time(){
+         auto now = std::chrono::system_clock::now();
+         auto duration = now.time_since_epoch();
+         return std::chrono::duration<double>(duration).count();
+     }
+
+    inline uint64_t time_seconds() {
+         auto now = std::chrono::system_clock::now();
+         auto duration = now.time_since_epoch();
+         return std::chrono::duration_cast<std::chrono::seconds>(duration).count();
+    }
 
 }

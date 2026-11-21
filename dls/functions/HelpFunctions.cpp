@@ -20,10 +20,6 @@ namespace DLS {
         static bool registered = false; if (registered) return; registered = true;
         using namespace FunctionMap;
 
-
-
-
-
         // ---------------------------------------------------------------------
         // Help
         // ---------------------------------------------------------------------
@@ -94,21 +90,12 @@ namespace DLS {
                 }
             }
 
-            // std::vector<std::string> scriptNames;
-            // for (const auto& [key, value] : RegisteredScriptFunctions) {
-            //     std::string name = SymbolTable::getName(key);
-            //     if (!doFilter || name.find(filter) != std::string::npos) {
-            //         scriptNames.push_back(name);
-            //     }
-            // }
-
             std::sort(filteredFunctions.begin(), filteredFunctions.end(),
                       [](const NamedFunction& a, const NamedFunction& b) {
                           return a.name < b.name;
                       }
             );
 
-            // std::sort(scriptNames.begin(), scriptNames.end());
 
             Tools::printf("  --- Functions [%zu/%zu] --- \n", filteredFunctions.size(), RegisteredFunctions.size());
             for (const auto& func : filteredFunctions) {
@@ -117,12 +104,6 @@ namespace DLS {
                 Tools::printf("  - %-30s %s\n", func.name.c_str(), desc.c_str());
             }
 
-            // if (scriptNames.size() > 0) {
-            //     Tools::printf("  --- Script Functions [%zu/%zu] --- \n", scriptNames.size(), RegisteredScriptFunctions.size());
-            //     for (const std::string& name : scriptNames) {
-            //         Tools::printf("  - %s \n", name.c_str());
-            //     }
-            // }
 
             return true;
         }, "list the registered functions. you can call it with a filter like `help::fn \"str\"`");

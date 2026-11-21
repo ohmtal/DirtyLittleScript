@@ -63,7 +63,7 @@ namespace DLS {
         std::vector<size_t> mReturnStack;
 
         VariableStorage() {
-            mGlobalsRegister.reserve(8192);
+            mGlobalsRegister.reserve(65536);
         }
 
         void reset() {
@@ -242,24 +242,6 @@ namespace DLS {
     // FWD
     // ------------------------------------------
     struct VM;
-    // ------------------------------------------
-    // Slot
-    // ------------------------------------------
-    // using OpFunc = void(*)(VM&);
-    // union Slot {
-    //     OpFunc code;
-    //     Value value;
-    //     size_t jump_offset;
-    //     size_t tapeChunk;
-    // };
-
-    // union Slot {
-    //     uint64_t code;
-    //     Value value;
-    //     uint64_t jump_offset;
-    //     uint64_t tapeChunk;
-    // };
-
 
     // ------------------------------------------
     // Loops
@@ -298,18 +280,6 @@ namespace DLS {
         // Tape functions
         // ------------------------------------------
         void emitCode(const U32 opcode ) { tape.push_back(opcode); }
-
-        // // U32 addLiteral(const Value& val) {
-        // //     size_t curIdx = 0;
-        // //     // TODO operator "==" in Value so i can check doubles here
-        // //     // this save some bytes
-        // //     // for (auto lit: mLiterals) {
-        // //     //   if lit == val ....
-        // //     // }
-        // //     curIdx = mLiterals.size();
-        // //     mLiterals.push_back(val);
-        // //     return static_cast<U32>(curIdx);
-        // // }
 
         U32 emitValue(Value val) {
             #ifdef DLS_DEBUG

@@ -4,6 +4,7 @@
 //-----------------------------------------------------------------------------
 // String / SymbolTable for fast map lookup ,
 // NOTE: Singleton
+// TODO: port back to DreiZehn
 // 2026-11-14: heavy update for c++20 optimize and thread safety
 //-----------------------------------------------------------------------------
 #pragma once
@@ -70,31 +71,6 @@ namespace DLS {
         std::deque<std::string> mIdToName;
     };
 
-// class BaseStringTable {
-//
-// protected:
-//     BaseStringTable() {
-//         internalInsert(""); //first is a emty string
-//     }
-//     uint32_t internalInsert(const std::string& name) {
-//         auto it = mNameToId.find(name);
-//         if (it != mNameToId.end()) {
-//             return it->second;
-//         }
-//
-//         uint32_t newId = static_cast<uint32_t>(mIdToName.size());
-//         mIdToName.push_back(name);
-//         mNameToId[name] = newId;
-//         return newId;
-//     }
-//
-//     const std::string& internalGetName(uint32_t id) const {
-//         return mIdToName.at(id);
-//     }
-//
-//     std::unordered_map<std::string, uint32_t> mNameToId;
-//     std::vector<std::string> mIdToName;
-// };
 // ----------------------------------------------------------------
 // for Symbols like variable names, methods, fieldnames, ..
 // ----------------------------------------------------------------

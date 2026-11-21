@@ -8,16 +8,6 @@
 #include <cassert>
 #endif
 
-// #include <cstdint>
-// #include <memory>
-// #include <vector>
-// #include <cstring> //mem ...
-// #include <span>
-// #include "Types.h"
-// #include "Value.h"
-// #include "FunctionMap.h"
-// #include "Globals.h"
-
 #include "Marshall.h"
 
 #ifndef IMPLEMENT_DLS
@@ -44,8 +34,6 @@ namespace DLS {
         }
 
         STK = 0;
-
-        // ValueVector& globalsRegister = Variables.mGlobalsRegister;
 
         #define X(name, args, comment) &&handle_##name,
         constexpr void* dispatch_table[] = {
@@ -144,57 +132,6 @@ namespace DLS {
                 DISPATCH();
             }
 
-            // if ( dimension > 1 ) {
-            //
-            //     Value assignValue = POP_STACK();
-            //     static std::vector<S64> indexStack;
-            //     indexStack.clear();
-            //     Value arrayIndexValue;
-            //     // PrintRuntimeError("FIXME op_save_array dimensions! = ", std::to_string(dimension), "value:", assignValue.toString());
-            //
-            //     // --- Build index Stack ----
-            //     for (U32 i = 0; i < dimension; i++) {
-            //         arrayIndexValue = POP_STACK();
-            //         if (!arrayIndexValue.isLong() && !arrayIndexValue.isDouble()) [[unlikely]]{
-            //             PrintRuntimeError("Array index must be an number: ", arrayIndexValue.toString());
-            //             DISPATCH();
-            //         }
-            //         indexStack.push_back(arrayIndexValue.getLong());
-            //     }
-            //     std::reverse(indexStack.begin(), indexStack.end());
-            //
-            //     // ---- Load initial variable ----
-            //     Value var = Variables.getGlobal(varIndex);
-            //
-            //     // --- loop the index values -----
-            //     for (S64 i = 0; i < dimension; i++) {
-            //         if (!var.isArray()) [[unlikely]]{
-            //             PrintRuntimeError("Not a Array - Multidimensional Arrays must be initialied! dimension:", std::to_string(i));
-            //             DISPATCH();
-            //         }
-            //         // PrintRuntimeError("FIXME dimensions! index => ", std::to_string(i),"::", std::to_string(indexStack[i]));
-            //         if (var.getFastLong() >= Variables.mArrays.size()) [[unlikely]] {
-            //             PrintRuntimeError("Array Index out of bounds!");
-            //             DISPATCH();
-            //         }
-            //         if (i == dimension - 1) {
-            //             Variables.saveArray(var, indexStack[i], assignValue);
-            //             DISPATCH();
-            //         }
-            //         /*const*/ ValueVector& curArr = Variables.getArrayByMasterIndex(var.getFastLong());
-            //         if (indexStack[i] >= curArr.size() ) [[unlikely]]{
-            //             PrintRuntimeError("Array Index out of bounds!");
-            //             DISPATCH();
-            //         }
-            //         var = curArr[indexStack[i]];
-            //     }
-            //
-            //     DISPATCH();
-            // }
-
-            //--------
-
-
             Value assignValue = POP_STACK();
             Value arrayIndexValue = POP_STACK();
             if (!arrayIndexValue.isLong() && !arrayIndexValue.isDouble()) [[unlikely]]{
@@ -252,49 +189,6 @@ namespace DLS {
                 DISPATCH();
             }
 
-            // if ( dimension > 1 ) {
-            //     static std::vector<S64> indexStack;
-            //     indexStack.clear();
-            //     Value arrayIndexValue;
-            //     // PrintRuntimeError("FIXME op_load_array dimensions! = ", std::to_string(dimension));
-            //     // --- Build index Stack ----
-            //     for (U32 i = 0; i < dimension; i++) {
-            //         arrayIndexValue = POP_STACK();
-            //         if (!arrayIndexValue.isLong() && !arrayIndexValue.isDouble()) [[unlikely]]{
-            //             PrintRuntimeError("Array index must be an number: ", arrayIndexValue.toString());
-            //             DISPATCH();
-            //         }
-            //         indexStack.push_back(arrayIndexValue.getLong());
-            //     }
-            //     std::reverse(indexStack.begin(), indexStack.end());
-            //
-            //     // ---- Load initial variable ----
-            //     Value var = Variables.getGlobal(varIndex);
-            //     // --- loop the index values -----
-            //     for (S64 i = 0; i < dimension; i++) {
-            //         if (!var.isArray()) [[unlikely]]{
-            //             PrintRuntimeError("Not a Array!");
-            //             PUSH_STACK(Value());
-            //             DISPATCH();
-            //         }
-            //         // PrintRuntimeError("FIXME dimensions! index => ", std::to_string(i),"::", std::to_string(indexStack[i]));
-            //         if (var.getFastLong() >= Variables.mArrays.size()) [[unlikely]] {
-            //             PrintRuntimeError("Array Index out of bounds!");
-            //             PUSH_STACK(Value());
-            //             DISPATCH();
-            //         }
-            //         const ValueVector& curArr = Variables.getArrayByMasterIndex(var.getFastLong());
-            //         if (indexStack[i] >= curArr.size() ) [[unlikely]]{
-            //             PrintRuntimeError("Array Index out of bounds!");
-            //             PUSH_STACK(Value());
-            //             DISPATCH();
-            //         }
-            //         var = curArr[indexStack[i]];
-            //     }
-            //     PUSH_STACK(var);
-            //     DISPATCH();
-            // }
-            //--------
             Value arrayIndexValue = POP_STACK();
             if (!arrayIndexValue.isLong() && !arrayIndexValue.isDouble()) [[unlikely]]{
                 PrintRuntimeError("Array index must be an number: ", arrayIndexValue.toString());
@@ -324,25 +218,10 @@ namespace DLS {
             DISPATCH();
         }
 
-        // handle_op_constuct_array: {
-        //     U32 count = advanceSlot();
-        //     U32 assignTemp = advanceSlot();
-        //     static ValueVector arr;
-        //     arr.clear();
-        //     for (S32 i = 0; i < (S32)count; i++) {
-        //         arr.push_back(POP_STACK());
-        //     }
-        //     std::reverse(arr.begin(), arr.end());
-        //
-        //     PUSH_STACK(Variables.createArray(arr, assignTemp));
-        //     DISPATCH();
-        // }
         // ------------------------------------------
         // Literal
         // ------------------------------------------
         handle_op_literal: {
-            // U32 idx = advanceSlot();
-            // PUSH_STACK(mLiterals[idx]);
             PUSH_STACK(advance_value());
             DISPATCH();
         }
@@ -357,7 +236,6 @@ namespace DLS {
             DISPATCH();
         }
 
-
         handle_op_inc: {
             U32 varIndex = advanceSlot();
             Value& dstValue = Variables.getGlobal(varIndex);
@@ -369,6 +247,7 @@ namespace DLS {
 
             DISPATCH();
         }
+
         handle_op_dec: {
             U32 varIndex = advanceSlot();
             Value& dstValue = Variables.getGlobal(varIndex);
@@ -513,8 +392,6 @@ namespace DLS {
             a = Value(a.getDouble() >= b.getDouble());
             DISPATCH();
         }
-
-
         // ------------------------------------------
         // JUMP
         // ------------------------------------------
@@ -620,33 +497,6 @@ namespace DLS {
         // ------------------------------------------
         // Object Fields
         // ------------------------------------------
-        // handle_op_load_field: {
-        //     U32 varIndex = advanceSlot();
-        //     U32 fieldSymId = advanceSlot();
-        //
-        //     Value result = Value();
-        //
-        //     Value& var = Variables.getGlobal(varIndex);
-        //
-        //     Marshall::Translator* tl = Marshall::getTranslator(var);
-        //     if (!tl) [[unlikely]] {
-        //         PrintRuntimeError("Failed to get Translator for variable");
-        //         PUSH_STACK(result);
-        //         DISPATCH();
-        //     }
-        //     size_t registerIndex;
-        //     if (!tl->getFieldRegister(fieldSymId,registerIndex)) [[unlikely]] {
-        //         PrintRuntimeError("Failed to get field - unknown fieldname");
-        //     } else {
-        //         tl->loadValueByRegister(var,registerIndex,result);
-        //     }
-        //
-        //     PUSH_STACK(result);
-        //
-        //     DISPATCH();
-        // }
-
-
         handle_op_load_field: {
             U32 varIndex = advanceSlot();
 
@@ -713,34 +563,8 @@ namespace DLS {
             DISPATCH();
         }
 
-        // handle_op_save_field: {
-        //     U32 varIndex = advanceSlot();
-        //     U32 fieldSymId = advanceSlot();
-        //     Value& src = POP_STACK();
-        //
-        //     Value& var = Variables.getGlobal(varIndex);
-        //
-        //
-        //     Marshall::Translator* tl = Marshall::getTranslator(var);
-        //     if (!tl) [[unlikely]] {
-        //         PrintRuntimeError("Failed to get Translator for variable");
-        //         DISPATCH();
-        //     }
-        //
-        //     size_t registerIndex;
-        //     if (!tl->getFieldRegister(fieldSymId,registerIndex)) [[unlikely]] {
-        //         PrintRuntimeError("Failed to set field - unknown fieldname");
-        //     } else {
-        //         tl->saveValueByRegister(var,registerIndex,src);
-        //     }
-        //
-        //
-        //     DISPATCH();
-        // }
-
-
         // ------------------------------------------
-        // Special forRange :D
+        // Special forRange
         // ------------------------------------------
         handle_op_cast_long: {
             PEEK_STACK(0) = Value(PEEK_STACK(0).getLong());
@@ -750,25 +574,6 @@ namespace DLS {
             PEEK_STACK(0) = Value(PEEK_STACK(0).getDouble());
             DISPATCH();
         }
-
-        // // as double counter
-        // handle_op_for_range_jump: {
-        //     U32 varIndex = advanceSlot();
-        //     Value& dstValue = Variables.getGlobal(varIndex);
-        //     if (dstValue.isDouble()) [[likely]] {
-        //         dstValue.d++;
-        //     } else {
-        //         dstValue = Value(dstValue.getDouble() + 1.0);
-        //     }
-        //
-        //     Value& limitValue = PEEK_STACK(0);
-        //     U32 target = advanceSlot();
-        //     if (dstValue.l >= limitValue.l) {
-        //         (void) POP_STACK();
-        //         pc = target;
-        //     }
-        //     DISPATCH();
-        // }
 
         // as int counter
         handle_op_for_range_jump: {

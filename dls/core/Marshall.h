@@ -14,19 +14,6 @@
 
 namespace DLS::Marshall {
 
-    // // using VarPointer = std::variant<
-    // //     double*,
-    // //     float*,
-    // //     S64*,
-    // //     S32*,
-    // //     U8*,
-    // //     bool*,
-    // //     const char*,
-    // //     std::string*
-    // //     >;
-    // // using VariableLinks = std::unordered_map<std::string, VarPointer>;
-
-
     template <typename MemberType>
     constexpr auto doSave = [](void* fieldPtr, const Value& src) {
         MemberType* m_ptr = reinterpret_cast<MemberType*>(fieldPtr);
@@ -138,35 +125,6 @@ namespace DLS::Marshall {
             mFieldStack.push_back(info);
         }
         // ---------------------------------------------------------------------
-        // not in use !
-        // template <typename MemberType>
-        // void registerNestedField(const char* name, MemberType StructType::* fieldTarget, U16 nestedMarshallId) {
-        //     U32 symbolId = DLS::SymbolTable::insert(name);
-        //     size_t offset = reinterpret_cast<size_t>(&(static_cast<StructType*>(nullptr)->*fieldTarget));
-        //
-        //     FieldInfo info;
-        //     info.offset = offset;
-        //     info.arrayIndex = mFieldsByIndex.size();
-        //
-        //     info.saveFn = [nestedMarshallId](void* fieldPtr, const Value& src) {
-        //         Translator* subTranslator = StructTranslatorMap[nestedMarshallId];
-        //         if (!subTranslator) return;
-        //
-        //         Value nestedPointerValue;
-        //         nestedPointerValue = Value(fieldPtr);
-        //
-        //         if (src.type == DLS::ValueType::Array) {
-        //             auto subArray = vm.Variables.getArrayByMasterIndex((size_t)src.getFastLong());
-        //             subTranslator->saveArrayValue(nestedPointerValue, subArray);
-        //         }
-        //     };
-        //
-        //     // fixme save
-        //
-        //     mFields[symbolId] = info;
-        //     mFieldsByIndex.push_back(info);
-        // }
-        // ---------------------------------------------------------------------
         bool getFieldRegister(U32 fieldSymbolId, size_t& target) override {
             auto it = mFieldLookup.find(fieldSymbolId);
             if (it == mFieldLookup.end()) return false;
@@ -243,18 +201,6 @@ namespace DLS::Marshall {
                 *dest = *src;
                 return true;
             }
-
-            // if (srcValue.isArray()) {
-            //     const ValueVector& arr = arrayResolver(srcValue);
-            //     if (arr.size() < mFieldsByIndex.size()) return false;
-            //     StructType* instance = static_cast<StructType*>(destInstance);
-            //     for (size_t i = 0; i < mFieldsByIndex.size(); ++i) {
-            //         const auto& field = mFieldsByIndex[i];
-            //         void* fieldAddress = reinterpret_cast<char*>(instance) + field.offset;
-            //         field.saveFn(fieldAddress, arr[i]);
-            //     }
-            //     return true;
-            // }
 
             return false;
         }

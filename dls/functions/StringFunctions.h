@@ -11,10 +11,6 @@
 //-----------------------------------------------------------------------------
 #pragma once
 #include <string.h>
-// #include <span>
-// #include <algorithm>
-// #include "core/Value.h"
-// #include "core/FunctionMap.h"
 
 namespace DLS {
 
@@ -43,10 +39,7 @@ namespace DLS {
         std::string truncate(std::string str, size_t width, bool addPoints);
         std::string trim(std::string_view str, bool bothEnds);
         std::string toLower(std::string s);
-
-
     }
-
 } //namespace
 
 #ifdef IMPLEMENT_DLS

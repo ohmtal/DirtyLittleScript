@@ -4,12 +4,6 @@
 //-----------------------------------------------------------------------------
 // Lexer / Traditional Tokenizer
 //-----------------------------------------------------------------------------
-// #include <string>
-// #include <iostream>
-// #include <vector>
-// #include "Token.h"
-// #include "Types.h"
-
 #include "toolbox/Tools.h"
 
 #ifndef IMPLEMENT_DLS
@@ -35,6 +29,26 @@ namespace DLS {
 
             if (peek() == '\n') { advance(); tokens.push_back({TokenType::EOLToken, "LINEBREAK"}); continue; }
             if (std::isspace(peek())) { advance(); continue; }
+            // ----------------------------------------------------------------
+            // ---------- Comment `//` and `--` ---------------
+            if (tokens.size() == 0  ||  !isContinueToken(tokens.back()) ) {
+                if (
+                    (peek() == '-' && peekNext() == '-' ) ||
+                    (peek() == '/' && peekNext() == '/' )
+                ) {
+                    advance();advance(); //eat 2
+                    while ( peek() != '\0') {
+                        if (peek() == '\n' ) {
+                            advance();
+                            tokens.push_back({TokenType::EOLToken, "\n"});
+                            break; //end of line
+                        }
+                        advance();
+                    }
+                    continue;
+                }
+            }
+
             // ----------------------------------------------------------------
             if (peek() == '>' && peekNext() == '=') { advance();advance(); tokens.push_back({TokenType::GreaterEqual, ">="}); continue; }
             if (peek() == '<' && peekNext() == '=') { advance();advance(); tokens.push_back({TokenType::LowerEqual, "<="}); continue; }
@@ -102,8 +116,6 @@ namespace DLS {
                 unsigned long long rawValue = std::stoull(hexNum, nullptr, 16);
                 double numVal = static_cast<double>(rawValue);
                 tokens.push_back({TokenType::Number, std::to_string(numVal)});
-                // int32_t intVal = static_cast<int32_t>(rawValue);
-                // tokens.push_back({TokenType::Number, std::to_string(intVal)});
                 continue;
             }
 
@@ -154,7 +166,6 @@ namespace DLS {
 
             // ----------------------------------------------------------------
             // Identifier and Keywords scan
-            // 0.6c only allow "::" not more or less
             if (std::isalpha(peek()) || peek() == '_' || ( peek() == ':' && peekNext() == ':') ) {
                 std::string id;
 

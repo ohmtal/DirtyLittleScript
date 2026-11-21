@@ -439,18 +439,6 @@ namespace DLS {
         using namespace FunctionMap;
 
         // ---------------------------------------------------------------------
-        // StringObject::RegisterSymbols();
-        // RegisterFunction("String::new", [](VM&, ValueSpan args, Value& ret) -> bool {
-        //     if (args.size() != 1 || !args[0].isString()) {
-        //         Tools::errorf("Usage: String::new string\n");
-        //         return false;
-        //     }
-        //     StringObject* s = new StringObject(args[0].getString());
-        //     ret = Value(s);
-        //     return true;
-        // });
-        // ---------------------------------------------------------------------
-        // ---------------------------------------------------------------------
         RegisterFunction("str::concat", [](VM&, ValueSpan args, Value& ret) -> bool {
             std::string resultStr = "";
 
@@ -750,8 +738,6 @@ namespace DLS {
             return true;
         }, "Remove a words at index - optional separator char");
         // ---------------------------------------------------------------------
-
-
 
     } //RegisterStringFunctions
 } //namespace
