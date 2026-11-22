@@ -69,21 +69,8 @@ int main(int argc, char* argv[]) {
     std::string mySrc = "";
     std::cout << "============= Dirty Little Script ===============\n";
 
-mySrc = R"(
-    print "--- Loop test ---"
-    forRange i 10; printraw i;;
-    print " :: FINAL:" i
 
-    forrange i 0; print "this is a bug!" i;;
-    printraw "TEST: skip 5 and stop at 8 so it should be 0 1 2 3 4 6 7 >>"
-    forRange i 10
-        if i == 5; printraw "<C>"; continue;;
-        if i == 8; printraw "<B>"; break;;
-        printraw i
-    end
-    print "<<"
-)"; Run(mySrc);
-goto jump_to_end;
+// goto jump_to_end;
 
 // goto jump_to_test;
 
@@ -356,6 +343,33 @@ mySrc = R"(
     a -= 6; print a
     a /= 2; print a
     a *= 5; print a
+)"; Run(mySrc);
+
+mySrc = R"(
+    print "--- Loop test ---"
+    forRange i 10; printraw i;;
+    print " :: FINAL:" i
+
+    forrange i 0; print "this is a bug!" i;;
+    printraw "TEST: skip 5 and stop at 8 so it should be 0 1 2 3 4 6 7 >>"
+    forRange i 10
+        if i == 5; printraw "<C>"; continue;;
+        if i == 8; printraw "<B>"; break;;
+        printraw i
+    end
+    print "<<"
+
+    printraw "TEST WHILE: skip 5 and stop at 8 so it should be 0 1 2 3 4 6 7 >>"
+    i = 0
+    while i < 10
+        i++
+        if i == 5; printraw "<C>"; continue;;
+        if i == 8; printraw "<B>"; break;;
+        printraw i
+    end
+    print "<<"
+
+
 )"; Run(mySrc);
 
 jump_to_end:

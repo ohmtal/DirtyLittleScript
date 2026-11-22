@@ -291,6 +291,17 @@ while `foo = function; return 1;; print foo` works fine.
 - [X] optimized a lot of other stuff and rolled back because i became slower
 - [X] Changed wherever possible to const Value& - a bit faster
 
+- Benchmarks (Release O3 / output redirected / best of 3):
+    - test_var: 1.916u 0.001s 0:01.92 99.4%
+    - _test_var_: 1.483u 0.002s 0:01.48 100.0%
+    - test_struct: 3.775u 0.002s 0:03.78 99.7%
+    - fibo: 0.806u 0.003s 0:00.81 98.7%
+    - counter: 3.716u 0.002s 0:03.72 99.7% << ForRange change did something ;)
+    - (sdl) Starfield bench: 5.918u 0.185s 0:06.33 96.2%
+    - All passed :)
+    
+- <<< intern 0.63 -------
+
 ## maybe:
 - add a callframe too to enable real functions 
 - Save a Tape:
