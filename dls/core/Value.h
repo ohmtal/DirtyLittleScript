@@ -115,6 +115,9 @@ namespace DLS {
 
     }; //Value
 
+    static const Value ValueDoubleNull = Value(0.0);
+    static const Value ValueEmpty = Value();
+
 } //namespace
 
 #ifdef IMPLEMENT_DLS

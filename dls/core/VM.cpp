@@ -363,7 +363,7 @@ namespace DLS {
                         DROP_STACK(dimension + 1);
                         DISPATCH();
                     }
-                    ValueVector& curArr = Variables.getArrayByMasterIndex(var.getFastLong());
+                    const ValueVector& curArr = Variables.getArrayByMasterIndex(var.getFastLong());
                     if (idx < 0 || idx >= static_cast<S64>(curArr.size())) [[unlikely]] {
                         PrintRuntimeError("Array Index out of bounds: ", std::to_string(idx));
                         DISPATCH();

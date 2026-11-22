@@ -119,25 +119,25 @@ namespace DLS {
 
         bool getArrayByMasterIndexSafe(size_t masterIndex, ValueVector& result);
 
-         inline ValueVector& getArrayByMasterIndex(size_t masterIndex) {
+         inline const ValueVector& getArrayByMasterIndex(size_t masterIndex) {
             #ifdef DLS_DEBUG
             assert(masterIndex < mArrays.size() && "Master index array out of range");
             #endif
             return mArrays[masterIndex].Elements;
         }
 
-        inline Value getArray(size_t varIndex, U32 index) {
+        inline const Value& getArray(size_t varIndex, U32 index) {
             Value& arrValue = getGlobalRef(varIndex);
             if (!arrValue.isArray()) [[unlikely]] {
                 PrintRuntimeError("This is not a array Value!");
-                return Value(0.0);
+                return ValueEmpty;
             }
             size_t masterIndex =(size_t)arrValue.getFastLong();
 
             if (index >= mArrays[masterIndex].Elements.size()) [[unlikely]] {
                 // mArrays[masterIndex].Elements.resize(index + 1);
                 PrintRuntimeError("Array index out of bounds.");
-                return Value();
+                return ValueEmpty;
             }
             return mArrays[masterIndex].Elements[index];
 
@@ -283,7 +283,7 @@ namespace DLS {
         // Stack functions
         // ------------------------------------------
         // ---- pop
-        inline Value POP_STACK() {
+        inline const Value& POP_STACK() {
             #ifdef DLS_DEBUG
             assert(STK > 0 && "POP_STACK but stack empty!");
             #endif

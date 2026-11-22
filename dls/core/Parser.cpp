@@ -275,6 +275,11 @@ bool Parser::parseMath(int minPrecedence) {
         }
         advance();
 
+        if (isMathAssignOperatorType(op.mType)) {
+            PrintParseError("Inline Math need common Variable!");
+            return false;
+        }
+
         if (isInlineMathType(op.mType)) {
             size_t pc = vm->tape.size();
             // override op_load_global
@@ -286,7 +291,7 @@ bool Parser::parseMath(int minPrecedence) {
                 }
                 // if (requestParam <= 0) vm->emitCode( op_pop_stack );
             } else {
-                PrintParseError("Inline Math need Variable!");
+                PrintParseError("Inline Math need common Variable!");
                 return false;
             }
 

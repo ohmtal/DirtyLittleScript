@@ -279,13 +279,18 @@ while `foo = function; return 1;; print foo` works fine.
         - [X] help::glob
    
    
-- [ ] Threadsafe parallel vm run
+- [X] Threadsafe parallel vm run
     - VM should be ok since Variables are all inside VM 
     - [X] check parser is not safe because of global variables for status. 
     - [X] SymbolTable and StringTable need mutexes 
-    - [ ] what else ...
-    
-    
+
+- [X] Added inline math assign for common variables    
+- [X] Optimized forRange - but not faster 
+- [X] Changed all common math to a templete function - not faster 
+- [X] Changed getGlobal and POP_STACK to const Value& - a bit faster
+- [X] optimized a lot of other stuff and rolled back because i became slower
+- [X] Changed wherever possible to const Value& - a bit faster
+
 ## maybe:
 - add a callframe too to enable real functions 
 - Save a Tape:
