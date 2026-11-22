@@ -82,7 +82,7 @@ I set a max elements limit to 65536. Which can be changed with compile flag: DLS
 
 <small>(*3) DreiZehnScript use a system to modify values directly by Pointer which is faster but disable Marshalling. So this Pointer to Struct System is only in DLS.</small>
 
-<small>(*4) Using this is slower than using multile single dimension arrays</small>
+<small>(*4) Using this is slower than using multiple single dimension arrays</small>
 
 
 ## Bind your C-Functions

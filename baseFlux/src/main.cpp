@@ -80,7 +80,7 @@ bool fetchDLSFiles() {
 
 
 void TestExpression(int tnum) {
-    SDL_Log("running %d....\n", tnum);
+    SDL_Log("running THREAD: %d....\n", tnum);
 
     using namespace DLS;
     using namespace DLS::Marshall;
@@ -104,7 +104,7 @@ void TestExpression(int tnum) {
             SDL_Delay(1);
         }
     }
-    SDL_Log("#%02d: x is: %f, y is: %f\n", res, x, y);
+    SDL_Log("#THREAD %02d: x is: %f, y is: %f\n", res, x, y);
 }
 
 void testThread() {
