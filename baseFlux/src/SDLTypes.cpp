@@ -108,7 +108,7 @@ namespace DLS::Flux {
                 if (tl) tl->saveArrayValue(ret,fluxVM.Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
             }
             return true;
-        }, "Create a Rect with marhalling.");
+        }, "Create a Rect (x,y,w,h).");
 
         // ---------------------------------------------------------------------
         // SDL_FPoint with marshalling
@@ -130,7 +130,7 @@ namespace DLS::Flux {
                 if (tl) tl->saveArrayValue(ret,fluxVM.Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
             }
             return true;
-        }, "Create a Point with marhalling");
+        }, "Create a Point (x,y)");
         // ---------------------------------------------------------------------
         // SDL_FPoint3 with marshalling
         // ---------------------------------------------------------------------
@@ -151,7 +151,7 @@ namespace DLS::Flux {
                 if (tl) tl->saveArrayValue(ret,fluxVM.Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
             }
             return true;
-        }, "Create a Point3 (x,y,z) with marhalling");
+        }, "Create a Point3 (x,y,z)");
         // ---------------------------------------------------------------------
         // SDL_Color with marshalling
         // ---------------------------------------------------------------------
@@ -173,11 +173,8 @@ namespace DLS::Flux {
                 if (tl) tl->saveArrayValue(ret,fluxVM.Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
             }
             return true;
-        }, "Create a Color with marhalling");
+        }, "Create a Color (r,g,b,a)");
         // ---------------------------------------------------------------------
-
-
-
     }
 
 }// namespace DLS::Flux

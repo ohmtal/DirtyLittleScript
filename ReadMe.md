@@ -1,7 +1,7 @@
 # Dirty Little Script (DLS)
 
-**Dirty Little Script** is a **header only** subset of [DreiZehnScript](https://github.com/ohmtal/DreiZehnScript)
-
+**Dirty Little Script** is a **header only** syntax subset of [DreiZehnScript](https://github.com/ohmtal/DreiZehnScript)
+It's not a copy of DreiZehnScript i coded Value, VM, Parser and more different.
 
 ## Keynotes 
 
@@ -39,17 +39,18 @@
 | `if foo == 1; print "it's one";;`| lazy alias for end is `;;` |
 | `# this is a comment` | '#' comment. it can be used for one line| 
 | `print "hello" # this is a comment` | also on the end| 
-| `print "hello" \ ignored` | to break a line use `\`. everything behind is ignored (*5)| 
+| `print "hello" \ ignored` | to break a line use `\`. everything behind is ignored| 
 | `      "World" ` | but on the next line the code continue.| 
 | math | |
 | `f = (10 * 5 + 2 ) / 4 - 1`| basic math, the parser respect the order|
 | `b = true && false` |  boolean and, or |
 | `b = b + 1` |  increment one |
-| `b++; b--` |  increment and decrement again (only on variables)|
+| `b++; b--` |  increment and decrement again (only on common variables)|
+| `b+=10; b-=10;b*=10;b/=10` |  assign operator (only on common variables)|
 | Loops |  |
 | `forRange i 10; print i;  end`| forRange loop count i 0..9 | 
-| `i = 5; while i > 0; print i; i = i - 1; end`| while loop | 
-| `i = 5; while i > 0; print i; if i == 2; continue;; if i == 1 break;; end`| while loop | 
+| `i = 5; while i > 0; i--; print i; end`| while loop | 
+| `i = 5; while i > 0; i--; print i; if i == 2; continue;; if i == 1 break;; end`| while loop continue and break| 
 | Condition |  |
 | `if true == false; print "Thats wrong!"; else print "OK"; end`  | if elif else |
 | Function |  |
@@ -83,7 +84,6 @@ I set a max elements limit to 65536. Which can be changed with compile flag: DLS
 
 <small>(*4) Using this is slower than using multile single dimension arrays</small>
 
-<small>(*5) Different to DreiZehn: the code behind `\` is not ignored in DreiZehnScript.</small>
 
 ## Bind your C-Functions
 
