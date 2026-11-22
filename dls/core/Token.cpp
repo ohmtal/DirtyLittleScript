@@ -34,6 +34,12 @@ namespace DLS{
             case TokenType::PlusPlus:      return "PlusPlus";
             case TokenType::MinusMinus:    return "MinusMinus";
 
+            case TokenType::AssignPlus:    return "AssignPlus";
+            case TokenType::AssignMinus:   return "AssignMinus";
+            case TokenType::AssignMul:     return "AssignMul";
+            case TokenType::AssignDiv:     return "AssignDiv";
+
+
             // if ...
             case TokenType::If:            return "If";
             case TokenType::Greater:       return "Greater";
@@ -88,12 +94,11 @@ namespace DLS{
 
 
     bool isMathAssignOperatorType(TokenType tokenType) {
-        return false;
-        // return tokenType == TokenType::AssignPlus
-        // || tokenType == TokenType::AssignMinus
-        // || tokenType == TokenType::AssignMul
-        // || tokenType == TokenType::AssignDiv
-        // ;
+        return tokenType == TokenType::AssignPlus
+        || tokenType == TokenType::AssignMinus
+        || tokenType == TokenType::AssignMul
+        || tokenType == TokenType::AssignDiv
+        ;
     }
 
     bool isInlineMathType(const TokenType tokenType) {

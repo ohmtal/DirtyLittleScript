@@ -12,8 +12,8 @@ j = 0;
 forRange j JLOOPS
 
     forRange i ILOOPS
-#         globalX = globalX + 1
-        globalX++
+#        globalX = globalX + 1
+       globalX++
     end
     print  "SUM (++) IS: " globalX
 

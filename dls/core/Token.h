@@ -23,6 +23,7 @@ namespace DLS{
         // math
         , Plus , Minus , Mul , Div
         , PlusPlus, MinusMinus
+        , AssignPlus, AssignMinus, AssignMul, AssignDiv
         // if ...
         , If,  Else , ElIf
         , Greater, Less, Equal, NotEqual

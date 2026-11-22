@@ -52,8 +52,13 @@ namespace DLS {
             // ----------------------------------------------------------------
             if (peek() == '>' && peekNext() == '=') { advance();advance(); tokens.push_back({TokenType::GreaterEqual, ">="}); continue; }
             if (peek() == '<' && peekNext() == '=') { advance();advance(); tokens.push_back({TokenType::LowerEqual, "<="}); continue; }
-
-
+            // ----------------------------------------------------------------
+            if (peek() == '+' && peekNext() == '=') { advance();advance(); tokens.push_back({TokenType::AssignPlus, "+="}); continue; }
+            if (peek() == '-' && peekNext() == '=') { advance();advance(); tokens.push_back({TokenType::AssignMinus, "-="}); continue; }
+            if (peek() == '*' && peekNext() == '=') { advance();advance(); tokens.push_back({TokenType::AssignMul, "*="}); continue; }
+            if (peek() == '/' && peekNext() == '=') { advance();advance(); tokens.push_back({TokenType::AssignDiv, "/="}); continue; }
+            if (peek() == '/' && peekNext() == '=') { advance();advance(); tokens.push_back({TokenType::AssignDiv, "/="}); continue; }
+            // ----------------------------------------------------------------
             if (peek() == '=') {
                 advance();
                 if (peek() == '=') { // "=="

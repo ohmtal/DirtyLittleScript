@@ -62,39 +62,13 @@ namespace DLS {
         std::vector<size_t> mFunctions;
         std::vector<size_t> mReturnStack;
 
-        VariableStorage() {
-            mGlobalsRegister.reserve(65536);
-        }
+        VariableStorage();
 
-        void reset() {
-            mReturnStack.clear();
-            mFunctions.clear();
-            mArrays.clear();
-            mArrayTempAssigned.clear();
-            mGlobalsRegister.clear();
-            mGlobalsLookUp.clear();
-        }
+        void reset();
+        S64 getGlobalRegister(U32 symId);
+        size_t reserveGlobal(U32 symId);
 
-
-        S64 getGlobalRegister(U32 symId) {
-            auto it = mGlobalsLookUp.find(symId);
-            if (it != mGlobalsLookUp.end()) [[likely]] {
-                return it->second;
-            }
-            return -1;
-        }
-
-        size_t reserveGlobal(U32 symId) {
-            S64 index = getGlobalRegister(symId);
-            if (index < 0 ) {
-                index = mGlobalsRegister.size();
-                mGlobalsLookUp[symId] = index;
-                mGlobalsRegister.push_back(Value());
-            }
-            return (size_t) index;
-        }
-
-        void saveGlobal(size_t index, const Value& value) {
+        inline void saveGlobal(size_t index, const Value& value) {
             #ifdef DLS_DEBUG
             assert (index < mGlobalsRegister.size() && "SAVE: GLOBALS REGISTER OUT OF BOUNDS");
             #endif
@@ -111,29 +85,19 @@ namespace DLS {
             mGlobalsRegister[index] = value;
         }
 
-       Value& getGlobal(size_t index) {
+       inline Value& getGlobal(size_t index) {
             #ifdef DLS_DEBUG
             assert (index < mGlobalsRegister.size() && "LOAD: GLOBALS REGISTER OUT OF BOUNDS");
             #endif
             return mGlobalsRegister[index];
         }
 
-        bool getGlobalVariableValueRef(const std::string& varName, Value& ret) {
-            S64 index = getGlobalRegister(SymbolTable::insert(varName));
-            if (index < 0 ) return false;
-            ret = getGlobal((size_t)index);
-            return true;
-        }
+        bool getGlobalVariableValueRef(const std::string& varName, Value& ret);
 
         // --------------------------------------------------------------------
-        void ArrayFreeTemp() {
-            for (auto idx : mArrayTempAssigned) {
-                mArrays[idx].setAssigned(false);
-            }
-            mArrayTempAssigned.clear();
-        }
+        void ArrayFreeTemp();
         // --------------------------------------------------------------------
-        Value createArray(const ValueVector& values, bool assignTemp = false) {
+        inline Value createArray(const ValueVector& values, bool assignTemp = false) {
             S64 masterIndex = (S64)reserveArray();
 
             // i need the temp assigned, when it's added as a func param
@@ -150,14 +114,14 @@ namespace DLS {
 
         bool getArrayByMasterIndexSafe(size_t masterIndex, ValueVector& result);
 
-         ValueVector& getArrayByMasterIndex(size_t masterIndex) {
+         inline ValueVector& getArrayByMasterIndex(size_t masterIndex) {
             #ifdef DLS_DEBUG
             assert(masterIndex < mArrays.size() && "Master index array out of range");
             #endif
             return mArrays[masterIndex].Elements;
         }
 
-        Value getArray(size_t varIndex, U32 index) {
+        inline Value getArray(size_t varIndex, U32 index) {
             Value& arrValue = getGlobal(varIndex);
             if (!arrValue.isArray()) [[unlikely]] {
                 PrintRuntimeError("This is not a array Value!");
@@ -174,7 +138,7 @@ namespace DLS {
 
         }
 
-        size_t reserveArray() {
+        inline size_t reserveArray() {
             for (size_t i = 0; i < mArrays.size(); i++) {
                 if (!mArrays[i].isAssigned()) return i;
             }
@@ -183,7 +147,7 @@ namespace DLS {
             return result;
         }
 
-        Value copyArray(size_t curMasterIndex) {
+        inline Value copyArray(size_t curMasterIndex) {
             size_t newIndex = reserveArray();
             mArrays[newIndex].Elements = mArrays[curMasterIndex].Elements;
             mArrays[newIndex].setAssigned(true); //new entry
@@ -192,7 +156,7 @@ namespace DLS {
             return result;
         }
 
-        void saveArray(Value& arrValue , U32 index, const Value& value) {
+        inline void saveArray(Value& arrValue , U32 index, const Value& value) {
 
             if (index  >= DLS_MAX_ARRAY_ELEMENTS - 1) [[unlikely]]{
                 PrintRuntimeError("Array index overflow max array elements!");
@@ -223,7 +187,7 @@ namespace DLS {
                 mArrays[masterIndex].Elements[index] = finaleValue ;
             }
         }
-        void saveArray(size_t varIndex, U32 index, const Value& value) {
+        inline void saveArray(size_t varIndex, U32 index, const Value& value) {
             Value arrValue = getGlobal(varIndex);
 
             //double copy! Value finaleValue = (value.type == ValueType::Array) ? copyArray((size_t)value.getFastLong()) : value;
@@ -247,8 +211,8 @@ namespace DLS {
     // Loops
     // ------------------------------------------
     struct LoopContext {
-        size_t continue_target;
         std::vector<size_t> break_slots;
+        std::vector<size_t> continue_slots;
     };
 
     // ------------------------------------------
@@ -265,8 +229,6 @@ namespace DLS {
         VariableStorage Variables;
 
         // ValueVector mLiterals;
-
-
         void run();
 
         VM() {
@@ -274,52 +236,33 @@ namespace DLS {
         }
         ~VM() = default;
 
-        inline void rewind() { pc = 0;}
 
         // ------------------------------------------
         // Tape functions
         // ------------------------------------------
-        void emitCode(const U32 opcode ) { tape.push_back(opcode); }
+        void emitCode(const U32 opcode );
+        U32 emitValue(Value val);
+        void emitTapeChunk(const U32 tapeChunk);
+        void emitJumpOffset(const U32 offset);
+        void patchJumpOffset(const U32 tapePosition, const U32 offset);
+        U32 tell();
+        void rewind();
+        void rewindTape(U32 slot);
 
-        U32 emitValue(Value val) {
-            #ifdef DLS_DEBUG
-            assert(sizeof(Value) <= 4 * sizeof(U32) && "Value size missmatch! Only 16 byte Values allowed.");
-            #endif
-            U32 startIp = (U32)tape.size();
-            tape.resize(startIp + 4);
-
-            if (sizeof(Value) < 16) {
-                tape[startIp] = 0;
-                tape[startIp + 1] = 0;
-                tape[startIp + 2] = 0;
-                tape[startIp + 3] = 0;
-            }
-
-            std::memcpy(&tape[startIp], &val, sizeof(Value));
-            return startIp;
-        }
-
-        void emitTapeChunk(const U32 tapeChunk)   { tape.push_back( tapeChunk); }
-
-        void emitJumpOffset(const U32 offset)   { tape.push_back( offset); }
-        void patchJumpOffset(const U32 tapePosition, const U32 offset)   { tape[tapePosition] = offset; }
-
-        U32 tell() { return (U32)tape.size(); }
-
-        void rewindTape(U32 slot) {
-            while (tape.size() > slot) {
-                tape.pop_back();
-            }
-        }
-
-        U32& peekSlot(U32 reverseOffset) {
+        inline U32 peekSlot(U32 reverseOffset) {
             return tape[pc - reverseOffset];
         }
 
-        U32& advanceSlot() {
-#ifdef DLS_DEBUG
+        inline U32 advanceSlot() {
+            #ifdef DLS_DEBUG
             assert (pc < tape.size() && "TAPE OVERFLOW");
-#endif
+            #endif
+            return tape[pc++];
+        }
+        inline U32& advanceSlotRef() {
+            #ifdef DLS_DEBUG
+            assert (pc < tape.size() && "TAPE OVERFLOW");
+            #endif
             return tape[pc++];
         }
 
@@ -334,7 +277,7 @@ namespace DLS {
         // Stack functions
         // ------------------------------------------
         // ---- pop
-        inline Value& POP_STACK() {
+        inline Value POP_STACK() {
             #ifdef DLS_DEBUG
             assert(STK > 0 && "POP_STACK but stack empty!");
             #endif
@@ -403,9 +346,13 @@ namespace DLS {
     X(op_inc,            1, "math ++") \
     X(op_dec,            1, "math --") \
     X(op_sub,            0, "math -") \
-    X(op_mul,           0, "math *") \
+    X(op_mul,            0, "math *") \
     X(op_div,            0, "math /") \
     X(op_modulo,         0, "math %") \
+    X(op_assign_add,     0, "math +=") \
+    X(op_assign_sub,     0, "math -=") \
+    X(op_assign_mul,     0, "math *=") \
+    X(op_assign_div,     0, "math /=") \
     X(op_bit_or,         0, "bit |") \
     X(op_bit_xor,        0, "bit ^") \
     X(op_bit_and,        0, "bit &") \
@@ -424,11 +371,10 @@ namespace DLS {
     X(op_jump_if_false,      1, "jump false") \
     X(op_jump_if_true_no_pop,      1, "jump false no pop") \
     X(op_jump_if_false_no_pop,      1, "jump false no pop") \
+    X(op_for_range_start,      2, "op_for_range_start") \
     X(op_for_range_jump,      2, "op_for_range_jump") \
     X(op_cfunc,      2, "call a c registered func") \
     X(op_func_def,      1, "define a lambda") \
-    X(op_cast_long,      0, "cast a stack value to long") \
-    X(op_cast_double,      0, "cast a stack value to double") \
     X(op_return,      0, "return")
 
     #define X(name, args, comment) name,

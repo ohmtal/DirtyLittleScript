@@ -148,7 +148,7 @@ bool Parser::parsePrimary() {
                     vm->emitCode(op_save_array);
                     vm->emitTapeChunk((U32)varidx);
                     vm->emitTapeChunk((U32)dimension);
-                } else if (S64 varidx = vm->Variables.getGlobalRegister(symId); varidx >= 0)  {
+                }  else if (S64 varidx = vm->Variables.getGlobalRegister(symId); varidx >= 0)  {
                     vm->emitCode(op_load_array);
                     vm->emitTapeChunk((U32)varidx);
                     vm->emitTapeChunk((U32)dimension);
@@ -192,6 +192,18 @@ bool Parser::parsePrimary() {
                 if (!getArg("Assign")) return false;
                 size_t varidx = vm->Variables.reserveGlobal(symId);
                 vm->emitCode(op_save_global);
+                vm->emitTapeChunk(varidx);
+            } else if (isMathAssignOperatorType(peek().mType)) {
+                TokenType op = advance().mType; // eat Assign
+                if (!getArg("Operator Assign")) return false;
+                size_t varidx = vm->Variables.reserveGlobal(symId);
+                switch(op) {
+                    case TokenType::AssignPlus:  vm->emitCode(op_assign_add);  break;
+                    case TokenType::AssignMinus: vm->emitCode(op_assign_sub);  break;
+                    case TokenType::AssignMul:   vm->emitCode(op_assign_mul);  break;
+                    case TokenType::AssignDiv:   vm->emitCode(op_assign_div);  break;
+                    default: return false;
+                }
                 vm->emitTapeChunk(varidx);
             } else
             if (S64 varidx = vm->Variables.getGlobalRegister(symId); varidx >= 0)  {
@@ -273,7 +285,6 @@ bool Parser::parseMath(int minPrecedence) {
                     vm->tape[pc - 2] = op_dec;
                 }
                 // if (requestParam <= 0) vm->emitCode( op_pop_stack );
-
             } else {
                 PrintParseError("Inline Math need Variable!");
                 return false;
@@ -281,6 +292,9 @@ bool Parser::parseMath(int minPrecedence) {
 
             continue;
         }
+
+            // case TokenType::AssignPlus: vm->emitCode(op_assign_add); break;
+
         // ----- we need both ---------
         if (!parseMath(precedence + 1)) return false;
         bool handled = true;
@@ -303,6 +317,8 @@ bool Parser::parseMath(int minPrecedence) {
             case TokenType::BitAnd:  vm->emitCode(op_bit_and); break;
             case TokenType::SHL:     vm->emitCode(op_bit_shl); break;
             case TokenType::SHR:     vm->emitCode(op_bit_shr); break;
+
+
 
 
             default: handled = false; break;
@@ -340,7 +356,7 @@ bool Parser::parseWhile() {
 
     // break continue
     LoopContext context;
-    context.continue_target = loop_start_slot;
+    // context.continue_target = loop_start_slot;
     vm->mLoopStack.push_back(context);
 
 
@@ -363,16 +379,45 @@ bool Parser::parseWhile() {
 
     size_t loop_end_slot = vm->tell();
 
-    // handle breaks
+    // handle breaks and Continue
     for (size_t break_slot : vm->mLoopStack.back().break_slots) {
         vm->patchJumpOffset(break_slot, loop_end_slot);
     }
+
+    for (size_t cont_slot : vm->mLoopStack.back().continue_slots) {
+        vm->patchJumpOffset(cont_slot, loop_start_slot);
+    }
+
     vm->mLoopStack.pop_back();
 
     return true;
 }
 // -------------------------------------------------------------------------
 //  Statements sub: forRange [VAR] [COUNT]
+//  still not optimal in DreiZehn i do:
+//  - compile COUNT ==> PUSH to stack
+//  - OP_FOR_STEP_INIT **now the loop begin**
+//  - BODY
+//  - OP_LOOP_INCREMENT_JUMP
+//  here i do:
+//  - op_literal (-1)
+//  - op_save_global (LIMIT VAR)
+//  - compile COUNT ==> PUSH to stack (getArg)
+//  - op_cast_long
+//  - op_for_range_jump **now the loop begin**
+//  - BODY
+//  - op_jump (to op_for_range_jump)
+//  - op_pop_stack (to cleanup limit
+//  better would be:
+//  - compile COUNT
+//  - op_for_range_start (varIndex, exitAdress)
+//      - cast limit (PEEK) to long and goto exitIP if 0
+//      - push iter to stack and update variable
+//  - body runs
+//  - op_for_range_jump (varIndex, body start Adress)
+//      - validate it's done => POP_VALUE() (limit) DISPATCH
+//      - increment iter and push to stack
+//      - jump to body start
 // -------------------------------------------------------------------------
 bool Parser::parseForRange() {
     advance();
@@ -386,91 +431,147 @@ bool Parser::parseForRange() {
         advance();
     }
 
-
-    // ----1. emit loop variable and set to -1
-    vm->emitCode(op_literal);
-    // vm->emitTapeChunk(vm->addLiteral(Value(-1)));
-    vm->emitValue(Value(-1));
-    U32 symId = SymbolTable::insert(variable);
-    size_t varidx = vm->Variables.reserveGlobal(symId);
-    vm->emitCode(op_save_global);
-    vm->emitTapeChunk((U32)varidx);
-
-    // ----2. emit count
+    // -- 1. emit COUNT value to STACK and save start adress for rollback
+    U32 rollbackAdress = vm->tell();
     if (!getArg("ForRange count")) return false;
-    vm->emitCode(op_cast_long);
 
-    U32 tapestart = vm->tell(); // NOTE can be removed again only for fun
+    // -- 2. make sure the Variable is setup
+    U32 symId = SymbolTable::insert(variable);
+    U32 varidx = static_cast<U32>(vm->Variables.reserveGlobal(symId));
 
-    // ---- save tape position
-    U32 loop_start_slot = vm->tell();
+    // -- 3. emit start
+    vm->emitCode(op_for_range_start);
+    vm->emitTapeChunk(varidx); //emit variable register index
+    U32 patchStart_ExitAdress = vm->tell();
+    vm->emitTapeChunk(0); // placeholder for exitAdress
 
-    // ---- increment compare and jump!
-    vm->emitCode(op_for_range_jump);
-    vm->emitTapeChunk((U32)varidx);
+    // -- 4. compile body and check end is there
 
-    U32 false_jump_slot = vm->tell();
-    vm->emitJumpOffset(0); // false placeholder
+    U32 body_start_slot = vm->tell();
 
-
-    // break continue
+    // -- 4.1 break continue
     LoopContext context;
-    context.continue_target = loop_start_slot;
+    // context.continue_target = bodyStart;
     vm->mLoopStack.push_back(context);
 
-    U32 tapeBeforeStatements = vm->tell(); // NOTE can be removed again only for fun
-    // main loop:
+
     while (peek().mType != TokenType::EOFToken &&
         peek().mType != TokenType::End)
     {
         if (!parseStatements()){
             PrintParseError("ForRange: failed to parse Statements");
+            vm->rewindTape(rollbackAdress);
+            vm->mLoopStack.pop_back();
             return false;
         }
     }
-
-    //NOTE no more vm emits until tapeBeforeStatements
-
     if (peek().mType != TokenType::End) {
         PrintParseError("ForRange missing end!");
+        vm->rewindTape(rollbackAdress);
+        vm->mLoopStack.pop_back();
         return false;
     }
     advance(); //end
 
-     // NOTE can be removed again only for fun
-    // cheat alias optimize!! one billion benchmark :P
-    // we have NO statement so we do not need to loop here
-    // simply save the limit to the iter variable:
-    if ( tapeBeforeStatements == vm->tell() ) {
-        vm->rewindTape(tapestart);
 
-        vm->emitCode(op_save_global);
-        vm->emitTapeChunk((U32)varidx);
+    // -- 5. emit op_for_range_jump
+    U32 jump_start_slot = vm->tell();
+    vm->emitCode(op_for_range_jump);
+    vm->emitTapeChunk(varidx); //emit variable register index
+    vm->emitTapeChunk(body_start_slot); //emit body start
 
-        vm->emitCode(op_dec);
-        vm->emitTapeChunk((U32)varidx);
-
-        return true;
-    }
-    // <<<<< NOTE can be removed again only for fun
+    // -- 6. patch exit
+    U32 exit_slot = vm->tell();
+    vm->patchJumpOffset(patchStart_ExitAdress, exit_slot);
 
 
-    vm->emitCode(op_jump);
-    vm->emitJumpOffset(loop_start_slot);
-
-
-    U32 loop_end_slot = vm->tell();
-    vm->patchJumpOffset(false_jump_slot,vm->tell());
-    vm->emitCode(op_pop_stack); // the limit value
-
-    // handle breaks
+    // 7. handle breaks and continue
     for (size_t break_slot : vm->mLoopStack.back().break_slots) {
-        vm->patchJumpOffset(break_slot, loop_end_slot);
+        vm->patchJumpOffset(break_slot, exit_slot);
     }
+    for (size_t cont_slot : vm->mLoopStack.back().continue_slots) {
+        vm->patchJumpOffset(cont_slot, jump_start_slot);
+    }
+
     vm->mLoopStack.pop_back();
 
     return true;
 }
+
+// bool Parser::parseForRange() {
+//     advance();
+//
+//     std::string variable = "";
+//     if (peek().mType != TokenType::Identifier) {
+//         PrintParseError("forRange need a variable");
+//         return false;
+//     } else {
+//         variable = peek().mValue;
+//         advance();
+//     }
+//
+//
+//     // ----1. emit loop variable and set to -1
+//     vm->emitCode(op_literal);
+//     // vm->emitTapeChunk(vm->addLiteral(Value(-1)));
+//     vm->emitValue(Value(-1));
+//     U32 symId = SymbolTable::insert(variable);
+//     size_t varidx = vm->Variables.reserveGlobal(symId);
+//     vm->emitCode(op_save_global);
+//     vm->emitTapeChunk((U32)varidx);
+//
+//     // ----2. emit count
+//     if (!getArg("ForRange count")) return false;
+//     vm->emitCode(op_cast_long);
+//
+//     // ---- save tape position
+//     U32 loop_start_slot = vm->tell();
+//
+//     // ---- increment compare and jump!
+//     vm->emitCode(op_for_range_jump);
+//     vm->emitTapeChunk((U32)varidx);
+//
+//     U32 false_jump_slot = vm->tell();
+//     vm->emitJumpOffset(0); // false placeholder
+//
+//
+//     // break continue
+//     LoopContext context;
+//     context.continue_target = loop_start_slot;
+//     vm->mLoopStack.push_back(context);
+//
+//     // main loop:
+//     while (peek().mType != TokenType::EOFToken &&
+//         peek().mType != TokenType::End)
+//     {
+//         if (!parseStatements()){
+//             PrintParseError("ForRange: failed to parse Statements");
+//             return false;
+//         }
+//     }
+//
+//     if (peek().mType != TokenType::End) {
+//         PrintParseError("ForRange missing end!");
+//         return false;
+//     }
+//     advance(); //end
+//
+//     vm->emitCode(op_jump);
+//     vm->emitJumpOffset(loop_start_slot);
+//
+//
+//     U32 loop_end_slot = vm->tell();
+//     vm->patchJumpOffset(false_jump_slot,vm->tell());
+//     vm->emitCode(op_pop_stack); // the limit value
+//
+//     // handle breaks
+//     for (size_t break_slot : vm->mLoopStack.back().break_slots) {
+//         vm->patchJumpOffset(break_slot, loop_end_slot);
+//     }
+//     vm->mLoopStack.pop_back();
+//
+//     return true;
+// }
 
 // -------------------------------------------------------------------------
 //  Statements sub: fn
@@ -661,7 +762,8 @@ bool Parser::parseStatements() {
                 return false;
             }
             vm->emitCode(op_jump);
-            vm->emitJumpOffset(vm->mLoopStack.back().continue_target);
+            vm->mLoopStack.back().continue_slots.push_back(vm->tell());
+            vm->emitJumpOffset(0);
         }
         break;
         case TokenType::Break: {
