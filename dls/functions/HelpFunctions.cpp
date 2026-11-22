@@ -146,7 +146,7 @@ namespace DLS {
         RegisterFunction("help::glob", [](VM& vm, ValueSpan args, Value& ret) -> bool {
             Tools::printf("---------------- Globals ------------------\n");
             for (auto & globs: vm.Variables.mGlobalsLookUp) {
-                Value& val = vm.Variables.getGlobal(globs.second);
+                Value val = vm.Variables.getGlobal(globs.second);
                 Tools::printf("%s = %s\n "
                 ,  SymbolTable::getName(globs.first).c_str()
                 , val.toString().c_str()

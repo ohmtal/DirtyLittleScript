@@ -30,7 +30,7 @@ namespace DLS {
     };
 
     template<MathOp Op>
-    FORCE_INLINE void doMath(Value& dst, const Value& a, const Value& b) {
+    void doMath(Value& dst, const Value& a, const Value& b) {
         double da = a.isDouble() ? a.d : (a.isLong() ? static_cast<double>(a.l) : 0.0);
         double db = b.isDouble() ? b.d : (b.isLong() ? static_cast<double>(b.l) : 0.0);
 
@@ -318,7 +318,7 @@ namespace DLS {
 
         handle_op_load_global: {
             U32 varIndex = advanceSlot();
-            Value& var = Variables.getGlobal(varIndex);
+            Value& var = Variables.getGlobalRef(varIndex);
             if (var.type == ValueType::Function) [[unlikely]] {
                 PlaceTapeAtScriptFunction(var);
             } else {
@@ -482,7 +482,7 @@ namespace DLS {
         handle_op_assign_add: {
             U32 varIndex = advanceSlot();
             Value b = POP_STACK();
-            Value& var = Variables.getGlobal(varIndex);
+            Value& var = Variables.getGlobalRef(varIndex);
             doMath<MathOp::Add>(var,var,b);
             // var = Value( var.getDouble() + b.getDouble() );
             DISPATCH();
@@ -490,7 +490,7 @@ namespace DLS {
         handle_op_assign_sub: {
             U32 varIndex = advanceSlot();
             Value b = POP_STACK();
-            Value& var = Variables.getGlobal(varIndex);
+            Value& var = Variables.getGlobalRef(varIndex);
             doMath<MathOp::Sub>(var,var,b);
             // var = Value( var.getDouble() - b.getDouble() );
             DISPATCH();
@@ -498,7 +498,7 @@ namespace DLS {
         handle_op_assign_mul: {
             U32 varIndex = advanceSlot();
             Value b = POP_STACK();
-            Value& var = Variables.getGlobal(varIndex);
+            Value& var = Variables.getGlobalRef(varIndex);
             doMath<MathOp::Mul>(var,var,b);
             // var = Value( var.getDouble() * b.getDouble() );
             DISPATCH();
@@ -506,7 +506,7 @@ namespace DLS {
         handle_op_assign_div: {
             U32 varIndex = advanceSlot();
             Value b = POP_STACK();
-            Value& var = Variables.getGlobal(varIndex);
+            Value& var = Variables.getGlobalRef(varIndex);
             doMath<MathOp::Div>(var,var,b);
             // double bval = b.getDouble();
             // if (bval == 0.0) [[unlikely]] {
@@ -519,7 +519,7 @@ namespace DLS {
 
         handle_op_inc: {
             U32 varIndex = advanceSlot();
-            Value& dstValue = Variables.getGlobal(varIndex);
+            Value& dstValue = Variables.getGlobalRef(varIndex);
 
             if (dstValue.isDouble()) [[likely]]
                 dstValue = Value(dstValue.getDouble() + 1.0);
@@ -531,7 +531,7 @@ namespace DLS {
 
         handle_op_dec: {
             U32 varIndex = advanceSlot();
-            Value& dstValue = Variables.getGlobal(varIndex);
+            Value& dstValue = Variables.getGlobalRef(varIndex);
             if (dstValue.isDouble()) [[likely]]
                 dstValue = Value(dstValue.getDouble() - 1.0);
             else
@@ -789,7 +789,7 @@ namespace DLS {
 
             Value result = Value();
 
-            Value& var = Variables.getGlobal(varIndex);
+            Value& var = Variables.getGlobalRef(varIndex);
 
             Marshall::IStructTranslator* tl = Marshall::getStructTranslator(var);
             if (!tl) [[unlikely]] {
@@ -823,7 +823,7 @@ namespace DLS {
             U32 fieldSymId = fieldSlot;
 
             Value src = POP_STACK();
-            Value& var = Variables.getGlobal(varIndex);
+            Value& var = Variables.getGlobalRef(varIndex);
 
             Marshall::IStructTranslator* tl = Marshall::getStructTranslator(var);
             if (!tl) [[unlikely]] {
@@ -866,7 +866,7 @@ namespace DLS {
             // --- we move the tape over varIndex and bodyStartTarget
             pc  += 2;
             // --- set iter variable to 0 and push copy to stack ---
-            Value& iterVar = Variables.getGlobal(static_cast<size_t>(varIndex));
+            Value& iterVar = Variables.getGlobalRef(static_cast<size_t>(varIndex));
             iterVar = Value(0);
             PUSH_STACK(iterVar);
 
@@ -886,7 +886,9 @@ namespace DLS {
                 STK -= 2; // 2 times pop stack
                 DISPATCH();
             }
-            Variables.getGlobal(static_cast<size_t>(varIndex)) = iter;
+            Value& globVar = Variables.getGlobalRef(static_cast<size_t>(varIndex)) ;
+            globVar.type = ValueType::Long;
+            globVar.l = iter.l;
             pc = bodyStartTarget;
 
             DISPATCH();

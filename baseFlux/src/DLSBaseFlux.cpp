@@ -71,7 +71,7 @@ namespace DLS::Flux {
     }
     // -----------------------------------------------------------------------------
     void OnSetup() {
-        DLS::Value& funcVar = fluxVM.Variables.getGlobal(setupEventVarRegister);
+        const DLS::Value& funcVar = fluxVM.Variables.getGlobal(setupEventVarRegister);
         if (!fluxVM.PlaceTapeAtScriptFunction(funcVar)) return;
         fluxVM.run();
 
@@ -108,7 +108,7 @@ namespace DLS::Flux {
     // Events
     // -----------------------------------------------------------------------------
     void OnInit() {
-        DLS::Value& funcVar = fluxVM.Variables.getGlobal(initEventVarRegister);
+        const DLS::Value& funcVar = fluxVM.Variables.getGlobal(initEventVarRegister);
         if (!fluxVM.PlaceTapeAtScriptFunction(funcVar)) return;
         fluxVM.run();
     }
@@ -116,13 +116,13 @@ namespace DLS::Flux {
     void OnUpdate(const float dt) {
         fluxVM.Variables.saveGlobal(var_updatedeltatime, DLS::Value(dt));
 
-        DLS::Value& funcVar = fluxVM.Variables.getGlobal(updateEventVarRegister);
+        const DLS::Value& funcVar = fluxVM.Variables.getGlobal(updateEventVarRegister);
         if (!fluxVM.PlaceTapeAtScriptFunction(funcVar)) return;
         fluxVM.run();
     }
     // -----------------------------------------------------------------------------
     void OnShutdown() {
-        DLS::Value& funcVar = fluxVM.Variables.getGlobal(shutDownEventVarRegister);
+        const DLS::Value& funcVar = fluxVM.Variables.getGlobal(shutDownEventVarRegister);
         if (!fluxVM.PlaceTapeAtScriptFunction(funcVar)) return;
         fluxVM.run();
     }
@@ -135,7 +135,7 @@ namespace DLS::Flux {
 
         fluxVM.Variables.saveGlobal(var_frametime, DLS::Value(BaseFlux::getFrameTime() * 100.0));
 
-        DLS::Value& funcVar = fluxVM.Variables.getGlobal(renderEventVarRegister);
+        const DLS::Value& funcVar = fluxVM.Variables.getGlobal(renderEventVarRegister);
         if (!fluxVM.PlaceTapeAtScriptFunction(funcVar)) return;
         fluxVM.run();
 
@@ -154,7 +154,7 @@ namespace DLS::Flux {
         fluxVM.Variables.saveGlobal(var_eventType, DLS::Value(EventType));
         fluxVM.Variables.saveGlobal(var_mod, DLS::Value(mod));
 
-        DLS::Value& funcVar = fluxVM.Variables.getGlobal(keyEventVarRegister);
+        const DLS::Value& funcVar = fluxVM.Variables.getGlobal(keyEventVarRegister);
         if (!fluxVM.PlaceTapeAtScriptFunction(funcVar)) return;
         fluxVM.run();
     }
@@ -172,7 +172,7 @@ namespace DLS::Flux {
         fluxVM.Variables.saveGlobal(var_mouseWheelY, DLS::Value(mWheelEvent.y));
         fluxVM.Variables.saveGlobal(var_eventType, DLS::Value((DLS::U32)SDL_EVENT_MOUSE_WHEEL));
         if (mouseEventVarRegister < 0) return;
-        DLS::Value& funcVar = fluxVM.Variables.getGlobal(mouseEventVarRegister);
+        const DLS::Value& funcVar = fluxVM.Variables.getGlobal(mouseEventVarRegister);
         if (!fluxVM.PlaceTapeAtScriptFunction(funcVar)) return;
         fluxVM.run();
     }
@@ -184,7 +184,7 @@ namespace DLS::Flux {
 
 
         if (mouseEventVarRegister < 0) return;
-        DLS::Value& funcVar = fluxVM.Variables.getGlobal(mouseEventVarRegister);
+        const DLS::Value& funcVar = fluxVM.Variables.getGlobal(mouseEventVarRegister);
         if (!fluxVM.PlaceTapeAtScriptFunction(funcVar)) return;
         fluxVM.run();
     }

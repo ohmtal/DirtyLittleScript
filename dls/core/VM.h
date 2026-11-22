@@ -85,13 +85,18 @@ namespace DLS {
             mGlobalsRegister[index] = value;
         }
 
-       inline Value& getGlobal(size_t index) {
+       inline const Value& getGlobal(size_t index) {
             #ifdef DLS_DEBUG
             assert (index < mGlobalsRegister.size() && "LOAD: GLOBALS REGISTER OUT OF BOUNDS");
             #endif
             return mGlobalsRegister[index];
         }
-
+        inline Value& getGlobalRef(size_t index) {
+            #ifdef DLS_DEBUG
+            assert (index < mGlobalsRegister.size() && "LOAD: GLOBALS REGISTER OUT OF BOUNDS");
+            #endif
+            return mGlobalsRegister[index];
+        }
         bool getGlobalVariableValueRef(const std::string& varName, Value& ret);
 
         // --------------------------------------------------------------------
@@ -122,7 +127,7 @@ namespace DLS {
         }
 
         inline Value getArray(size_t varIndex, U32 index) {
-            Value& arrValue = getGlobal(varIndex);
+            Value& arrValue = getGlobalRef(varIndex);
             if (!arrValue.isArray()) [[unlikely]] {
                 PrintRuntimeError("This is not a array Value!");
                 return Value(0.0);
@@ -273,6 +278,7 @@ namespace DLS {
             return val;
         }
 
+
         // ------------------------------------------
         // Stack functions
         // ------------------------------------------
@@ -316,7 +322,7 @@ namespace DLS {
         // ------------------------------------------
         // Run script  functions
         // ------------------------------------------
-        bool PlaceTapeAtScriptFunction(Value& var) {
+        bool PlaceTapeAtScriptFunction(const Value& var) {
             if (var.type != ValueType::Function ) [[unlikely]] return false;
             if (pc < tape.size() - 1) Variables.mReturnStack.push_back(pc);
             pc = Variables.mFunctions[(size_t)var.getFastLong()];

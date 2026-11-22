@@ -47,14 +47,14 @@ namespace DLS {
 
         void syncToVM() {
             for (auto& b : bindings) {
-                Value& var = vm.Variables.getGlobal(b.registerIndex);
+                Value& var = vm.Variables.getGlobalRef(b.registerIndex);
                 b.translator->loadValue(var);
             }
         }
 
         void syncFromVM() {
             for (auto& b : bindings) {
-                Value& var = vm.Variables.getGlobal(b.registerIndex);
+                Value& var = vm.Variables.getGlobalRef(b.registerIndex);
                 b.translator->saveValue(var);
             }
         }
