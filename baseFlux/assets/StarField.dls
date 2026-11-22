@@ -6,7 +6,7 @@
 #       : flux::DrawFPS
 
 
-caption = "StarField again with object fields"
+caption = "StarField again with fields"
 
 SDL_EVENT_KEY_DOWN = 0x300
 SDL_EVENT_MOUSE_BUTTON_DOWN = 1025
@@ -25,7 +25,7 @@ minW = maxW * -1
 maxH = HEIGTH / 2
 minH = maxH * -1
 
-STAR_COUNT  = 420
+STAR_COUNT  = 4200
 START_DIV   = 0.03125
 SPEED       = 0.001
 
@@ -54,36 +54,36 @@ OnInit = function
     flux::size WIDTH HEIGTH WIDTH HEIGTH
     InitStars
 end
-
+# -----------------------------------------------------------------------------
+OnUpdate = function
+end
 # -----------------------------------------------------------------------------
 screen = Rect::new
 OnRender = function
+    flux::SetRenderDrawColor 200 200 220
     forRange staridx STAR_COUNT
         point = Points[staridx]
         point.z = point.z - SPEED * flux::ft
 
         invZ = 1.0 / point.z
-        screen.x = (WIDTH * 0.5) + (point.x * invZ)
-        screen.y = (HEIGTH * 0.5) + (point.y * invZ)
+        screenX = (WIDTH * 0.5) + (point.x * invZ)
+        screenY = (HEIGTH * 0.5) + (point.y * invZ)
 
-        if (point.z < 0.0) || (screen.x < 0.0) \
-            || (screen.x > WIDTH) || (screen.y < 0.0)  \
-            || (screen.y > HEIGTH)
+        if (point.z < 0.0) || (screenX < 0.0) \
+            || (screenX > WIDTH) || (screenY < 0.0)  \
+            || (screenY > HEIGTH)
 
             point.x = math::random minW maxW
             point.y = math::random minH maxH
             point.z = 1.0
 
-            screen.x = WIDTH + point.x
-            screen.y = HEIGTH + point.y
+            screenX = WIDTH + point.x
+            screenY = HEIGTH + point.y
         end
 
         radius = math::lerp 2.0 0.3 point.z
-        screen.w = radius; screen.h = radius
 
-        #         flux::fillRect screen
-        flux::DrawRect screen STAR_COLOR 1
-        # SDL_RenderFillRect Renderer screenX screenY radius radius
+        flux::RenderFillRect screenX screenY radius radius
     end
 
     flux::DrawFPS 10 30 1

@@ -198,7 +198,7 @@ namespace DLS {
                 static_cast<Uint8>(args[1].getInt()),
                         static_cast<Uint8>(args[2].getInt()),
                         static_cast<Uint8>(args[3].getInt()),
-                        (args.size() >= 4) ?  static_cast<Uint8>(args[4].getInt()) : 255
+                        (args.size() >= 5) ?  static_cast<Uint8>(args[4].getInt()) : 255
             );
             ret = Value(success);
             return true;

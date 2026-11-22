@@ -264,7 +264,38 @@ namespace DLS::Flux {
         //     ret = Value(0);
         //     return true;
         // }, "Destroy a Rect");
+        // ---------------------------------------------------------------------
+        FunctionMap::RegisterFunction("flux::SetRenderDrawColor", [](VM&,ValueSpan args, Value& ret) -> bool {
+            if (args.size() < 3 ) {
+                Tools::errorf("usage: flux::SetRenderDrawColor( r, g, b, a)\n");
+                return false;
+            }
+            bool success = SDL_SetRenderDrawColor(
+                app.getRenderer(),
+                static_cast<Uint8>(args[0].getInt()),
+                static_cast<Uint8>(args[1].getInt()),
+                static_cast<Uint8>(args[2].getInt()),
+                (args.size() >= 4) ?  static_cast<Uint8>(args[3].getInt()) : 255
+            );
+            ret = Value(success);
+            return true;
+        }, "flux::SetRenderDrawColor( r, g, b, a)");
+        // ---------------------------------------------------------------------
+        FunctionMap::RegisterFunction("flux::RenderFillRect", [](VM&,ValueSpan args, Value& ret) -> bool {
+            if (args.size() != 4 ) {
+                Tools::errorf("usage: flux::RenderFillRect( float x, float y, float w, float h)\n");
+                return false;
+            }
 
+            SDL_FRect rect;
+            rect.x = static_cast<float>(args[0].getFloat());
+            rect.y = static_cast<float>(args[1].getFloat());
+            rect.w = static_cast<float>(args[2].getFloat());
+            rect.h = static_cast<float>(args[3].getFloat());
+
+            ret = Value(SDL_RenderFillRect(app.getRenderer(), &rect));
+            return true;
+        }, "flux::RenderFillRect( float x, float y, float w, float h)");
 
     }
 
