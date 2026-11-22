@@ -26,7 +26,8 @@ namespace DLS {
         Pointer,
         String,
         Function,
-        Array
+        Array,
+        Object
     };
     //
     struct alignas(16) Value {

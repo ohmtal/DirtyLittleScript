@@ -12,7 +12,7 @@
 #include "DLSBaseFlux.h"
 #include "SDLTypes.h"
 
-// #include "core/Objects.h"
+#include "core/Objects.h"
 
 namespace DLS::Flux {
     // -----------------------------------------------------------------------------
@@ -67,8 +67,26 @@ namespace DLS::Flux {
         return true;
     }
     // -------------------------------------------------------------------------
+    struct TestObject: public GenericObject {
+        float foo = 0.f;
+        std::string bar = "yes";
+
+        TestObject() { }
+
+        static void initFields() {
+            auto* tl = CREATE_TRANSLATOR(TestObject);
+            marshallArena.Add(tl);
+            tl->registerField("foo", &TestObject::foo);
+            tl->registerField("bar", &TestObject::bar);
+            sMarshallId = RegisterStructTranslator(tl);
+            sTranslator = tl;
+        }
+
+    };
     // -------------------------------------------------------------------------
     void RegisterSDLTypes() {
+
+
 
         // ---------------------------------------------------------------------
         // SDL_FRect
