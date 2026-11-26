@@ -124,19 +124,23 @@ bool Parser::parseMath(int minPrecedence) {
         }
         advance();
 
+        // this is handled on
         if (isMathAssignOperatorType(op.mType)) {
             PrintParseError("Inline Math need common Variable!");
             return false;
         }
 
         if (isInlineMathType(op.mType)) {
-            size_t pc = vm->tape.size();
             // override op_load_global
-            if (pc >= 2 && vm->tape[pc - 2] == op_load_global) {
+            if (lastGlobalRegister() < OP_NO_OP) {
+                size_t pc = vm->tape.size();
+                size_t offset = vm->lastEmittedCode == op_dup ? 1 : 2;
                 if (op.mType == TokenType::PlusPlus) {
-                    vm->tape[pc - 2] = op_inc;
+                    vm->tape[pc - offset] = op_inc;
+                    vm->lastEmittedCode = op_inc;
                 } else { // must be MinusMinus
-                    vm->tape[pc - 2] = op_dec;
+                    vm->tape[pc - offset] = op_dec;
+                    vm->lastEmittedCode = op_dec;
                 }
                 // if (requestParam <= 0) vm->emitCode( op_pop_stack );
             } else {
@@ -146,6 +150,24 @@ bool Parser::parseMath(int minPrecedence) {
 
             continue;
         }
+
+        // if (isInlineMathType(op.mType)) {
+        //     size_t pc = vm->tape.size();
+        //     // override op_load_global
+        //     if (pc >= 2 && vm->tape[pc - 2] == op_load_global) {
+        //         if (op.mType == TokenType::PlusPlus) {
+        //             vm->tape[pc - 2] = op_inc;
+        //         } else { // must be MinusMinus
+        //             vm->tape[pc - 2] = op_dec;
+        //         }
+        //         // if (requestParam <= 0) vm->emitCode( op_pop_stack );
+        //     } else {
+        //         PrintParseError("Inline Math need common Variable!");
+        //         return false;
+        //     }
+        //
+        //     continue;
+        // }
 
             // case TokenType::AssignPlus: vm->emitCode(op_assign_add); break;
 
@@ -197,6 +219,61 @@ bool Parser::getArg(const std::string& Where, bool optional ) {
     }
     return true;
 }
+// -------------------------------------------------------------------------
+//  emitLiteral optimizer
+// -------------------------------------------------------------------------
+void Parser::emitLiteral(const Value& value) {
+    U32 literalRegister = vm->Variables.saveLiteral(value);
+
+    if (vm->lastEmittedCode == op_literal || vm->lastEmittedCode == op_dup) {
+        if (vm->lastEmittedCode == op_dup) {
+            // lets walk up
+            U32 last = vm->tell() - 1 ;
+            while (vm->tape[last] == op_dup && last > 0) last--;
+            if (last > 0 && vm->tape[last - 1 ] == op_literal && vm->tape[last] == literalRegister ) {
+                vm->emitCode(op_dup);
+                return;
+            }
+        } else {
+            if (vm->tape[vm->tell() - 1 ] == literalRegister) {
+                vm->emitCode(op_dup);
+                return;
+            }
+        }
+    }
+
+    vm->emitCode(op_literal );
+    vm->emitTapeChunk(literalRegister);
+}
+// -------------------------------------------------------------------------
+//  emitLoadGlobal optimizer - NOTE maybe a problem with op_inc/op_dec
+// -------------------------------------------------------------------------
+U32 Parser::lastGlobalRegister() {
+
+    if (vm->lastEmittedCode == op_load_global || vm->lastEmittedCode == op_dup) {
+        if (vm->lastEmittedCode == op_dup) {
+            // lets walk up
+            U32 last = vm->tell() - 1 ;
+            while (vm->tape[last] == op_dup && last > 0) last--;
+            if (last > 0 && vm->tape[last - 1 ] == op_literal) {
+                return vm->tape[last];
+            }
+        } else {
+            return vm->tape[vm->tell() - 1 ];
+        }
+    }
+    return OP_NO_OP;
+}
+void Parser::emitLoadGlobal(const U32 registerIndex) {
+
+    if (lastGlobalRegister() == registerIndex) {
+        vm->emitCode(op_dup);
+        return;
+    }
+    vm->emitCode(op_load_global );
+    vm->emitTapeChunk(registerIndex);
+}
+
 
 // -------------------------------------------------------------------------
 //  Primary sub: NumberLiteral
@@ -215,9 +292,9 @@ bool Parser::parseNumberLiteral() {
         if (haveDot) evaluatedValue = Value(resDouble);
         else evaluatedValue =  Value((S64)resDouble);
     }
-    vm->emitCode(op_literal );
-    // vm->emitTapeChunk(vm->addLiteral(evaluatedValue));
-    vm->emitValue( evaluatedValue );
+    emitLiteral(evaluatedValue);
+    // vm->emitCode(op_literal );
+    // vm->emitTapeChunk(vm->Variables.saveLiteral(evaluatedValue));
     return true;
 }
 // -------------------------------------------------------------------------
@@ -225,9 +302,9 @@ bool Parser::parseNumberLiteral() {
 // -------------------------------------------------------------------------
 bool Parser::parseStringLiteral() {
     Token t = advance();
-    vm->emitCode(op_literal );
-    vm->emitValue( Value(t.mValue) );
-
+    emitLiteral(Value(t.mValue));
+    // vm->emitCode(op_literal );
+    // vm->emitTapeChunk(vm->Variables.saveLiteral(Value(t.mValue)));
     return true;
 }
 // -------------------------------------------------------------------------
@@ -264,14 +341,18 @@ bool Parser::parseIdentifier() {
             if (!getArg( "c function parameters" )) return false;
             argCount++;
         }
-        vm->emitCode( op_cfunc );
+        if (requestParam <= 0) {
+            vm->emitCode( op_cfunc_void );
+        } else {
+            vm->emitCode( op_cfunc );
+        }
         vm->emitTapeChunk((U32)symId);
         vm->emitTapeChunk((U32)argCount);
 
         if (ArrayConstructed) vm->emitCode(op_clear_temp_arrays);
         ArrayAssign = false;
         ArrayConstructed = false;
-        if (requestParam <= 0) vm->emitCode( op_pop_stack );
+        // //byebye: if (requestParam <= 0) vm->emitCode( op_pop_stack );
     }
     // --- Array ----
     else if (peek().mType == TokenType::LSquare) {
@@ -364,13 +445,15 @@ bool Parser::parseIdentifier() {
     }
     // --- default variable
     else if (S64 varidx = vm->Variables.getGlobalRegister(symId); varidx >= 0)  {
-        vm->emitCode(op_load_global);
-        vm->emitTapeChunk((U32)varidx);
+        emitLoadGlobal((U32)varidx);
+        // vm->emitCode(op_load_global);
+        // vm->emitTapeChunk((U32)varidx);
     }
     // --- constant
     else if (Value* constansPointer = FunctionMap::getConstants(symId);constansPointer) {
-        vm->emitCode(op_literal );
-        vm->emitValue(*constansPointer);
+        emitLiteral(*constansPointer);
+        // vm->emitCode(op_literal );
+        // vm->emitTapeChunk(vm->Variables.saveLiteral(*constansPointer));
     }
     // --- ERROR :: invalid Identifier
     else {
@@ -631,13 +714,14 @@ bool Parser::parseIfElifElse() {
     vm->emitJumpOffset(0); // false placeholder
 
     // main loop:
-    while (peek().mType != TokenType::EOFToken &&
-        peek().mType != TokenType::End &&
-        peek().mType != TokenType::ElIf &&
-        peek().mType != TokenType::Else) {
+    while ( peek().mType != TokenType::EOFToken &&
+            peek().mType != TokenType::End &&
+            peek().mType != TokenType::ElIf &&
+            peek().mType != TokenType::Else)
+    {
         if (!parseStatements()) return false;
-        }
-        vm->emitCode(op_jump);
+    }
+    vm->emitCode(op_jump);
     end_jump_slots.push_back(vm->tell());
     vm->emitJumpOffset(0); // end placeholder
 
@@ -653,15 +737,16 @@ bool Parser::parseIfElifElse() {
         false_jump_slot = vm->tell();
         vm->emitJumpOffset(0); // placeholder nect elif
 
-        while (peek().mType != TokenType::EOFToken &&
-            peek().mType != TokenType::End &&
-            peek().mType != TokenType::ElIf &&
-            peek().mType != TokenType::Else) {
+        while ( peek().mType != TokenType::EOFToken &&
+                peek().mType != TokenType::End &&
+                peek().mType != TokenType::ElIf &&
+                peek().mType != TokenType::Else)
+        {
             if (!parseStatements()) return false;;
-            }
+        }
 
-            // elif jump to end
-            vm->emitCode(op_jump);
+        // elif jump to end
+        vm->emitCode(op_jump);
         end_jump_slots.push_back(vm->tell());
         vm->emitJumpOffset(0);
 
@@ -673,10 +758,11 @@ bool Parser::parseIfElifElse() {
     if (peek().mType == TokenType::Else) {
         advance(); // eat 'else'
 
-        while (peek().mType != TokenType::EOFToken &&
-            peek().mType != TokenType::End) {
+        while ( peek().mType != TokenType::EOFToken &&
+                peek().mType != TokenType::End)
+        {
             if (!parseStatements()) return false;
-            }
+        }
     }
 
     // final end
@@ -689,9 +775,23 @@ bool Parser::parseIfElifElse() {
 
     // --- FINAL JUMPS PATCH ---
     size_t final_destination = vm->tell();
+
+    // DOES NOT WORK because of the false_jump_slot!!!!
+    // while (!end_jump_slots.empty() && end_jump_slots.back() + 1 == final_destination) {
+    //     U32 jump_opcode_slot = static_cast<U32>(end_jump_slots.back());
+    //     end_jump_slots.pop_back();
+    //     vm->rewindTape(jump_opcode_slot - 1);
+    //     final_destination = vm->tell();
+    // }
+
+
+    final_destination = vm->tell();
     for (size_t slot : end_jump_slots) {
         vm->patchJumpOffset(slot, final_destination);
     }
+
+
+
     return true;
 }
 

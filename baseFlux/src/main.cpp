@@ -180,6 +180,9 @@ void onDraw(SDL_Renderer* renderer) {
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("Main")) {
             ImGui::MenuItem("Console", "GraveAccent", &showConsole);
+            if (ImGui::MenuItem("Dump Tape")) {
+                DLS::Flux::DumpTape();
+            }
             ImGui::MenuItem("---");
             if (ImGui::MenuItem("TestThread with Expression")) testThread();
             ImGui::EndMenu();

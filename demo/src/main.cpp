@@ -364,13 +364,18 @@ mySrc = R"(
 
 )"; Run(mySrc);
 
-jump_to_test:
 mySrc = R"(
     a = 0
     a++
     print a
     a--
     print a
+)";
+Run(mySrc);
+
+jump_to_test:
+mySrc = R"(
+    print "constant test:" true math::pi false
 )";
 Run(mySrc);
 

@@ -262,7 +262,7 @@ while `foo = function; return 1;; print foo` works fine.
     - (sdl) Starfield bench: 5.918u 0.198s 0:06.31 96.6%
     - All passed :)
     
-- <<< intern 0.62 -------
+- <<< intern 0.62 ------- 0.63 -->
 
 - [X] also changed the Run(string) to return a Value
     
@@ -300,12 +300,36 @@ while `foo = function; return 1;; print foo` works fine.
     - (sdl) Starfield bench: 5.918u 0.185s 0:06.33 96.2%
     - All passed :)
     
-- <<< intern 0.63 -------
+- <<< intern 0.63 ------- 0.64 -->>
+- [X] docu parser and added more sub functions 
+- [X] ported tape dump from DreiZehn and make it nice :) (used in BaseFlux)
+- [ ] save tape
+
+
+
+
 
 ## maybe:
-- add a callframe too to enable real functions 
-- Save a Tape:
-    - SymbolTable
-    - StringTable
-    - Variables 
-    - tape
+- I think about upgrading - or i do the syntax change in DreiZehn ?
+    - if i really rewrite parser and add a Ast i should think about Register bases OPCODE
+    - to be more powerfull and flexible i need a AST again 
+        - a big problem is, no assign return a value because it's difficult
+        to keep track of the "requested" values and risk stack Garbage
+    - the syntax to enable multiline without the '\' stuff
+        - paren usage for calls separated with ',' 
+            - function call example: `Foo::bar(10,20,30);`
+            - forRange(i, 20) ... end;
+        - enable multiline: semicolon will be required to end a statement
+    - script functions with parameters local variables 
+        - need to rename the current lamda style 
+        
+- Save a Tape - i need everything which is created on parser 
+    - how to make sure all functions are avaliable ?! When it's parsed everything 
+        is checked but in Bytecode - i also need this infos or risk a crash ?!
+        i could save a list when   if (FunctionMap::IsCFunction(symId))  is done. 
+        and check it when the bytecode is loaded. 
+    - File Identifer and  Version Nummber 
+    - SymbolTable  for names: op_cfunc use it
+    - StringTable?? not sure - guess not 
+    - Variables: mGlobalsRegister - also lookup ? 
+    - tape 

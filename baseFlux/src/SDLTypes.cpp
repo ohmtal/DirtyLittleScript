@@ -116,14 +116,14 @@ namespace DLS::Flux {
         frectTranslator->registerField("h", &SDL_FRect::h);
         SDL_FRectID = RegisterStructTranslator(frectTranslator);
 
-        FunctionMap::RegisterFunction("Rect::new", [](VM&, ValueSpan args, Value& ret) -> bool {
+        FunctionMap::RegisterFunction("Rect::new", [](VM& vm, ValueSpan args, Value& ret) -> bool {
             SDL_FRect* p = new SDL_FRect();
             DLS::GarbageList.Add(p);
             ret = Value(p);
             ret.marshallId = SDL_FRectID;
             if (args.size() > 0 && args[0].isArray()) {
                 DLS::Marshall::IStructTranslator* tl = DLS::Marshall::getStructTranslator(ret);
-                if (tl) tl->saveArrayValue(ret,fluxVM.Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
+                if (tl) tl->saveArrayValue(ret,vm.Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
             }
             return true;
         }, "Create a Rect (x,y,w,h).");
@@ -137,7 +137,7 @@ namespace DLS::Flux {
         fpointTranslator->registerField("y", &SDL_FPoint::y);
         SDL_FPointID = RegisterStructTranslator(fpointTranslator);
 
-        FunctionMap::RegisterFunction("Point::new", [](VM&, ValueSpan args, Value& ret) -> bool {
+        FunctionMap::RegisterFunction("Point::new", [](VM& vm, ValueSpan args, Value& ret) -> bool {
             SDL_FPoint* p = new SDL_FPoint();
             DLS::GarbageList.Add(p);
             ret = Value(p);
@@ -145,7 +145,7 @@ namespace DLS::Flux {
             if (args.size() > 0 && args[0].isArray()) {
                 // MapArrayFPoint(args[0], *p);
                 DLS::Marshall::IStructTranslator* tl = DLS::Marshall::getStructTranslator(ret);
-                if (tl) tl->saveArrayValue(ret,fluxVM.Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
+                if (tl) tl->saveArrayValue(ret,vm.Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
             }
             return true;
         }, "Create a Point (x,y)");
@@ -159,14 +159,14 @@ namespace DLS::Flux {
         fpoint3Translator->registerField("z", &SDL_FPoint3::z);
         SDL_FPoint3ID = RegisterStructTranslator(fpoint3Translator);
 
-        FunctionMap::RegisterFunction("Point3::new", [](VM&, ValueSpan args, Value& ret) -> bool {
+        FunctionMap::RegisterFunction("Point3::new", [](VM& vm, ValueSpan args, Value& ret) -> bool {
             SDL_FPoint3* p = new SDL_FPoint3();
             DLS::GarbageList.Add(p);
             ret = Value(p);
             ret.marshallId = SDL_FPoint3ID;
             if (args.size() > 0 && args[0].isArray()) {
                 DLS::Marshall::IStructTranslator* tl = DLS::Marshall::getStructTranslator(ret);
-                if (tl) tl->saveArrayValue(ret,fluxVM.Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
+                if (tl) tl->saveArrayValue(ret,vm.Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
             }
             return true;
         }, "Create a Point3 (x,y,z)");
@@ -181,14 +181,14 @@ namespace DLS::Flux {
         colorTranslator->registerField("a", &SDL_Color::a);
         SDL_ColorID = RegisterStructTranslator(colorTranslator);
 
-        FunctionMap::RegisterFunction("Color::new", [](VM&, ValueSpan args, Value& ret) -> bool {
+        FunctionMap::RegisterFunction("Color::new", [](VM& vm, ValueSpan args, Value& ret) -> bool {
             SDL_Color* p = new SDL_Color();
             DLS::GarbageList.Add(p);
             ret = Value(p);
             ret.marshallId = SDL_ColorID;
             if (args.size() > 0 && args[0].isArray()) {
                 DLS::Marshall::IStructTranslator* tl = DLS::Marshall::getStructTranslator(ret);
-                if (tl) tl->saveArrayValue(ret,fluxVM.Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
+                if (tl) tl->saveArrayValue(ret,vm.Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
             }
             return true;
         }, "Create a Color (r,g,b,a)");

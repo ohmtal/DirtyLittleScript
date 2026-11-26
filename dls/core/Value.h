@@ -25,9 +25,9 @@ namespace DLS {
         Long,
         Pointer,
         String,
-        Function,
-        Array,
-        Object
+        Function, // using p
+        Array,    // using l
+        Object    // using p
     };
     //
     struct alignas(16) Value {
@@ -54,6 +54,40 @@ namespace DLS {
         Value(std::string val) { type = ValueType::String; strId = StringTable::insert(val); }
         Value(void* val) { type = ValueType::Pointer; p = val; }
         Value(void* val, U8 val_subtype) { type = ValueType::Pointer; p = val; subType = val_subtype;}
+        // ------------------
+        bool operator==(const Value& other) const {
+            if (type != other.type ||
+                subType != other.subType ||
+                flags != other.flags ||
+                marshallId != other.marshallId) {
+                return false;
+            }
+
+            switch (type) {
+                case ValueType::None:
+                    return true;
+
+                case ValueType::Double:
+                    return d == other.d;
+
+                case ValueType::Array:
+                case ValueType::Long:
+                    return l == other.l;
+
+                case ValueType::Function:
+                case ValueType::Object:
+                case ValueType::Pointer:
+                    return p == other.p ;
+
+                case ValueType::String:
+                    return strId == other.strId;
+
+                // clang warns me when i forget one after adding it ;)
+                // default:
+                //     return false;
+            }
+            return false;
+        }
         // ------------------
         inline bool isDouble() const{ return type == ValueType::Double; }
         inline bool isFloat() const{ return type == ValueType::Double; }

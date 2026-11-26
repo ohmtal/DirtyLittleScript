@@ -53,12 +53,16 @@ private:
     bool parseIfElifElse();
 
     // Primary Sub Functions
+    void emitLiteral(const Value& value);
+    U32  lastGlobalRegister();
+    void emitLoadGlobal(const U32 registerIndex);
     bool parseNumberLiteral();
     bool parseStringLiteral();
     bool parseParen();
     bool parseIdentifier();
     bool parseFn();
     bool parseCurly();
+
 
     // Error/Info Functions
     void PrintParseError(const std::string& message

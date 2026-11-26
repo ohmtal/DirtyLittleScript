@@ -67,14 +67,14 @@ namespace DLS {
     // frectTranslator->registerField("w", &SDL_FRect::w);
     // frectTranslator->registerField("h", &SDL_FRect::h);
     // SDL_FRectID = RegisterStructTranslator(frectTranslator);
-    // FunctionMap::RegisterFunction("Rect::new", [](VM&, ValueSpan args, Value& ret) -> bool {
+    // FunctionMap::RegisterFunction("Rect::new", [](VM& vm, ValueSpan args, Value& ret) -> bool {
     //     SDL_FRect* p = new SDL_FRect();
     //     DLS::GarbageList.Add(p);
     //     ret = Value(p);
     //     ret.marshallId = SDL_FRectID;
     //     if (args.size() > 0 && args[0].isArray()) {
     //         DLS::Marshall::IStructTranslator* tl = DLS::Marshall::getStructTranslator(ret);
-    //         if (tl) tl->saveArrayValue(ret,fluxVM.Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
+    //         if (tl) tl->saveArrayValue(ret,vm.Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
     //     }
     //     return true;
     // }, "Create a Rect (x,y,w,h).");

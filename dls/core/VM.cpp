@@ -227,14 +227,32 @@ namespace DLS {
     VariableStorage::VariableStorage(){
         mGlobalsRegister.reserve(65536);
     }
+
+    U32 VariableStorage::saveLiteral(const Value& value) {
+        // not the fastest way but only used on compile time
+        for (size_t iter = 0; iter < mLiteralsRegister.size(); iter++) {
+            if (mLiteralsRegister[iter] == value) return (U32) iter;
+        }
+        U32 result = (U32) mLiteralsRegister.size();
+        mLiteralsRegister.push_back(value);
+        return result;
+    }
+
     // =========================================================================
     // Virtual Machine
     // =========================================================================
-    void VM::rewindTape(U32 slot){
-        while (tape.size() > slot) {
-            tape.pop_back();
+    // void VM::rewindTape(U32 slot){
+    //     while (tape.size() > slot) {
+    //         tape.pop_back();
+    //     }
+    // }
+    void VM::rewindTape(U32 slot) {
+        if (tape.size() > slot) {
+            tape.resize(slot);
+            lastEmittedCode = OP_NO_OP;
         }
     }
+
 
     void VM::rewind(){ pc = 0;}
 
@@ -264,7 +282,7 @@ namespace DLS {
         return startIp;
     }
 
-    void VM::emitCode(const U32 opcode){ tape.push_back(opcode); }
+    void VM::emitCode(const U32 opcode){ tape.push_back(opcode);lastEmittedCode=opcode; }
 
     // -----------------------------------------------------------------------------
     #define DISPATCH() goto *dispatch_table[tape[pc++]]
@@ -306,7 +324,13 @@ namespace DLS {
             }
             DISPATCH();
         }
-
+        // ------------------------------------------
+        // DUP(licate)
+        // ------------------------------------------
+        handle_op_dup: {
+            DUP_STACK();
+            DISPATCH();
+        }
         // ------------------------------------------
         // Variables
         // ------------------------------------------
@@ -465,7 +489,7 @@ namespace DLS {
         // Literal
         // ------------------------------------------
         handle_op_literal: {
-            PUSH_STACK(advance_value());
+            PUSH_STACK(Variables.getLiteral(advanceSlot()));
             DISPATCH();
         }
         // ------------------------------------------
@@ -721,6 +745,64 @@ namespace DLS {
         // ------------------------------------------
         // C-Function call
         // ------------------------------------------
+        // --- c func without push - no return value
+        handle_op_cfunc_void: {
+            // args count
+            U32 symid =  advanceSlot();
+            U32 numArgs = advanceSlot();
+
+            const FunctionMap::CallBack* cb = FunctionMap::GetCFunction(symid);
+            if (!cb) [[unlikely]]{
+                for (U32 i = 0; i < numArgs; ++i) {
+                    (void)POP_STACK();
+                }
+                // // PUSH_STACK(Value(0));
+                DISPATCH();
+            }
+
+            // Tools::printf("CALL FUNC: %s [args:%f]\n", SymbolTable::getName(symid).c_str(), numArgs);
+
+            if (numArgs <= 12) {
+                Value evaluatedArgsStack[12];
+
+                for (S64 i = numArgs ; i > 0  ; i--) {
+                    evaluatedArgsStack[i - 1] = POP_STACK();
+                }
+                Value returnValue = Value(0);
+                bool success = (*cb)(*this, ValueSpan(evaluatedArgsStack, numArgs), returnValue);
+
+                if (!success) [[unlikely]] {
+                    Tools::errorf("Runtime Error in function: %s\n", SymbolTable::getName(symid).c_str());
+                }
+                // // PUSH_STACK(returnValue);
+
+                DISPATCH();
+            } else {
+                // --- more than 12 parameters fallback ---
+                bool success = false;
+                Value returnValue = Value(0);
+                {
+
+                    ValueVector evaluatedArgs;
+                    evaluatedArgs.clear();
+                    evaluatedArgs.resize(numArgs);
+                    for (S64 i = numArgs ; i > 0  ; i--) {
+                        evaluatedArgs[i - 1] = POP_STACK();
+                    }
+                    success = (*cb)(*this, evaluatedArgs, returnValue);
+                }
+
+
+                if (!success) [[unlikely]] {
+                    Tools::errorf("Runtime Error in function: %s\n", SymbolTable::getName(symid).c_str());
+                }
+                // // PUSH_STACK(returnValue);
+                DISPATCH();
+            }
+            DISPATCH();
+        }
+
+        // ----- c_func with return value:
         handle_op_cfunc: {
             // args count
             U32 symid =  advanceSlot();
@@ -941,9 +1023,82 @@ namespace DLS {
             DISPATCH();
         }
         // ------------------------------------------
+        handle_op_invalid:{
+            return;
+        }
+        // ------------------------------------------
     } //run
 
+    // =========================================================================
+    // Bytecode Dump
+    // =========================================================================
 
+    size_t disassembleInstruction(const U32* code, size_t offset, const S32 stk, const size_t callstk, size_t localsSize) {
+        uint32_t opcode = code[offset];
+        char buffer[512] = {};
+        size_t pos = 0;
+        auto append = [&](const char* fmt, auto... args) {
+            if (pos < sizeof(buffer)) {
+                int written = snprintf(buffer + pos, sizeof(buffer) - pos, fmt, args...);
+                if (written > 0) {
+                    pos += static_cast<size_t>(written);
+                }
+            }
+        };
+        append("%04zu: [%02u]", offset, opcode);
+
+        if (opcode < op_invalid) {
+            append("%-20s", OpCodeInfos[opcode].name);
+            U32 count = OpCodeInfos[opcode].emittedCount;
+            if (count > 0) {
+                append(" %s", "[ ");
+                for (U32 i = 1; i <= count; i++) {
+                    if (i > 1) append("%s",", ");
+                    append("%u",code[offset + i]);
+                }
+                append(" %s", "]");
+            } else {
+                append(" %s", "[ - ]");
+
+            }
+            offset += 1 + count;
+            // append(" (%s)", OpCodeInfos[opcode].comment);
+        } else {
+            append("-------- UNKNOWN_OPCODE [%u] -------", opcode);
+            offset++;
+        }
+
+        if (stk >= 0) {
+            append(", _STK[%d], CF:%zu (%zu)", stk, callstk, localsSize);
+        }
+
+        Tools::printf("%s\n", buffer);
+
+        return offset;
+    }
+
+    void disassembleCode(const U32* code, size_t codeSize) {
+        Tools::printf("===== TAPE DUMP =====\n");
+        size_t offset = 0;
+        while (offset < codeSize) {
+            offset = disassembleInstruction(code, offset);
+        }
+        Tools::printf("=====================\n");
+    }
+
+    void VM::dumpTape(size_t start, size_t end) {
+        size_t tapeSize = tape.size();
+        if (start >= tapeSize || end <= start) {
+            Tools::errorf("TAPE DUMP: out of bounds: %u - %u :: %u", (U32)start, (U32)end, (U32)tapeSize);
+            return;
+        }
+        if (end > tapeSize) {
+            end = tapeSize;
+        }
+        const U32* code = tape.data() + start;
+        size_t codeSize = end - start;
+        disassembleCode(code, codeSize);
+    }
 
 } //namespace
 

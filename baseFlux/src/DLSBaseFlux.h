@@ -17,6 +17,7 @@ namespace DLS::Flux {
     void OnUpdate(const float dt);
     void OnShutdown();
     void OnRender();
+    void DumpTape();
     bool RunFile(const std::string& fileName, bool ResetTape );
     void OnKey(SDL_Keycode key, DLS::U32 EventType, SDL_Keymod mod);
     void OnMouse( DLS::U8 button,  DLS::U32 EventType);

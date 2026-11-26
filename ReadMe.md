@@ -1,11 +1,14 @@
 # Dirty Little Script (DLS)
 
-**Dirty Little Script** is a **header only** syntax subset of [DreiZehnScript](https://github.com/ohmtal/DreiZehnScript)
-It's not a copy of DreiZehnScript i coded Value, VM, Parser and more different.
+**Dirty Little Script** is a little **header only** script language.
+
+The Syntax is close to [DreiZehnScript](https://github.com/ohmtal/DreiZehnScript)
+but not 100% compatible. It's not a copy of DreiZehnScript i coded Value, VM,
+Parser and more different.
 
 ## Keynotes 
 
-- can be used as a Expression compiler / runner
+- can be used as a multi threaded Expression compiler / runner
 - only global variables
 - no objects (fields/methods) like in DreiZehn but basic structs support 
 - only lambda style functions without parameters
@@ -87,8 +90,62 @@ I set a max elements limit to 65536. Which can be changed with compile flag: DLS
 
 ## Bind your C-Functions
 
-This is simular to [DreiZehn's binding method](https://github.com/ohmtal/DreiZehnScript/blob/main/handbook/Bindings.md).
+This is very close to [DreiZehn's binding method](https://github.com/ohmtal/DreiZehnScript/blob/main/handbook/Bindings.md).
 Except the Object. DLS does not support the DreiZehn ValueObject Classes.
+
+``` 
+// Example binding:
+RegisterFunction("math::sin", [](VM&, ValueSpan args, Value& ret) -> bool {
+    if (args.size() != 1) return false;
+    ret = Value(std::sin(args[0].getDouble()));
+    return true;
+}, "return sine of value using std::sin");
+
+```
+
+## Bind a Constant:
+
+```
+ RegisterConstants("math::pi", Value(3.14159265358979323846));
+```
+
+## Bind a Struct Example:
+
+```
+// in a header: 
+    inline U16 SDL_ColorID = 0;
+    inline bool isColor(const Value& value) { return value.isPointerMarshall(SDL_ColorID); }
+    inline DLS::ArenaAllocator marshallArena;
+    
+// inside a RegisterFunction :
+void RegisterSDLColor()
+{
+    // ---------------------------------------------------------------------
+    // SDL_Color with marshalling
+    // ---------------------------------------------------------------------
+    auto* colorTranslator = new DLS::Marshall::GenericStructTranslator<SDL_Color>();
+    marshallArena.Add(colorTranslator);
+    colorTranslator->registerField("r", &SDL_Color::r);
+    colorTranslator->registerField("g", &SDL_Color::g);
+    colorTranslator->registerField("b", &SDL_Color::b);
+    colorTranslator->registerField("a", &SDL_Color::a);
+    SDL_ColorID = RegisterStructTranslator(colorTranslator);
+
+    FunctionMap::RegisterFunction("Color::new", [](VM& vm, ValueSpan args, Value& ret) -> bool {
+        SDL_Color* p = new SDL_Color();
+        DLS::GarbageList.Add(p);
+        ret = Value(p);
+        ret.marshallId = SDL_ColorID;
+        if (args.size() > 0 && args[0].isArray()) {
+            DLS::Marshall::IStructTranslator* tl = DLS::Marshall::getStructTranslator(ret);
+            if (tl) tl->saveArrayValue(ret,vm.Variables.getArrayByMasterIndex((size_t)args[0].getFastLong()));
+        }
+        return true;
+    }, "Create a Color (r,g,b,a)");
+    // ---------------------------------------------------------------------
+}
+    
+```
 
 
 ## Compile the demo
@@ -124,7 +181,7 @@ cmake --build build
 |  |  |
 
 ## Using as Expression compiler
-s
+
 ```
 //-----------------------------------------------------------------------------
 // DLS Expression Demo

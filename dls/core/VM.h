@@ -24,11 +24,15 @@
 #define DLS_MAX_ARRAY_ELEMENTS 65536
 #endif
 
+#define OP_NO_OP UINT32_MAX
+
 namespace DLS {
 
     void PrintRuntimeError(const std::string& message
     , const std::string& p1 = "",const std::string& p2 = "",const std::string& p3 = "");
 
+    size_t disassembleInstruction(const uint32_t* code, size_t offset, const S32 stk = -1, const size_t callstk = 0, size_t localsSize = 0);
+    void disassembleCode(const uint32_t* code, size_t codeSize);
 
 
     struct ArrayEntry {
@@ -55,6 +59,9 @@ namespace DLS {
 
         std::unordered_map<U32,size_t> mGlobalsLookUp;
         ValueVector mGlobalsRegister;
+
+        std::vector<Value> mLiteralsRegister;
+
 
         std::vector<ArrayEntry> mArrays;
         std::vector<size_t> mArrayTempAssigned;
@@ -205,6 +212,15 @@ namespace DLS {
 
         }
 
+        //  -- Literals --
+        U32 saveLiteral(const Value& value);
+        inline const Value& getLiteral(size_t index) {
+            #ifdef DLS_DEBUG
+            assert (index < mLiteralsRegister.size() && "LOAD: Literals REGISTER OUT OF BOUNDS");
+            #endif
+            return mLiteralsRegister[index];
+        }
+
     };
 
     // ------------------------------------------
@@ -232,6 +248,8 @@ namespace DLS {
 
         std::vector<LoopContext> mLoopStack;
         VariableStorage Variables;
+
+        U32 lastEmittedCode = OP_NO_OP;
 
         // ValueVector mLiterals;
         void run();
@@ -315,6 +333,20 @@ namespace DLS {
             stack[STK++] = val;
         }
 
+        // ---- dup
+        inline void DUP_STACK() {
+            #ifdef DLS_DEBUG
+            if (STK >= stack.size()) [[unlikely]] {
+                size_t new_size = stack.empty() ? 8 : stack.size() * 2;
+                stack.resize(new_size);
+                PrintRuntimeError("STACK RESIZE!", std::to_string(new_size));
+            }
+            #endif
+            stack[ STK  ] = stack[ STK - 1 ];
+            STK++;
+        }
+
+
         U32 STACK_SIZE() {
             return STK;
         }
@@ -329,6 +361,13 @@ namespace DLS {
             if (pc >= tape.size()) [[unlikely]] return false;
             return true;
         }
+
+        // ------------------------------------------
+        // Debug:
+        // ------------------------------------------
+
+        void dumpTape(size_t start = 0, size_t end = SIZE_MAX);
+
     };
     // =========================================================================
 
@@ -339,6 +378,7 @@ namespace DLS {
     X(op_exit,          0, "exit") \
     X(op_pop_stack,     0, "pop the stack") \
     X(op_pop_stack_count, 1, "pop stack with count") \
+    X(op_dup,           0, "duplicated last stack value") \
     X(op_clear_temp_arrays, 0, "clear temp arrays") \
     X(op_load_global,    1, "load a global variable") \
     X(op_save_global,    1, "save a global variable") \
@@ -346,7 +386,7 @@ namespace DLS {
     X(op_save_array,     2, "save a array") \
     X(op_load_field,     2, "load a object field") \
     X(op_save_field,     2, "save a object field") \
-    X(op_constuct_array,  1, "construct a array") \
+    X(op_constuct_array,  2, "construct a array") \
     X(op_literal,        1, "push a value") \
     X(op_add,            0, "math +") \
     X(op_inc,            1, "math ++") \
@@ -370,18 +410,20 @@ namespace DLS {
     X(op_lower,          0, "compare <") \
     X(op_equal,          0, "compare ==") \
     X(op_not_equal,      0, "compare !=") \
-    X(op_lower_equal,      0, "compare <=") \
-    X(op_greater_equal,      0, "compare >=") \
-    X(op_jump,               1, "jump") \
-    X(op_jump_if_true,       1, "jump true") \
-    X(op_jump_if_false,      1, "jump false") \
-    X(op_jump_if_true_no_pop,      1, "jump false no pop") \
-    X(op_jump_if_false_no_pop,      1, "jump false no pop") \
-    X(op_for_range_start,      2, "op_for_range_start") \
-    X(op_for_range_jump,      2, "op_for_range_jump") \
-    X(op_cfunc,      2, "call a c registered func") \
-    X(op_func_def,      1, "define a lambda") \
-    X(op_return,      0, "return")
+    X(op_lower_equal,    0, "compare <=") \
+    X(op_greater_equal,  0, "compare >=") \
+    X(op_jump,           1, "jump") \
+    X(op_jump_if_true,   1, "jump true") \
+    X(op_jump_if_false,  1, "jump false") \
+    X(op_jump_if_true_no_pop,   1, "jump false no pop") \
+    X(op_jump_if_false_no_pop,  1, "jump false no pop") \
+    X(op_for_range_start,       2, "op_for_range_start") \
+    X(op_for_range_jump,        2, "op_for_range_jump") \
+    X(op_cfunc,       2, "call a c registered func") \
+    X(op_cfunc_void,  2, "call a c registered func but do not push a value.") \
+    X(op_func_def,    1, "define a lambda") \
+    X(op_return,      0, "return") \
+    X(op_invalid,     0, "invalid instruction!")
 
     #define X(name, args, comment) name,
     enum OpCodes : U32 {
@@ -389,7 +431,20 @@ namespace DLS {
     };
     #undef X
 
-// =============================================================================
+    // ----- OpCode Infos from X Macro -----
+    struct OpCodeInfo {
+        const char* name;
+        U32 emittedCount;
+        const char* comment;
+    };
+
+    #define X(name, args, comment) {#name, args, comment},
+    constexpr OpCodeInfo OpCodeInfos[] = {
+        OP_CODE_LIST
+    };
+    #undef X
+
+
 // =============================================================================
 } //namespace
 #ifdef IMPLEMENT_DLS

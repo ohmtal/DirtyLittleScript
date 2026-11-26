@@ -226,6 +226,10 @@ namespace DLS::Flux {
     // -------------------------------------------------------------------------
     const std::string& getScriptFile()  { return currentFileName; }
     // -------------------------------------------------------------------------
+    void DumpTape() {
+        fluxVM.dumpTape();
+    }
+    // -------------------------------------------------------------------------
     bool RunFile(const std::string& fileName, bool ResetTape ) {
         currentFileName = fileName;
         if (ResetTape) {
