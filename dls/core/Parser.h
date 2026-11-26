@@ -42,16 +42,25 @@ private:
     Token advance() { if (mPos + 1 < mTokens.size()) return mTokens[mPos++]; else return Token(TokenType::EOFToken);}
 
     int  getPrecedence(TokenType type);
-    bool parsePrimary();
+    bool parseStatements();
     bool parseMath(int minPrecedence);
+    bool parsePrimary();
     bool getArg(const std::string& Where, bool optional = false);
+
+    // Statement sub functions:
     bool parseWhile();
     bool parseForRange();
-    bool parseFn();
     bool parseIfElifElse();
-    bool parseCurly();
-    bool parseStatements();
 
+    // Primary Sub Functions
+    bool parseNumberLiteral();
+    bool parseStringLiteral();
+    bool parseParen();
+    bool parseIdentifier();
+    bool parseFn();
+    bool parseCurly();
+
+    // Error/Info Functions
     void PrintParseError(const std::string& message
     , const std::string& p1 = "",const std::string& p2 = "",const std::string& p3 = "");
     void PrintParseInfo(const std::string& message
