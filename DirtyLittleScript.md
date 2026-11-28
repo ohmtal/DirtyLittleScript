@@ -303,13 +303,36 @@ while `foo = function; return 1;; print foo` works fine.
 - <<< intern 0.63 ------- 0.64 -->>
 - [X] docu parser and added more sub functions 
 - [X] ported tape dump from DreiZehn and make it nice :) (used in BaseFlux)
+
+- <<< intern 0.64 ------- 0.70 -->>
+
+- Benchmarks (Release O3 / output redirected / best of 3):
+    - test_var: 1.977u 0.000s 0:01.97 100.0%
+    - _test_var_: 1.526u 0.000s 0:01.52 100.0%
+    - test_struct: 3.676u 0.006s 0:03.68 99.7% 
+    - fibo: 0.841u 0.003s 0:00.84 100.0%
+    - (sdl) Starfield bench: 5.694u 0.159s 0:06.05 96.5% 
+    - All passed :)
+
+
+- **feature complete** add stuff to DreiZehn and i did more here than i should ;)
+
+
+
+
+
+
+
+## maybe but not:
 - [ ] save tape
-
-
-
-
-
-## maybe:
+    - SymbolTable
+    - Variables::mGlobalsLookup
+    - Variables::mGlobalsRegister
+    - Variables::mLiteralsRegister
+    - Variabes::mFunctions
+    - Variabes::mReturnStack
+    - VM::tape
+    
 - I think about upgrading - or i do the syntax change in DreiZehn ?
     - if i really rewrite parser and add a Ast i should think about Register bases OPCODE
     - to be more powerfull and flexible i need a AST again 

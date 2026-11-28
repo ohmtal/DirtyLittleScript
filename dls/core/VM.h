@@ -248,8 +248,8 @@ namespace DLS {
         U32 pc = 0;
         std::vector<U32> tape;
         U32 STK = 0;
-        //TEST ValueVector stack;
-        Value stack[DLS_VM_STACKSIZE];
+        ValueVector stack;
+        // Value stack[DLS_VM_STACKSIZE];
 
         std::vector<LoopContext> mLoopStack;
         VariableStorage Variables;
@@ -260,7 +260,7 @@ namespace DLS {
         void run();
 
         VM() {
-            //TEST stack.resize(DLS_VM_STACKSIZE);
+            stack.resize(DLS_VM_STACKSIZE);
         }
         ~VM() = default;
 
