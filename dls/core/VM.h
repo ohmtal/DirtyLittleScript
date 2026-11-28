@@ -24,6 +24,10 @@
 #define DLS_MAX_ARRAY_ELEMENTS 65536
 #endif
 
+#ifndef DLS_VM_STACKSIZE
+#define DLS_VM_STACKSIZE 1024
+#endif
+
 #define OP_NO_OP UINT32_MAX
 
 namespace DLS {
@@ -60,8 +64,7 @@ namespace DLS {
         std::unordered_map<U32,size_t> mGlobalsLookUp;
         ValueVector mGlobalsRegister;
 
-        std::vector<Value> mLiteralsRegister;
-
+        ValueVector mLiteralsRegister;
 
         std::vector<ArrayEntry> mArrays;
         std::vector<size_t> mArrayTempAssigned;
@@ -92,7 +95,7 @@ namespace DLS {
             mGlobalsRegister[index] = value;
         }
 
-       inline const Value& getGlobal(size_t index) {
+       inline const Value& getGlobal(size_t index)  const {
             #ifdef DLS_DEBUG
             assert (index < mGlobalsRegister.size() && "LOAD: GLOBALS REGISTER OUT OF BOUNDS");
             #endif
@@ -133,7 +136,7 @@ namespace DLS {
             return mArrays[masterIndex].Elements;
         }
 
-        inline const Value& getArray(size_t varIndex, U32 index) {
+        inline const Value& getArray(size_t varIndex, U32 index)  {
             Value& arrValue = getGlobalRef(varIndex);
             if (!arrValue.isArray()) [[unlikely]] {
                 PrintRuntimeError("This is not a array Value!");
@@ -214,7 +217,8 @@ namespace DLS {
 
         //  -- Literals --
         U32 saveLiteral(const Value& value);
-        inline const Value& getLiteral(size_t index) {
+
+        inline const Value& getLiteral(size_t index) const {
             #ifdef DLS_DEBUG
             assert (index < mLiteralsRegister.size() && "LOAD: Literals REGISTER OUT OF BOUNDS");
             #endif
@@ -244,7 +248,8 @@ namespace DLS {
         U32 pc = 0;
         std::vector<U32> tape;
         U32 STK = 0;
-        ValueVector stack;
+        //TEST ValueVector stack;
+        Value stack[DLS_VM_STACKSIZE];
 
         std::vector<LoopContext> mLoopStack;
         VariableStorage Variables;
@@ -255,7 +260,7 @@ namespace DLS {
         void run();
 
         VM() {
-            stack.resize(1024);
+            //TEST stack.resize(DLS_VM_STACKSIZE);
         }
         ~VM() = default;
 
@@ -324,11 +329,16 @@ namespace DLS {
         // ---- push
         inline void PUSH_STACK(const Value& val) {
             #ifdef DLS_DEBUG
-            if (STK >= stack.size()) [[unlikely]] {
-                size_t new_size = stack.empty() ? 8 : stack.size() * 2;
-                stack.resize(new_size);
-                PrintRuntimeError("STACK RESIZE!", std::to_string(new_size));
+            if (STK >= DLS_VM_STACKSIZE) [[unlikely]] {
+                PrintRuntimeError("STACK OVERFLOW!");
+                exit(1);
             }
+            // test
+            // if (STK >= stack.size()) [[unlikely]] {
+            //     size_t new_size = stack.empty() ? 8 : stack.size() * 2;
+            //     stack.resize(new_size);
+            //     PrintRuntimeError("STACK RESIZE!", std::to_string(new_size));
+            // }
             #endif
             stack[STK++] = val;
         }
@@ -336,11 +346,17 @@ namespace DLS {
         // ---- dup
         inline void DUP_STACK() {
             #ifdef DLS_DEBUG
-            if (STK >= stack.size()) [[unlikely]] {
-                size_t new_size = stack.empty() ? 8 : stack.size() * 2;
-                stack.resize(new_size);
-                PrintRuntimeError("STACK RESIZE!", std::to_string(new_size));
+            if (STK >= DLS_VM_STACKSIZE) [[unlikely]] {
+                PrintRuntimeError("STACK OVERFLOW!");
+                exit(1);
             }
+
+            // TEST
+            // if (STK >= stack.size()) [[unlikely]] {
+            //     size_t new_size = stack.empty() ? 8 : stack.size() * 2;
+            //     stack.resize(new_size);
+            //     PrintRuntimeError("STACK RESIZE!", std::to_string(new_size));
+            // }
             #endif
             stack[ STK  ] = stack[ STK - 1 ];
             STK++;

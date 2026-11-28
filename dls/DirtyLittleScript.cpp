@@ -223,6 +223,14 @@ namespace DLS {
             ret = Value((S64)arr.size());
             return true;
         }, "return the element count of an array variable");
+        // ---------------------------------------------------------------------
+        // ByteCode / tape
+        // ---------------------------------------------------------------------
+        RegisterFunction("tape::dump", [](VM& vm, ValueSpan args, Value& ret) -> bool {
+
+            vm.dumpTape(args.size() > 0 ? args[0].getUInt() : 0,args.size() > 1 ? args[1].getUInt() : OP_NO_OP);
+            return true;
+        }, "return the element count of an array variable");
 
     } //<< Init
     // -------------------------------------------------------------------------

@@ -7,7 +7,9 @@
 #pragma once
 
 #include "toolbox/ArenaAllocator.h"
+#include "core/StructArena.h"
 
 namespace DLS {
     inline ArenaAllocator GarbageList;
+    inline StructArena StructsList;
 } //DLS

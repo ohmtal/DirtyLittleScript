@@ -27,7 +27,7 @@ namespace DLS {
         String,
         Function, // using p
         Array,    // using l
-        Object    // using p
+        Object    // using l
     };
     //
     struct alignas(16) Value {

@@ -10,7 +10,6 @@
 #include <functional>
 #include <unordered_map>
 #include "Value.h"
-#include "Globals.h"
 
 namespace DLS::Marshall {
 

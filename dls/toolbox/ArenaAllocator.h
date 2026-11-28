@@ -7,6 +7,9 @@
 //-----------------------------------------------------------------------------
 #pragma once
 
+#include <vector>
+#include <cinttypes>
+
 namespace DLS {
 
 struct ArenaAllocator {
@@ -17,12 +20,13 @@ struct ArenaAllocator {
     std::vector<Entry> objects;
     // ----------------------------------------------------
     template <typename T>
-    void Add(T* obj) {
+    size_t Add(T* obj) {
         objects.push_back({
             static_cast<void*>(obj), [](void* p) {
                 delete static_cast<T*>(p);
             }
         });
+        return objects.size() - 1;
     }
     // ----------------------------------------------------
     // Handle with care!!

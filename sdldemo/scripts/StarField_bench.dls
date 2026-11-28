@@ -112,23 +112,28 @@ while Running
     SDL_SetRenderDrawColor Renderer 180 180 255 255
 
     forRange i STAR_COUNT
-        Points_Z[i] = Points_Z[i] - Dt * Speed
+        z = Points_Z[i] - Dt * Speed
+//         Points_Z[i] = Points_Z[i] - Dt * Speed
 
-        invZ = 1.0 / Points_Z[i]
+//         invZ = 1.0 / Points_Z[i]
+        invZ = 1.0 / z
         screenX = (W * 0.5) + (Points_X[i] * invZ)
         screenY = (H * 0.5) + (Points_Y[i] * invZ)
 
-        if (Points_Z[i] < 0.0) || (screenX < 0.0) || (screenX > W) || (screenY < 0.0)  || (screenY > H)
+//         if (Points_Z[i] < 0.0) || (screenX < 0.0) || (screenX > W) || (screenY < 0.0)  || (screenY > H)
+        if (z < 0.0) || (screenX < 0.0) || (screenX > W) || (screenY < 0.0)  || (screenY > H)
             Points_X[i] = math::random minW maxW
             Points_Y[i] = math::random minH maxH
-            Points_Z[i] = 1.0
-            # print "[RESET STAR]" i Points_X[i] Points_Y[i] Points_Z[i]
+            z = 1.0
+//             Points_Z[i] = 1.0
 
             screenX = W + Points_X[i]
             screenY = H + Points_Y[i]
         end
 
-        radius = math::lerp 2.0 0.3 Points_Z[i]
+        radius = math::lerp 2.0 0.3 z
+//         radius = math::lerp 2.0 0.3 Points_Z[i]
+        Points_Z[i] = z
         SDL_RenderFillRect Renderer screenX screenY radius radius
 
     end

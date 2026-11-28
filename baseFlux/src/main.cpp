@@ -22,12 +22,11 @@
 
 #include "DLSBaseFlux.h"
 
-
-
 namespace fs = std::filesystem;
 BaseFlux::Main app;
 ImConsole gConsole;
 std::vector<fs::path> dlsFiles;
+
 //-----------------------------------------------------------------------------
 // console redirect ....
 void SDLCALL ConsoleLogFunction(void *userdata, int category, SDL_LogPriority priority, const char *message)

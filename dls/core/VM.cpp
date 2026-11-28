@@ -57,108 +57,6 @@ namespace DLS {
         return true;
     }
 
-    // void VariableStorage::saveArray(size_t varIndex, U32 index, const Value& value) {
-    //     Value arrValue = getGlobal(varIndex);
-    //
-    //     //double copy! Value finaleValue = (value.type == ValueType::Array) ? copyArray((size_t)value.getFastLong()) : value;
-    //
-    //     // changed to saveArray
-    //     bool doSave =  !arrValue.isArray();
-    //     saveArray(arrValue, index, value);
-    //     // saveArray(arrValue, index, finaleValue);
-    //     if (doSave) saveGlobal(varIndex,arrValue);
-    //
-    // }
-    //
-    // void VariableStorage::saveArray(Value& arrValue, U32 index, const Value& value) {
-    //
-    //     if (index  >= DLS_MAX_ARRAY_ELEMENTS - 1) [[unlikely]]{
-    //         PrintRuntimeError("Array index overflow max array elements!");
-    //         return;
-    //     }
-    //
-    //     Value finaleValue = (value.type == ValueType::Array) ? copyArray((size_t)value.getFastLong()) : value;
-    //
-    //     if (arrValue.isArray()) {
-    //         size_t masterIndex =(size_t)arrValue.getFastLong();
-    //         if (index >= mArrays[masterIndex].Elements.size()) {
-    //             mArrays[masterIndex].Elements.resize(index + 1);
-    //         }
-    //         if (mArrays[masterIndex].Elements[index].isArray()) {
-    //             size_t oldIndex = (size_t)mArrays[masterIndex].Elements[index].getFastLong();
-    //             mArrays[oldIndex].setAssigned(false);
-    //         }
-    //         // copyArray already set AssingCount
-    //         mArrays[masterIndex].Elements[index] = finaleValue ;
-    //     } else {
-    //         size_t masterIndex = mArrays.size();
-    //         mArrays.push_back({});
-    //         arrValue = Value((S64)masterIndex);
-    //         arrValue.type = ValueType::Array;
-    //         if (index >= mArrays[masterIndex].Elements.size()) {
-    //             mArrays[masterIndex].Elements.resize(index + 1);
-    //         }
-    //         mArrays[masterIndex].Elements[index] = finaleValue ;
-    //     }
-    // }
-    //
-    // Value VariableStorage::copyArray(size_t curMasterIndex){
-    //     size_t newIndex = reserveArray();
-    //     mArrays[newIndex].Elements = mArrays[curMasterIndex].Elements;
-    //     mArrays[newIndex].setAssigned(true); //new entry
-    //     Value result = Value( (S64) newIndex);
-    //     result.type = ValueType::Array;
-    //     return result;
-    // }
-    //
-    // size_t VariableStorage::reserveArray(){
-    //     for (size_t i = 0; i < mArrays.size(); i++) {
-    //         if (!mArrays[i].isAssigned()) return i;
-    //     }
-    //     size_t result = mArrays.size();
-    //     mArrays.push_back({});
-    //     return result;
-    // }
-    //
-    // Value VariableStorage::getArray(size_t varIndex, U32 index) {
-    //     Value& arrValue = getGlobal(varIndex);
-    //     if (!arrValue.isArray()) [[unlikely]] {
-    //         PrintRuntimeError("This is not a array Value!");
-    //         return Value(0.0);
-    //     }
-    //     size_t masterIndex =(size_t)arrValue.getFastLong();
-    //
-    //     if (index >= mArrays[masterIndex].Elements.size()) [[unlikely]] {
-    //         // mArrays[masterIndex].Elements.resize(index + 1);
-    //         PrintRuntimeError("Array index out of bounds.");
-    //         return Value();
-    //     }
-    //     return mArrays[masterIndex].Elements[index];
-    //
-    // }
-    //
-    // ValueVector& VariableStorage::getArrayByMasterIndex(size_t masterIndex){
-    //     #ifdef DLS_DEBUG
-    //     assert(masterIndex < mArrays.size() && "Master index array out of range");
-    //     #endif
-    //     return mArrays[masterIndex].Elements;
-    // }
-    //
-    // Value VariableStorage::createArray(const ValueVector& values, bool assignTemp) {
-    //     S64 masterIndex = (S64)reserveArray();
-    //
-    //     // i need the temp assigned, when it's added as a func param
-    //     if (assignTemp) [[unlikely]]{
-    //         mArrays[(size_t)masterIndex].setAssigned(true);
-    //         mArrayTempAssigned.push_back((size_t)masterIndex);
-    //     }
-    //
-    //     Value result = Value(masterIndex);
-    //     result.type = ValueType::Array;
-    //     mArrays[masterIndex].Elements = values;
-    //     return result;
-    // }
-    //
     void VariableStorage::ArrayFreeTemp(){
         for (auto idx : mArrayTempAssigned) {
             mArrays[idx].setAssigned(false);
@@ -173,29 +71,6 @@ namespace DLS {
         return true;
     }
 
-    // Value& VariableStorage::getGlobal(size_t index){
-    //     #ifdef DLS_DEBUG
-    //     assert (index < mGlobalsRegister.size() && "LOAD: GLOBALS REGISTER OUT OF BOUNDS");
-    //     #endif
-    //     return mGlobalsRegister[index];
-    // }
-    //
-    // void VariableStorage::saveGlobal(size_t index, const Value& value) {
-    //     #ifdef DLS_DEBUG
-    //     assert (index < mGlobalsRegister.size() && "SAVE: GLOBALS REGISTER OUT OF BOUNDS");
-    //     #endif
-    //
-    //     if (mGlobalsRegister[index].isArray()) [[unlikely]] {
-    //         size_t oldIndex = mGlobalsRegister[index].getFastLong();
-    //         mArrays[oldIndex].setAssigned(false);
-    //     }
-    //     if (value.type == ValueType::Array) [[unlikely]] {
-    //         mGlobalsRegister[index] = copyArray((size_t)value.getFastLong());
-    //         return;
-    //     }
-    //
-    //     mGlobalsRegister[index] = value;
-    // }
 
     size_t VariableStorage::reserveGlobal(U32 symId){
         S64 index = getGlobalRegister(symId);
@@ -342,7 +217,7 @@ namespace DLS {
 
         handle_op_load_global: {
             U32 varIndex = advanceSlot();
-            Value& var = Variables.getGlobalRef(varIndex);
+            const Value& var = Variables.getGlobal(varIndex);
             if (var.type == ValueType::Function) [[unlikely]] {
                 PlaceTapeAtScriptFunction(var);
             } else {
@@ -871,7 +746,7 @@ namespace DLS {
 
             Value result = Value();
 
-            Value& var = Variables.getGlobalRef(varIndex);
+            const Value& var = Variables.getGlobal(varIndex);
 
             Marshall::IStructTranslator* tl = Marshall::getStructTranslator(var);
             if (!tl) [[unlikely]] {
@@ -904,8 +779,8 @@ namespace DLS {
             U32& fieldSlot = advanceSlotRef();
             U32 fieldSymId = fieldSlot;
 
-            Value src = POP_STACK();
-            Value& var = Variables.getGlobalRef(varIndex);
+            const Value& src = POP_STACK();
+            const Value& var = Variables.getGlobal(varIndex);
 
             Marshall::IStructTranslator* tl = Marshall::getStructTranslator(var);
             if (!tl) [[unlikely]] {
